@@ -28,7 +28,7 @@ jobs:
       - name: Copy .jar to EC2
         run: |
           # EC2 인스턴스로 .jar 파일을 복사
-          scp -i ${{ secrets.EC2_KEY }} build/libs/your-spring-boot-app.jar ec2-user@${{ secrets.EC2_IP }}:/home/ec2-user/deploy/
+          scp -i ${{ secrets.EC2_KEY }} build/libs/OneProject-0.0.1-SNAPSHOT.jar ec2-user@${{ secrets.EC2_IP }}:/home/ec2-user/deploy/
         env:
           EC2_KEY: ${{ secrets.EC2_KEY }}  # GitHub Secrets에 저장된 EC2 키 파일
           EC2_IP: ${{ secrets.EC2_IP }}    # GitHub Secrets에 저장된 EC2 IP 주소
