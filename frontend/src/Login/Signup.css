@@ -1,0 +1,222 @@
+/* src/Signup.css */
+
+/* 기본 스타일 */
+.signup-container {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .signup-container h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  
+  .signup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .name-inputs {
+    display: flex;
+    gap: 15px;
+  }
+  
+  .input-field {
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .input-field:focus {
+    border-color: #4CAF50;
+    outline: none;
+  }
+  
+  /* 비밀번호 강도 표시 */
+  .password-strength {
+    font-size: 0.8em;  /* 글씨 크기 줄이기 */
+    font-weight: bold;
+    margin-top: -10px;
+    text-align: left;
+  }
+  
+  .password-strength.weak {
+    color: red;
+  }
+  
+  .password-strength.medium {
+    color: orange;
+  }
+  
+  .password-strength.strong {
+    color: green;
+  }
+  
+  /* 비밀번호 확인 메시지 */
+  .password-match {
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-top: -10px;
+    text-align: left;
+  }
+  
+  .password-match.match {
+    color: green;
+  }
+  
+  .password-match.mismatch {
+    color: red;
+  }
+  
+
+  /* .gender-select {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+  
+  .gender-select label {
+    font-size: 16px;
+    display: inline-block;
+    margin-right: 10px;
+  } */
+
+  .user-type-select {
+    gap: 10px ;
+    display: flex;
+    justify-content: center;
+  }
+
+  .user-type-select label {
+    font-size: 16px;
+    display: inline-block;
+    margin-right: 10px;
+  }
+
+  .tooltip {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 5px;
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  
+  .tooltip-bottom {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 10px;
+    background-color: #fefefe;
+    color: #333;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    white-space: nowrap;
+    z-index: 10;
+  }
+  
+  .tooltip-bottom::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -6px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent #fefefe transparent;
+  }
+  
+  .user-type-select-wrapper {
+    position: relative;
+    margin: 20px 0 40px; /* 아래 여백 확보 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .id-check-wrapper {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    align-items: center;
+  }
+  
+  .check-btn {
+    background-color: #94A0D1;     /* 버튼 배경색 */
+    color: black;                /* 글씨 색 */
+    border: none;
+    border-radius: 15px;       
+    padding: 15px 20px;
+    min-width: 90px;
+    white-space: nowrap;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s ease; /*배경색이 바뀔때 더 부드럽게 해주는 명령어 0.2초만에*/
+  }
+  
+  .check-btn:hover {
+    background-color: #333;      /* 호버 시 좀 더 밝은 검정 */
+    color: white;
+  }
+  
+  
+  .id-available {
+    color: green;
+    margin-bottom: 10px;
+  }
+  
+  .id-unavailable {
+    color: red;
+    margin-bottom: 10px;
+  }
+  
+  
+  
+  input[type="radio"] {
+    margin-right: 5px;
+  }
+  
+  .submit-btn {
+    background-color: #94A0D1;
+    color: black;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 15px;
+    transition: background-color 0.3s;
+  }
+  
+  .submit-btn:hover {
+    background-color: black;
+    color: white;
+  }
+  
+  label {
+    font-size: 14px;
+    color: #555;
+  }
+  
+  input[type="checkbox"] {
+    margin-right: 10px;
+  }
+  

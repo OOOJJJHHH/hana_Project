@@ -1,0 +1,69 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.4.3'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.projectlombok:lombok'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation 'org.springframework.boot:spring-boot-starter'
+    // MySQL JDBC 드라이버 의존성 추가
+    runtimeOnly 'com.mysql:mysql-connector-j'  // 최신 버전으로 수정 가능
+
+    // Spring Data JPA 의존성 추가
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-parameters"
+}
+
+def reactAppDir = "$projectDir/../frontend"
+
+def npmCommand = System.getProperty('os.name').toLowerCase().contains('windows') ? 'cmd' : 'npm'
+
+task buildReact(type: Exec) {
+    workingDir reactAppDir
+    if (npmCommand == 'cmd') {
+        commandLine 'cmd', '/c', 'npm run build'
+    } else {
+        commandLine 'npm', 'run', 'build'
+    }
+}
+
+task copyReactBuild(type: Copy) {
+    dependsOn buildReact
+    from "$reactAppDir/build"
+    into "$projectDir/src/main/resources/static"
+}
+
+processResources.dependsOn copyReactBuild
