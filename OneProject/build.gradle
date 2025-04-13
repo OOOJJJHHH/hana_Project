@@ -13,30 +13,28 @@ java {
     }
 }
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
-}
-
 repositories {
     mavenCentral()
 }
 
 dependencies {
+    // Spring Boot 핵심
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // DB
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // Lombok
     compileOnly 'org.projectlombok:lombok'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
+
+    // 개발용
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // 테스트
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-    implementation 'org.springframework.boot:spring-boot-starter'
-    // MySQL JDBC 드라이버 의존성 추가
-    runtimeOnly 'com.mysql:mysql-connector-j'  // 최신 버전으로 수정 가능
-
-    // Spring Data JPA 의존성 추가
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 }
 
 tasks.named('test') {
@@ -47,23 +45,41 @@ tasks.withType(JavaCompile) {
     options.compilerArgs << "-parameters"
 }
 
-def reactAppDir = "$projectDir/../frontend"
+def frontendDir = "$projectDir/../frontend"
 
-def npmCommand = System.getProperty('os.name').toLowerCase().contains('windows') ? 'cmd' : 'npm'
-
-task buildReact(type: Exec) {
-    workingDir reactAppDir
-    if (npmCommand == 'cmd') {
-        commandLine 'cmd', '/c', 'npm run build'
-    } else {
-        commandLine 'npm', 'run', 'build'
+sourceSets {
+    main {
+        resources {
+            srcDirs = ["$projectDir/src/main/resources"]
+        }
     }
 }
 
-task copyReactBuild(type: Copy) {
-    dependsOn buildReact
-    from "$reactAppDir/build"
-    into "$projectDir/src/main/resources/static"
+task installReact(type: Exec) {
+    workingDir frontendDir
+    inputs.dir frontendDir
+    group = BasePlugin.BUILD_GROUP
+    commandLine System.getProperty('os.name').toLowerCase().contains('windows') ?
+            ['npm.cmd', 'install'] :
+            ['npm', 'install']
 }
 
-processResources.dependsOn copyReactBuild
+task buildReact(type: Exec) {
+    dependsOn installReact
+    workingDir frontendDir
+    inputs.dir frontendDir
+    group = BasePlugin.BUILD_GROUP
+    commandLine System.getProperty('os.name').toLowerCase().contains('windows') ?
+            ['npm.cmd', 'run', 'build'] :
+            ['npm', 'run', 'build']
+}
+
+task copyReactBuildFiles(type: Copy) {
+    dependsOn buildReact
+    from "$frontendDir/build"
+    into "$buildDir/resources/main/static"
+}
+
+processResources {
+    dependsOn copyReactBuildFiles
+}
