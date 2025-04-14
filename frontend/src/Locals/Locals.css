@@ -1,0 +1,272 @@
+/* 기본 폰트 설정 및 margin, padding 초기화 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;  /* 수평 스크롤 방지 */
+  overflow-y: auto;  /* 수직 스크롤 허용 */
+}
+
+/* Locals-container 스타일 */
+.local-container {
+  width: 90%;           /* 기존 55% → 넓게 */
+  max-width: 1280px;    /* 화면 최대 크기 제한 */
+  margin: 0 auto;       /* 중앙 정렬 */
+  padding: 20px;
+  overflow-x: hidden;
+}
+
+/* 헤더 섹션 */
+.locals-header {
+  position: relative;
+  width: 100%;
+}
+
+.header-image {
+  width: 100%;
+  height: 600px;
+  object-fit: cover;
+}
+
+.header-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  text-align: center;
+  width: 80%;
+}
+
+.header-text h1 {
+  font-size: 2rem;
+  margin-bottom: 15px;
+}
+
+.header-text p {
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+
+/* 추천인 목록을 상단에 박스 형태로 나열 */
+.recommender-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 15px; /* 추천인들 간 간격 */
+  margin-bottom: 20px;
+}
+
+.recommender-item {
+  background-color: #f4f4f4;
+  padding: 10px;
+  border-radius: 8px;
+  width: 130px;
+  height: 130px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.3s ease;
+}
+
+.recommender-item:hover {
+  transform: scale(1.05); /* 마우스 오버 시 확대 효과 */
+}
+
+.recommender-item img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.recommender-item span {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* 추천 장소 섹션 */
+.recommendations {
+  padding: 20px;
+  text-align: center;
+}
+
+.recommendations-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.recommendations-header h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  flex: 1;
+  text-align: center;
+}
+
+.recommendation-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* 최소 300px 크기의 카드로 자동 배치 */
+  gap: 25px;
+  margin-top: 30px;
+}
+
+.recommendation-card {
+  background-color: #f4f4f4;
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.card-info {
+  margin-top: 10px;
+}
+
+.card-info h3 {
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+}
+
+.card-info p {
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+
+.card-info span {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.view-more-btn {
+  padding: 12px 20px;
+  background-color: #ff69b4;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background-color 0.3s ease; /* 부드러운 색상 변화 */
+}
+
+.view-more-btn:hover {
+  background-color: #ff4081;
+}
+
+/* 추천인 목록 */
+.recommender-list {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  width: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 100;
+  display: none;
+}
+
+/* 추천인 목록 보이기 (JS에서 class 추가) */
+.recommender-list.show {
+  display: block;
+}
+
+.card-image-container {
+  position: relative;
+  width: 100%;
+  height: 220px; /* 이미지 크기 고정 */
+}
+
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-icon {
+  position: absolute;
+  top: 10px; /* 상단에서 약간 떨어지게 */
+  right: 10px; /* 우측에서 약간 떨어지게 */
+  font-size: 40px;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  padding: 5px;
+}
+.user-image-overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: white;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  border: 2px solid white;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .local-container {
+    width: 95%;
+  }
+
+  .header-text p {
+      font-size: 0.9rem;
+  }
+
+  .search-input {
+      width: 80%;
+  }
+
+  .recommendation-list {
+    grid-template-columns: 1fr; /* 모바일에서 카드 1개씩 나열 */
+  }
+
+  .recommender-item {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+}
+.hotel-review-section {
+  margin-top: 40px;
+  padding: 20px;
+  background-color: #f8f8f8;
+  border-radius: 12px;
+}
+
+.review-card {
+  padding: 10px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.review-card:last-child {
+  border-bottom: none;
+}
+
+.review-card p {
+  margin: 5px 0;
+}

@@ -19,7 +19,7 @@ const Header = () => {
       <Nav>
         <NavList>
           <NavItem><NavLink href="/city">도시들</NavLink></NavItem>
-          <NavItem><NavLink href="/locals">현지인</NavLink></NavItem>
+          <NavItem><NavLink href="/local">현지인</NavLink></NavItem>
           <NavItem><NavLink href="/about">이벤트</NavLink></NavItem>
         </NavList>
       </Nav>
@@ -37,6 +37,7 @@ const HeaderContainer = styled.header`
   width: 100%;
   box-sizing: border-box;
   max-width: 100%;
+  
 
   @media (max-width: 1400px) { 
     padding: 10px 20px; /* 작은 화면에서도 여백 줄이기 */
@@ -65,9 +66,11 @@ const TopRow = styled.div`
 const LogoButton = styled.button`
   margin-left : 70px;
   background: transparent;  /* 배경 투명 */
+  color: black;
   border: none;  /* 테두리 투명 */
   cursor: pointer; /* 클릭 가능 표시 */
   padding: 0; /* 불필요한 여백 제거 */
+  outline: none; /* 포커스 시 파란색 배경 제거 */
 `;
 
 
@@ -87,6 +90,7 @@ const LoginText = styled.span`
   transition: color 0.3s ease;
   position: relative;  /* 위치 조정 */
   z-index: 10;  /* 메뉴보다 위로 */
+  
 
   &:hover {
     color: #ff5722; /* hover 시 색상 변경 */
@@ -121,7 +125,11 @@ const NavList = styled.ul`
   }
 `;
 
-const NavItem = styled.li``;
+const NavItem = styled.li`
+display: inline-block;
+padding: 0px 150px;
+`;
+
 
 const NavLink = styled.a`
   color: black;
@@ -129,8 +137,8 @@ const NavLink = styled.a`
   text-decoration: none;
   font-size: 1.2rem;
   display: inline-block;  /* 글자 크기만큼만 클릭 가능 */
-  padding: 0px 150px;  /* 너무 넓은 클릭 영역 제거 */
   transition: color 0.3s ease;
+  
 
   &:hover {
     text-decoration: underline;

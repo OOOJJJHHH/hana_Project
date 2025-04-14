@@ -67,7 +67,7 @@ function Signup() {
     }
   };
 
-  const checkIdAvailability = () => { // ✅ 추가됨
+  const checkIdAvailability = () => { 
     const usedIds = ['testuser', 'admin', 'guest']; // 예시
     if (usedIds.includes(formData.id)) {
       setIsIdAvailable(false);
@@ -232,22 +232,63 @@ function Signup() {
             여성
           </label>
         </div> */}
-
+        <div className = "Agree-box">
+        <p><h4>개인정보 수집·이용에 대한 동의</h4></p>
+        <hr></hr>
+        <p>
+          <br></br>
+          ㈜여가(이하 "회사")은 회원가입을 위해 아래와 같은 개인정보를 수집·이용합니다.
+          <br></br>
+          <br></br>
+          <strong> 1. 수집 항목</strong>
+            <br></br>
+            <br></br>
+            이름
+            <br></br>
+            <br></br>
+            이메일
+            <br></br>
+            <br></br>
+            아이디
+            <br></br>
+            <br></br>
+            <strong>2. 수집 및 이용 목적</strong>
+            <br></br>
+            <br></br>
+            회원 식별 및 본인 여부 확인
+            <br></br>
+            <br></br>
+            서비스 이용을 위한 계정 생성 및 관리
+            <br></br>
+            <br></br>
+            고객 문의 대응 및 공지사항 전달
+            <br></br>
+            <br></br>
+            <strong>3. 보유 및 이용 기간</strong>
+            <br></br>
+            <br></br>
+            회원 탈퇴 시까지 보관하며, 관련 법령에 따라 일정 기간 보관할 수 있습니다.
+            <br></br>
+            <br></br>
+            <strong>※ 귀하는 개인정보 수집 및 이용에 대한 동의를 거부할 권리가 있으나, 동의를 거부할 경우 회원가입이 제한될 수 있습니다.</strong>
+          </p>
+            </div>
         <div>
+        <label>개인정보 수집 ∙ 이용에 대한 동의에 동의하십니까? </label>
           <input
             type="checkbox"
             name="termsAccepted"
             checked={formData.termsAccepted}
             onChange={(e) => setFormData({ ...formData, termsAccepted: e.target.checked })}
           />
-          <label>약관에 동의합니다.</label>
+          
         </div>
         <button type="submit" className="submit-btn" disabled={!formData.termsAccepted}>
-          회원가입
+           회원가입
         </button>
       </form>
     </div>
   );
-}
+};
 
 export default Signup;

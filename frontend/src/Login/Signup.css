@@ -210,6 +210,17 @@
     background-color: black;
     color: white;
   }
+  .Agree-box {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+
+  }
   
   label {
     font-size: 14px;
