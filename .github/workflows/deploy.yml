@@ -26,10 +26,10 @@ jobs:
       - name: 📦 Install React dependencies
         working-directory: frontend
         run: npm install
-
-      - name: 🏗️ Build React
-        working-directory: frontend
-        run: CI=false npm run build
+#
+#      - name: 🏗️ Build React
+#        working-directory: frontend
+#        run: CI=false npm run build
 
       # 먼저 backend 디렉토리로 이동
       - name: ⚙️ Build Spring Boot project
