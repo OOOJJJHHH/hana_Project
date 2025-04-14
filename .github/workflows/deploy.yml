@@ -31,8 +31,11 @@ jobs:
         working-directory: frontend
         run: CI=false npm run build
 
+      # 먼저 backend 디렉토리로 이동
       - name: ⚙️ Build Spring Boot project
-        run: ./gradlew clean build
+        run: |
+          cd OneProject
+          ./gradlew clean build
 
       - name: 🚀 Deploy JAR to EC2
         uses: appleboy/scp-action@v0.1.4
