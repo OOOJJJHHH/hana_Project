@@ -30,7 +30,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
-          source: "*.jar"
+          source: "OneProject/build/libs/*.jar"
           target: "/home/ec2-user/deploy"
 
       - name: 🔁 Restart Spring Boot on EC2
@@ -41,5 +41,5 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script: |
             pkill -f 'java -jar' || true
-            nohup java -jar "/home/ec2-user/deploy/OneProject-0.0.1-SNAPSHOT.jar" > app.log 2>&1 &
+            nohup java -jar "/home/ec2-user/deploy/OneProject/build/libs/OneProject-0.0.1-SNAPSHOT.jar" > app.log 2>&1 &
       
