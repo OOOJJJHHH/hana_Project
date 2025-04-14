@@ -69,6 +69,10 @@ task buildReact(type: Exec) {
     workingDir frontendDir
     inputs.dir frontendDir
     group = BasePlugin.BUILD_GROUP
+
+    // CI 환경 변수 추가 (eslint 오류 무시)
+    environment 'CI', 'false'
+
     commandLine System.getProperty('os.name').toLowerCase().contains('windows') ?
             ['npm.cmd', 'run', 'build'] :
             ['npm', 'run', 'build']

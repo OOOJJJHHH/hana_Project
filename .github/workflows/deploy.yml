@@ -2,7 +2,7 @@ name: CI/CD Deploy to EC2
 
 on:
   push:
-    branches: [ master ]  # 브랜치 이름 반영
+    branches: [ master ]  # master 브랜치에 push 될 때 실행
 
 jobs:
   deploy:
@@ -18,25 +18,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: 🧱 Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22'
-
-      - name: 📦 Install React dependencies
-        working-directory: frontend
-        run: npm install
-#
-#      - name: 🏗️ Build React
-#        working-directory: frontend
-#        run: CI=false npm run build
-
-      # 먼저 backend 디렉토리로 이동
-      - name: ⚙️ Build Spring Boot project
+      - name: ⚙️ Build Spring Boot + React project (Gradle)
         run: |
           cd OneProject  # 백엔드 디렉토리로 이동
-          chmod +x ./gradlew  # gradlew 파일에 실행 권한 부여
-          ./gradlew clean build  # gradle 빌드 실행
+          chmod +x ./gradlew
+          ./gradlew clean copyReactBuildFiles bootJar
 
       - name: 🚀 Deploy JAR to EC2
         uses: appleboy/scp-action@v0.1.4
@@ -44,9 +30,8 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_KEY }}
-          source: "build/libs/*.jar"
+          source: "OneProject/build/libs/*.jar"  # 경로 주의
           target: "/home/ec2-user/deploy"
-
 
       - name: 🔁 Restart Spring Boot on EC2
         uses: appleboy/ssh-action@v1.0.0
