@@ -21,8 +21,8 @@ jobs:
       - name: ⚙️ Build Spring Boot + React project (Gradle)
         run: |
           cd OneProject  # 백엔드 디렉토리로 이동
-          chmod +x ./gradlew.bat
-          ./gradlew.bat clean copyReactBuildFiles build
+          chmod +x ./gradlew
+          ./gradlew clean copyReactBuildFiles build
 
       - name: 🚀 Deploy JAR to EC2
         uses: appleboy/scp-action@v0.1.4
