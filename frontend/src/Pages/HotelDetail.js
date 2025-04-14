@@ -78,6 +78,11 @@ const hotelDetails = {
     images: [Hotel1Inside1, Hotel1Inside2, Hotel1Inside3, Hotel1Inside4],
     thumbnail: Hotel1,
     rating: 4.5,
+    rooms: {
+      Standard: 150000,
+      Deluxe: 250000,
+      VIP: 400000
+    },
     reviews: getRandomReviews(),
   },
   "Hotel Diana Roof Garden": {
@@ -87,6 +92,11 @@ const hotelDetails = {
     images: [Hotel2Inside1, Hotel2Inside2, Hotel2Inside3, Hotel2Inside4],
     thumbnail: Hotel2,
     rating: 4.2,
+    rooms: {
+      Standard: 120000,
+      Deluxe: 220000,
+      VIP: 350000
+    },
     reviews: getRandomReviews(),
   },
   "Starhotels Metropole": {
@@ -96,6 +106,11 @@ const hotelDetails = {
     images: [Hotel3Inside1, Hotel3Inside2, Hotel3Inside3, Hotel3Inside4],
     thumbnail: Hotel3,
     rating: 4.0,
+    rooms: {
+      Standard: 140000,
+      Deluxe: 230000,
+      VIP: 360000
+    },
     reviews: getRandomReviews(),
   },
   "Rome Marriott Grand Hotel Flora": {
@@ -105,6 +120,11 @@ const hotelDetails = {
     images: [Hotel4Inside1, Hotel4Inside2, Hotel4Inside3, Hotel4Inside4],
     thumbnail: Hotel4,
     rating: 4.4,
+    rooms: {
+      Standard: 160000,
+      Deluxe: 270000,
+      VIP: 420000
+    },
     reviews: getRandomReviews(),
   },
   "Intercontinental Rome Ambasciatori Palace": {
@@ -114,6 +134,11 @@ const hotelDetails = {
     images: [Hotel5Inside1, Hotel5Inside2, Hotel5Inside3, Hotel5Inside4],
     thumbnail: Hotel5,
     rating: 4.3,
+    rooms: {
+      Standard: 180000,
+      Deluxe: 300000,
+      VIP: 450000
+    },
     reviews: getRandomReviews(),
   },
   "Il Grande Gatsby Bar & Restaurant": {
@@ -123,6 +148,11 @@ const hotelDetails = {
     images: [Hotel6Inside1, Hotel6Inside2, Hotel6Inside3, Hotel6Inside4],
     thumbnail: Hotel6,
     rating: 4.1,
+    rooms: {
+      Standard: 110000,
+      Deluxe: 210000,
+      VIP: 330000
+    },
     reviews: getRandomReviews(),
   },
   "Hotel Scott House": {
@@ -132,6 +162,11 @@ const hotelDetails = {
     images: [Hotel7Inside1, Hotel7Inside2, Hotel7Inside3, Hotel7Inside4],
     thumbnail: Hotel7,
     rating: 3.9,
+    rooms: {
+      Standard: 130000,
+      Deluxe: 220000,
+      VIP: 350000
+    },
     reviews: getRandomReviews(),
   },
 };
@@ -139,19 +174,28 @@ const hotelDetails = {
 const HotelDetail = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
   const queryParams = new URLSearchParams(location.search);
   const hotelName = queryParams.get("name");
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [hotelInfo, setHotelInfo] = useState(null);
+  const [selectedRoom, setSelectedRoom] = useState("Standard"); // 기본 선택 방
+  const [roomPrice, setRoomPrice] = useState(0); // 기본 가격
 
   useEffect(() => {
     if (hotelName && hotelDetails[hotelName]) {
       setHotelInfo(hotelDetails[hotelName]);
       setCurrentIndex(0);
+      setSelectedRoom("Standard"); // 기본 방을 "Standard"로 설정
+      setRoomPrice(hotelDetails[hotelName].rooms["Standard"]); // 기본 가격 설정
     }
   }, [hotelName]);
+
+  const handleRoomChange = (event) => {
+    const roomType = event.target.value;
+    setSelectedRoom(roomType);
+    setRoomPrice(hotelInfo.rooms[roomType]); // 선택한 방에 따른 가격 변경
+  };
 
   const handleNext = () => {
     if (hotelInfo) {
@@ -203,6 +247,27 @@ const HotelDetail = () => {
         <h1>{hotelInfo.name}</h1>
         <p>{hotelInfo.location}</p>
         <p>{hotelInfo.description}</p>
+
+        <div className="room-selector">
+          <label htmlFor="room-select">방 종류:</label>
+          <select id="room-select" value={selectedRoom} onChange={handleRoomChange}>
+            {Object.keys(hotelInfo.rooms).map((roomType) => (
+              <option key={roomType} value={roomType}>
+                {roomType} - {hotelInfo.rooms[roomType].toLocaleString()}원
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="room-price">
+          <h3>선택된 방: {selectedRoom}</h3>
+          <p>가격: {roomPrice.toLocaleString()}원</p>
+        </div>
+
+        <div className="action-buttons">
+          <button className="reserve-button">예약하기</button>
+          <button className="wishlist-button">찜하기</button>
+        </div>
       </div>
 
       <div className="similar-hotels-section">
