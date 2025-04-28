@@ -36,54 +36,54 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
+//
+//tasks.named('test') {
+//    useJUnitPlatform()
+//}
+//
+//tasks.withType(JavaCompile) {
+//    options.compilerArgs << "-parameters"
+//}
+//
+//def frontendDir = "$projectDir/../frontend"
+//
+//sourceSets {
+//    main {
+//        resources {
+//            srcDirs = ["$projectDir/src/main/resources"]
+//        }
+//    }
+//}
 
-tasks.named('test') {
-    useJUnitPlatform()
-}
-
-tasks.withType(JavaCompile) {
-    options.compilerArgs << "-parameters"
-}
-
-def frontendDir = "$projectDir/../frontend"
-
-sourceSets {
-    main {
-        resources {
-            srcDirs = ["$projectDir/src/main/resources"]
-        }
-    }
-}
-
-task installReact(type: Exec) {
-    workingDir frontendDir
-    inputs.dir frontendDir
-    group = BasePlugin.BUILD_GROUP
-    commandLine System.getProperty('os.name').toLowerCase().contains('windows') ?
-            ['npm.cmd', 'install'] :
-            ['npm', 'install']
-}
-
-task buildReact(type: Exec) {
-    dependsOn installReact
-    workingDir frontendDir
-    inputs.dir frontendDir
-    group = BasePlugin.BUILD_GROUP
-
-    // CI 환경 변수 추가 (eslint 오류 무시)
-    environment 'CI', 'false'
-
-    commandLine System.getProperty('os.name').toLowerCase().contains('windows') ?
-            ['npm.cmd', 'run', 'build'] :
-            ['npm', 'run', 'build']
-}
-
-task copyReactBuildFiles(type: Copy) {
-    dependsOn buildReact
-    from "$frontendDir/build"
-    into "$buildDir/resources/main/static"
-}
-
-processResources {
-    dependsOn copyReactBuildFiles
-}
+//task installReact(type: Exec) {
+//    workingDir frontendDir
+//    inputs.dir frontendDir
+//    group = BasePlugin.BUILD_GROUP
+//    commandLine System.getProperty('os.name').toLowerCase().contains('windows') ?
+//            ['npm.cmd', 'install'] :
+//            ['npm', 'install']
+//}
+//
+//task buildReact(type: Exec) {
+//    dependsOn installReact
+//    workingDir frontendDir
+//    inputs.dir frontendDir
+//    group = BasePlugin.BUILD_GROUP
+//
+//    // CI 환경 변수 추가 (eslint 오류 무시)
+//    environment 'CI', 'false'
+//
+//    commandLine System.getProperty('os.name').toLowerCase().contains('windows') ?
+//            ['npm.cmd', 'run', 'build'] :
+//            ['npm', 'run', 'build']
+//}
+//
+//task copyReactBuildFiles(type: Copy) {
+//    dependsOn buildReact
+//    from "$frontendDir/build"
+//    into "$buildDir/resources/main/static"
+//}
+//
+//processResources {
+//    dependsOn copyReactBuildFiles
+//}

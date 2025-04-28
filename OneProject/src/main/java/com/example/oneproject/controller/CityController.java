@@ -1,11 +1,13 @@
 package com.example.oneproject.controller;
 
+import com.example.oneproject.DTO.UserDTO;
 import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.CityContent;
 import com.example.oneproject.Entity.UserContent;
 import com.example.oneproject.Service.CityService;
 import com.example.oneproject.Service.LodService;
 import com.example.oneproject.Service.UserService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -77,9 +79,65 @@ public class CityController {
     //숙소의 정보를 get
     @GetMapping("/getLod")
     public List<ClodContent> getLod() {
+
         return lodService.getAllLods();
     }
 
 
-    // === 유저 정보 등록 ===
+    // === 유저 정보===
+    @PostMapping("/saveUser")
+    public void saveUser(@RequestBody UserContent userContent) {
+        userService.saveUser(userContent);
+    }
+    @GetMapping("/getUser")
+    public List<UserContent> getUser() {
+        return userService.getUsers();
+    }
+
+
+
+
+
+    //세션
+    @PostMapping("/api/login")
+    public ResponseEntity<?> login(@RequestBody UserContent userContent, HttpSession session) {
+
+        String uId = userContent.getuId();
+        String uPassword = userContent.getuPassword();
+        String result = userService.login(uId, uPassword, session);
+
+        System.out.println("Received result: " + result);
+
+        if("로그인성공".equals(result)){
+            System.out.println("잘되었어요");
+            UserDTO user = (UserDTO) session.getAttribute("loginUser");
+            return ResponseEntity.ok(user);
+        }
+        else{
+            System.out.println("안되었어요");
+            return ResponseEntity.status(401).body(result);
+        }
+    }
+
+
+    @GetMapping("/api/getSessionInfo")
+    public ResponseEntity<?> getSessionInfo(HttpSession session) {
+        UserDTO user = (UserDTO) session.getAttribute("loginUser");
+
+        if(user != null){
+            return ResponseEntity.ok(user);
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 필요");
+        }
+    }
+
+    @PostMapping("/api/logout")
+    public ResponseEntity<String> logout(HttpSession session) {
+        session.invalidate(); // 세션 전체 삭제
+        return ResponseEntity.ok("로그아웃 성공");
+    }
+
+
+
 }

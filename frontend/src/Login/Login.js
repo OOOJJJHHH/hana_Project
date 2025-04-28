@@ -1,13 +1,44 @@
-import React, { useState } from "react";
+import React, {useContext, useState} from "react";
+import axios from "axios";
+import {UserUpdateContext} from "../Session/UserContext";
 
 export default function LoginForm() {
-  const [id, setid] = useState("");
-  const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const [id, setId] = useState("");
+  const [password, setPassword] = useState("");
+  const setUserInfo = useContext(UserUpdateContext);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("로그인 시도:", { id, password });
+
+    try {
+      const response = await axios.post(
+          "http://localhost:8080/api/login",
+          {
+            uId: id,
+            uPassword: password,
+          },
+          {
+            withCredentials: true,
+          }
+      );
+
+      if (response.data) {
+        // 로그인 성공 시 userInfo 업데이트
+        setUserInfo(response.data);  // 서버에서 받은 사용자 정보로 상태 업데이트
+
+        // 유저 정보를 localStorage에 저장
+        localStorage.setItem('loginUser', JSON.stringify(response.data));
+
+        // 로그인 성공 후 홈 페이지로 이동 (리로드 없이)
+        window.location.href = "/";  // 이 부분 수정
+      }
+    }
+    catch (error) {
+      console.error("로그인 실패", error);
+    }
   };
+
 
   const handleFindClick = () => {
     window.open("/popup/find", "FindPopup", "width=400,height=600,left=200,top=100");
@@ -98,7 +129,7 @@ export default function LoginForm() {
               type="text"
               style={inputStyle}
               value={id}
-              onChange={(e) => setid(e.target.value)}
+              onChange={(e) => setId(e.target.value)}
               required
               placeholder="   id"
             />

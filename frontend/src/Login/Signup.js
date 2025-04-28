@@ -1,47 +1,54 @@
 // src/Signup.js
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import './Signup.css';
+import axios from "axios";
 
 function Signup() {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    id:'',
-    password: '',
-    confirmPassword: '',
-    gender: '',
-    userType: '', // 추가
-    dateOfBirth: '',
-    termsAccepted: false
+    uUser: '', // 사용자, 집주인 선택
+    uLastName: '',
+    uFirstName: '',
+    uIdEmail: '',
+    uId:'',
+    uPassword: '',
   });
-  
 
   const [isIdAvailable, setIsIdAvailable] = useState(null);
   const [selectedUserType, setSelectedUserType] = useState('');
   const [passwordStrength, setPasswordStrength] = useState('');
   const [passwordMatch, setPasswordMatch] = useState('');
+  const [cfPassword, setcfPassword] = useState('');
+  const [ToS, setToS] = useState('N');
 
+  useEffect(() => {
+    if (cfPassword.length === 0) {
+      setPasswordMatch('');
+      return;
+    }
+
+    if (formData.uPassword === cfPassword) {
+      setPasswordMatch('match');
+    } else {
+      setPasswordMatch('mismatch');
+    }
+  }, [formData.uPassword, cfPassword]);
+
+  //입력한
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value
     });
-
-    if (name === 'confirmPassword') {
-      checkPasswordMatch(value, formData.password);
-    }
   };
 
   const handlePasswordChange = (e) => {
     const { value } = e.target;
     setFormData({
       ...formData,
-      password: value
+      uPassword: value
     });
     evaluatePasswordStrength(value);
-    checkPasswordMatch(formData.confirmPassword, value);
   };
 
   const evaluatePasswordStrength = (password) => {
@@ -57,31 +64,45 @@ function Signup() {
     setPasswordStrength(strength);
   };
 
-  const checkPasswordMatch = (confirmPassword, password) => {
-    if (confirmPassword === '') {
-      setPasswordMatch('');
-    } else if (confirmPassword === password) {
-      setPasswordMatch('match');
-    } else {
-      setPasswordMatch('mismatch');
-    }
-  };
-
+  //입력한 id가 db에 이미 있는 id일 경우( 즉 이미 사용하고 있는 id )
   const checkIdAvailability = () => { 
-    const usedIds = ['testuser', 'admin', 'guest']; // 예시
-    if (usedIds.includes(formData.id)) {
+    const usedIds = ['testuser', 'guest']; // 예시
+    if (usedIds.includes(formData.uId)) {
       setIsIdAvailable(false);
     } else {
       setIsIdAvailable(true);
     }
   };
 
-  const handleSubmit = (e) => {
+
+  // 최종적으로 db에 user 내용을 저장
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
+    console.log(formData);
+    console.log(selectedUserType);
+    if (formData.uPassword !== cfPassword) {
       alert('비밀번호가 일치하지 않습니다.');
       return;
     }
+
+    try{
+      await axios.post("http://localhost:8080/saveUser", formData);
+      alert("성공적으로 데이터가 저장되었습니다");
+
+      setFormData({
+        uUser: '', // 사용자, 집주인 선택
+        uLastName: '',
+        uFirstName: '',
+        uIdEmail: '',
+        uId:'',
+        uPassword: '',
+      });
+    }
+    catch (error){
+      console.log("Error saving city:", error);
+      alert("데이터 저장에 실패하였습니다");
+    }
+
     console.log('폼 제출됨:', formData);
   };
 
@@ -107,26 +128,28 @@ function Signup() {
           <label>
             <input
               type="radio"
-              name="userType"
+              name="uUser"
               value="tenant"
               onChange={(e) => {
                 handleChange(e);
                 setSelectedUserType('tenant');
+                setFormData({uUser: selectedUserType});
               }}
-              checked={formData.userType === 'tenant'}
+              checked={formData.uUser === 'tenant'}
             />
             사용자
           </label>
           <label>
             <input
               type="radio"
-              name="userType"
+              name="uUser"
               value="landlord"
               onChange={(e) => {
                 handleChange(e);
                 setSelectedUserType('landlord');
+                setFormData({uUser: selectedUserType});
               }}
-              checked={formData.userType === 'landlord'}
+              checked={formData.uUser === 'landlord'}
             />
             집주인
           </label>
@@ -137,8 +160,8 @@ function Signup() {
         <div className="name-inputs">
           <input
             type="text"
-            name="firstName"
-            value={formData.firstName}
+            name="uFirstName"
+            value={formData.uFirstName}
             onChange={handleChange}
             placeholder="이름"
             className="input-field"
@@ -146,8 +169,8 @@ function Signup() {
           />
           <input
             type="text"
-            name="lastName"
-            value={formData.lastName}
+            name="uLastName"
+            value={formData.uLastName}
             onChange={handleChange}
             placeholder="성"
             className="input-field"
@@ -156,8 +179,8 @@ function Signup() {
         </div>
         <input
           type="email"
-          name="email"
-          value={formData.email}
+          name="uIdEmail"
+          value={formData.uIdEmail}
           onChange={handleChange}
           placeholder="이메일"
           className="input-field"
@@ -166,8 +189,8 @@ function Signup() {
           <div className="id-check-wrapper">
           <input
             type="text"
-            name="id"
-            value={formData.id}
+            name="uId"
+            value={formData.uId}
             onChange={(e) => {
               handleChange(e);
               setIsIdAvailable(null); // 상태 초기화
@@ -185,8 +208,8 @@ function Signup() {
 
         <input
           type="password"
-          name="password"
-          value={formData.password}
+          name="uPassword"
+          value={formData.uPassword}
           onChange={handlePasswordChange}
           placeholder="비밀번호"
           className="input-field"
@@ -199,39 +222,18 @@ function Signup() {
         </div>
         <input
           type="password"
-          name="confirmPassword"
-          value={formData.confirmPassword}
-          onChange={handleChange}
+          name="cfPassword"
+          value={cfPassword}
+          onChange={(e) => setcfPassword(e.target.value)}
           placeholder="비밀번호 확인"
           className="input-field"
           required
         />
         <div className={`password-match ${passwordMatch}`}>
-          {passwordMatch === 'match' && '비밀번호가 일치합니다.'}
-          {passwordMatch === 'mismatch' && '비밀번호가 일치하지 않습니다.'}
+          {formData.uPassword === cfPassword && '비밀번호가 일치합니다.'}
+          {formData.uPassword !== cfPassword && '비밀번호가 일치하지 않습니다.'}
         </div>
-        {/* <div className="gender-select">
-          <label>
-            <input
-              type="radio"
-              name="gender"
-              value="male"
-              onChange={handleChange}
-              checked={formData.gender === 'male'}
-            />
-            남성
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="gender"
-              value="female"
-              onChange={handleChange}
-              checked={formData.gender === 'female'}
-            />
-            여성
-          </label>
-        </div> */}
+
         <div className = "Agree-box">
         <p><h4>개인정보 수집·이용에 대한 동의</h4></p>
         <hr></hr>
@@ -277,13 +279,11 @@ function Signup() {
         <label>개인정보 수집 ∙ 이용에 대한 동의에 동의하십니까? </label>
           <input
             type="checkbox"
-            name="termsAccepted"
-            checked={formData.termsAccepted}
-            onChange={(e) => setFormData({ ...formData, termsAccepted: e.target.checked })}
+            onChange={(e) => setToS(e.target.checked ? "Y":"N")}
           />
           
         </div>
-        <button type="submit" className="submit-btn" disabled={!formData.termsAccepted}>
+        <button type="submit" className="submit-btn" disabled={ToS!="Y"}>
            회원가입
         </button>
       </form>
@@ -292,3 +292,35 @@ function Signup() {
 };
 
 export default Signup;
+
+
+
+
+
+
+
+
+
+
+{/* <div className="gender-select">
+          <label>
+            <input
+              type="radio"
+              name="gender"
+              value="male"
+              onChange={handleChange}
+              checked={formData.gender === 'male'}
+            />
+            남성
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="gender"
+              value="female"
+              onChange={handleChange}
+              checked={formData.gender === 'female'}
+            />
+            여성
+          </label>
+        </div> */}

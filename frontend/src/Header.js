@@ -1,8 +1,34 @@
-import React from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom'; // Link 컴포넌트 import
+import {Link, useNavigate} from 'react-router-dom';
+import {UserContext, UserUpdateContext} from "./Session/UserContext";
+import axios from "axios";
 
 const Header = () => {
+
+    const navigate = useNavigate();
+
+    const userInfo = useContext(UserContext);  // userInfo 가져오기
+    const setUserInfo = useContext(UserUpdateContext);  // setUserInfo 가져오기
+
+    const Logout = async () => {
+        try{
+            await axios.post("http://localhost:8080/api/logout", {}, {
+                withCredentials: true,
+            });
+            setUserInfo(null);
+            localStorage.removeItem('loginUser');  // 로그인 정보를 삭제
+            navigate("/login");
+        }
+    catch (error){
+            console.error("에러가 발생했습니다", error);
+        }
+    }
+
+    useEffect(() => {
+        console.log("userInfo: ", userInfo);
+    }, [userInfo]);
+
   return (
     <HeaderContainer>
       <TopRow>
@@ -11,10 +37,21 @@ const Header = () => {
         </LogoButton>
         
         <SearchInput type="text" placeholder="검색..." style={{ width: "100px"}}/>
-        
-        <LoginText>
-          <Link to="/login">로그인</Link> {/* Link 컴포넌트를 사용하여 로그인 페이지로 이동 */}
-        </LoginText>
+
+
+          <p>{userInfo}</p>
+          {userInfo==null ? (
+              <LoginText>
+                  <button onClick={() => navigate("/login")}>Login</button> {/* Link 컴포넌트를 사용하여 로그인 페이지로 이동 */}
+              </LoginText>
+          ):(
+              <LoginText>
+                  <button>마이페이지</button>
+                  <button onClick={Logout}>로그아웃</button> {/* Link 컴포넌트를 사용하여 로그인 페이지로 이동 */}
+              </LoginText>
+          )}
+
+
       </TopRow>
       <Nav>
         <NavList>

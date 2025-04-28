@@ -9,20 +9,23 @@ public class UserContent {
     @GeneratedValue(strategy= GenerationType.IDENTITY)    // 프로젝트에 연결된 DB의 numbering 전략을 따른다.
     private long id;    // 시퀀스, auto_increment
 
-    @Column(length = 100, nullable = false)
-    private String u_last_Name;
+    @Column(nullable = false)
+    private String uUser;
 
     @Column(length = 100, nullable = false)
-    private String u_first_Name;
+    private String uLastName;
 
     @Column(length = 100, nullable = false)
-    private String u_idEmail;
+    private String uFirstName;
 
     @Column(length = 100, nullable = false)
-    private String u_pw;
+    private String uIdEmail;
 
     @Column(length = 100, nullable = false)
-    private String u_gender;
+    private String uId;
+
+    @Column(length = 100, nullable = false)
+    private String uPassword;
 
     public long getId() {
         return id;
@@ -32,43 +35,51 @@ public class UserContent {
         this.id = id;
     }
 
-    public String getU_last_Name() {
-        return u_last_Name;
+    public String getuUser() {
+        return uUser;
     }
 
-    public void setU_last_Name(String u_last_Name) {
-        this.u_last_Name = u_last_Name;
+    public void setuUser(String uUser) {
+        this.uUser = uUser;
     }
 
-    public String getU_first_Name() {
-        return u_first_Name;
+    public String getuLastName() {
+        return uLastName;
     }
 
-    public void setU_first_Name(String u_first_Name) {
-        this.u_first_Name = u_first_Name;
+    public void setuLastName(String uLastName) {
+        this.uLastName = uLastName;
     }
 
-    public String getU_idEmail() {
-        return u_idEmail;
+    public String getuFirstName() {
+        return uFirstName;
     }
 
-    public void setU_idEmail(String u_idEmail) {
-        this.u_idEmail = u_idEmail;
+    public void setuFirstName(String uFirstName) {
+        this.uFirstName = uFirstName;
     }
 
-    public String getU_pw() {
-        return u_pw;
+    public String getuIdEmail() {
+        return uIdEmail;
     }
 
-    public void setU_pw(String u_pw) {
-        this.u_pw = u_pw;
+    public void setuIdEmail(String uIdEmail) {
+        this.uIdEmail = uIdEmail;
     }
 
-    public String getU_gender() {
-        return u_gender;
+    public String getuId() {
+        return uId;
     }
 
-    public void setU_gender(String u_gender) {
-        this.u_gender = u_gender;
+    public void setuId(String uId) {
+        this.uId = uId;
+    }
+
+    public String getuPassword() {
+        return uPassword;
+    }
+
+    public void setuPassword(String uPassword) {
+        this.uPassword = uPassword;
     }
 }
