@@ -255,9 +255,6 @@ const ImageSlider = () => {
 const ToggleRectangles = () => {
   const [activeButton, setActiveButton] = useState("left");
 
-  const leftImages = [fan2_1, fan2_2, fan2_1, fan2_2];
-  const rightImages = [fan2_2, fan2_1, fan2_2, fan2_1];
-
   return (
       <>
         <ButtonContainer>
@@ -276,17 +273,21 @@ const ToggleRectangles = () => {
         </ButtonContainer>
 
         <RectangleContainer>
-          {activeButton === "left"
-              ? leftImages.map((image, index) => (
-                  <Rectangle key={index}>
-                    <img src={image} alt={`상품${index + 1}`} />
-                  </Rectangle>
-              ))
-              : rightImages.map((image, index) => (
-                  <Rectangle key={index}>
-                    <img src={image} alt={`상품${index + 5}`} />
-                  </Rectangle>
-              ))}
+          {activeButton === "left" ? (
+              <>
+                <Rectangle><img src={"fan2_1"} alt="상품1" /></Rectangle>
+                <Rectangle><img src={"fan2_2"} alt="상품2" /></Rectangle>
+                <Rectangle><img src={"fan2_1"} alt="상품3" /></Rectangle>
+                <Rectangle><img src={"fan2_2"} alt="상품4" /></Rectangle>
+              </>
+          ) : (
+              <>
+                <Rectangle><img src={"fan2_2"} alt="상품5" /></Rectangle>
+                <Rectangle><img src={"fan2_1"} alt="상품6" /></Rectangle>
+                <Rectangle><img src={"fan2_2"} alt="상품7" /></Rectangle>
+                <Rectangle><img src={"fan2_1"} alt="상품8" /></Rectangle>
+              </>
+          )}
         </RectangleContainer>
       </>
   );
