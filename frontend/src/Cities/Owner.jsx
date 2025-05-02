@@ -117,6 +117,7 @@ const Owner = () => {
                         required
                     />
                 </div>
+
                 <div>
                     <label>숙소 이미지:</label>
                     <input
