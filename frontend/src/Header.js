@@ -25,9 +25,9 @@ const Header = () => {
         }
     }
 
-    useEffect(() => {
-        console.log("userInfo: ", userInfo);
-    }, [userInfo]);
+    // useEffect(() => {
+    //     console.log("userInfo: ", userInfo);
+    // }, [userInfo]);
 
   return (
     <HeaderContainer>
@@ -39,15 +39,15 @@ const Header = () => {
         <SearchInput type="text" placeholder="검색..." style={{ width: "100px"}}/>
 
 
-          <p>{userInfo}</p>
           {userInfo==null ? (
               <LoginText>
-                  <button onClick={() => navigate("/login")}>Login</button> {/* Link 컴포넌트를 사용하여 로그인 페이지로 이동 */}
+                  <button style={headMyLogButton} onClick={() => navigate("/login")}>Login</button> {/* Link 컴포넌트를 사용하여 로그인 페이지로 이동 */}
               </LoginText>
           ):(
               <LoginText>
-                  <button>마이페이지</button>
-                  <button onClick={Logout}>로그아웃</button> {/* Link 컴포넌트를 사용하여 로그인 페이지로 이동 */}
+                  <p style={{marginRight: "15px"}}>!! <strong style={{fontSize: "25px"}}>{userInfo.uFirstName}</strong> !!님 반가워요</p>
+                  <button style={headMyLogButton} onClick={() => navigate("/UserMyPage")}>마이페이지</button>
+                  <button style={headMyLogButton} onClick={Logout}>로그아웃</button> {/* Link 컴포넌트를 사용하여 로그인 페이지로 이동 */}
               </LoginText>
           )}
 
@@ -62,6 +62,16 @@ const Header = () => {
       </Nav>
     </HeaderContainer>
   );
+};
+
+const headMyLogButton = {
+    backgroundColor: "white",
+    border: "1px solid black",
+    padding: "5px 10px",
+    borderRadius: "5px",
+    margin: "0 15px 0 0",
+    fontsize: "300px",
+    cursor: "pointer"
 };
 
 const HeaderContainer = styled.header`
@@ -120,15 +130,16 @@ const SearchInput = styled.input`
 `;
 
 const LoginText = styled.span`
-  width: 130px !important; /* 강제 적용 */
+  width: auto !important; /* 강제 적용 */
   font-size: 1.2rem;
   color: black;
   cursor: pointer;
   transition: color 0.3s ease;
   position: relative;  /* 위치 조정 */
   z-index: 10;  /* 메뉴보다 위로 */
-  
-
+  display: flex;
+  flex-direction: row;  
+    
   &:hover {
     color: #ff5722; /* hover 시 색상 변경 */
   }

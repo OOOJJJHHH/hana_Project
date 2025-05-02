@@ -8,6 +8,7 @@ import com.example.oneproject.Service.CityService;
 import com.example.oneproject.Service.LodService;
 import com.example.oneproject.Service.UserService;
 import jakarta.servlet.http.HttpSession;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -93,6 +94,15 @@ public class CityController {
     public List<UserContent> getUser() {
         return userService.getUsers();
     }
+
+    @GetMapping("/getOneUser")
+    public List<UserContent> getOneUser(HttpSession session) {
+        UserDTO user = (UserDTO) session.getAttribute("loginUser");
+        System.out.println(user);
+            String uId = user.getuId();
+            return userService.getOneUsers(uId);
+    }
+
 
 
 

@@ -5,7 +5,7 @@ export const UserContext = createContext();
 export const UserUpdateContext = createContext();
 
 export const UserProvider = ({ children }) => {
-    // userInfo의 초기값을 로컬스토리지에서 가져옴 (없으면 빈 객체로 초기화)
+    // userInfo의 초기값을 로컬S스토리지에서 가져옴 (없으면 빈 객체로 초기화)
     const [userInfo, setUserInfo] = useState(() => {
         const savedUserInfo = localStorage.getItem('loginUser');
         return savedUserInfo ? JSON.parse(savedUserInfo) : null; // 로그인 정보 없으면 null

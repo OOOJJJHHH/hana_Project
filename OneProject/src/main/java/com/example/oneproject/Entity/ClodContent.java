@@ -40,6 +40,7 @@ public class ClodContent {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String lodImag;
 
+
     public Long getId() {
         return id;
     }
