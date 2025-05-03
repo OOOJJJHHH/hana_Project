@@ -5,6 +5,8 @@ import com.example.oneproject.Entity.UserContent;
 import com.example.oneproject.Repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,8 +18,15 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public void saveUser(UserContent userContent) {
+    public void saveUser(UserContent userContent, HttpSession session) {
         userRepository.save(userContent);
+
+        UserDTO user = (UserDTO) session.getAttribute("loginUser");
+
+        if(user != null){
+            UserDTO userDTO = new UserDTO(userContent.getuId(), userContent.getuFirstName(), userContent.getuUser());
+            session.setAttribute("loginUser", userDTO);
+        }
     }
 
     public List<UserContent> getUsers() {

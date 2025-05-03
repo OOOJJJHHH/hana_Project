@@ -87,9 +87,10 @@ public class CityController {
 
     // === 유저 정보===
     @PostMapping("/saveUser")
-    public void saveUser(@RequestBody UserContent userContent) {
-        userService.saveUser(userContent);
+    public void saveUser(@RequestBody UserContent userContent, HttpSession session) {
+        userService.saveUser(userContent, session);
     }
+
     @GetMapping("/getUser")
     public List<UserContent> getUser() {
         return userService.getUsers();
@@ -121,6 +122,7 @@ public class CityController {
         if("로그인성공".equals(result)){
             System.out.println("잘되었어요");
             UserDTO user = (UserDTO) session.getAttribute("loginUser");
+            System.out.println(user);
             return ResponseEntity.ok(user);
         }
         else{
