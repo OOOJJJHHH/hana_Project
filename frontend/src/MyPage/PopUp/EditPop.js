@@ -1,10 +1,13 @@
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import axios from "axios";
+import {UserContext, UserUpdateContext} from "../../Session/UserContext";
 
 const EditPop = ({onClose}) => {
     const [userProfile, setUserProfile] = useState([]);
     const [formData, setFormData] = useState([]);
     const [hoveredButton, setHoveredButton] = useState(null); // 'save', 'cancel', 또는 null
+    const userInfo = useContext(UserContext);
+    const setUserInfo = useContext(UserUpdateContext);
 
     const formContent = {
         uFirstName : "이름",
@@ -22,6 +25,7 @@ const EditPop = ({onClose}) => {
                 console.log("데이터 도착:", response.data);
                 setUserProfile(response.data[0]);
                 setFormData(response.data[0]);
+
             })
             .catch(error => {
                 console.error("에러 발생:", error);
@@ -45,8 +49,21 @@ const EditPop = ({onClose}) => {
         console.log(formData);
 
         try{
-            await axios.post("http://localhost:8080/saveUser", formData);
+            await axios.post("http://localhost:8080/saveUser",
+                formData,
+                {
+                    withCredentials: true
+                });
             alert("데이터가 성공적으로 수정되었습니다");
+
+                const a = {
+                    uUser: formData.uUser,
+                    uFirstName: formData.uFirstName,
+                    uId: formData.uId,
+                };
+                console.log("yes");
+                setUserInfo(a);
+
             onClose();
         }
         catch (error) {

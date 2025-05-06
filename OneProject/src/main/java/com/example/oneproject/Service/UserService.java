@@ -18,8 +18,6 @@ public class UserService {
 
     public void saveUser(UserContent userContent) {
         userRepository.save(userContent);
-
-
     }
 
     public List<UserContent> getUsers() {
@@ -50,6 +48,5 @@ public class UserService {
             return "존재하지 않는 사용자";
         }
     }
-
 
 }
