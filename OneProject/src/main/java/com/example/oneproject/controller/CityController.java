@@ -70,7 +70,7 @@ public class CityController {
 
 
 
-    
+
     // === 숙소 ===
     //숙소의 정보를 저장
     @PostMapping("/saveLod")
@@ -108,6 +108,7 @@ public class CityController {
 
 
 
+
     //세션
     @PostMapping("/api/login")
     public ResponseEntity<?> login(@RequestBody UserContent userContent, HttpSession session) {
@@ -130,6 +131,8 @@ public class CityController {
     }
 
 
+
+
     @GetMapping("/api/getSessionInfo")
     public ResponseEntity<?> getSessionInfo(HttpSession session) {
         UserDTO user = (UserDTO) session.getAttribute("loginUser");
@@ -141,6 +144,7 @@ public class CityController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 필요");
         }
     }
+
 
     @PostMapping("/api/logout")
     public ResponseEntity<String> logout(HttpSession session) {
