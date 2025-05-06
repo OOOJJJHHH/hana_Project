@@ -88,7 +88,7 @@ public class CityController {
     // === 유저 정보===
     @PostMapping("/saveUser")
     public void saveUser(@RequestBody UserContent userContent, HttpSession session) {
-        userService.saveUser(userContent, session);
+        userService.saveUser(userContent);
     }
 
     @GetMapping("/getUser")

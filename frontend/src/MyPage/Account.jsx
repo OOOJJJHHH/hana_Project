@@ -1,8 +1,6 @@
-import React, {useContext, useEffect, useState} from "react";
-import {UserContext} from "../Session/UserContext";
-import MapPopupContent from "../Cities/PopUp/MapPopupContent";
+import React, { useContext, useState } from "react";
+import { UserContext } from "../Session/UserContext";
 import EditPop from "./PopUp/EditPop";
-import axios from "axios";
 
 // 스위치 스타일들
 const switchCon = {
@@ -42,44 +40,52 @@ const sliderBefore = {
     transition: '0.4s',
 };
 
-const Switch = ({ checked, onChange }) => (
-    <label style={switchCon}>
-        <input
-            type="checkbox"
-            style={hiddenCheckbox}
-            checked={checked}
-            onChange={onChange}
-        />
-        <span style={slider}>
-      <span style={{ ...sliderBefore, transform: checked ? 'translateX(26px)' : 'none' }}></span>
-    </span>
-    </label>
-);
+const Switch = ({ checked, onChange }) => {
+    const dynamicSlider = {
+        ...slider,
+        backgroundColor: checked ? '#2196F3' : '#ccc', // 켜짐 시 파란색
+    };
 
+    const dynamicSliderBefore = {
+        ...sliderBefore,
+        transform: checked ? 'translateX(26px)' : 'none',
+    };
+
+    return (
+        <label style={switchCon}>
+            <input
+                type="checkbox"
+                style={hiddenCheckbox}
+                checked={checked}
+                onChange={onChange}
+            />
+            <span style={dynamicSlider}>
+                <span style={dynamicSliderBefore}></span>
+            </span>
+        </label>
+    );
+};
 
 const Account = () => {
     const userInfo = useContext(UserContext);
 
     const [edit, setEdit] = useState(false);
-    // 팝업창 열기
     const openPopup = () => setEdit(true);
-    // 팝업창 닫기
     const closePopup = () => setEdit(false);
-    //
-    const [hovered, setHovered] = useState(false);
-    // 스위치 상태
-    const [switches, setSwitches] = useState([false, false]);
 
-    // 스위치 상태를 토글하는 함수
+    const [hovered, setHovered] = useState(false);
+
+    // 스위치 상태
+    const [switches, setSwitches] = useState([false, false, false]);
+
     const toggleSwitch = (index) => {
         setSwitches((prev) => {
             const newSwitches = [...prev];
-            newSwitches[index] = !newSwitches[index];  // 특정 인덱스의 상태만 반전시킴
+            newSwitches[index] = !newSwitches[index];
             return newSwitches;
         });
     };
 
-    //CSS
     const mainContent = {
         display: "flex",
         flexDirection: "row",
@@ -90,8 +96,8 @@ const Account = () => {
         marginBottom: "20px",
         display: "flex",
         flexDirection: "row",
-        fontSize: "25px", // 원하는 폰트 크기(px, rem 등)
-        lineHeight: '5', // 줄 간격도 조정 가능
+        fontSize: "25px",
+        lineHeight: '5',
         gap: "30px"
     };
 
@@ -117,18 +123,17 @@ const Account = () => {
         marginTop: "20px",
         display: "flex",
         flexDirection: "column",
-        fontSize: "25px", // 원하는 폰트 크기(px, rem 등)
-        lineHeight: '1', // 줄 간격도 조정 가능
+        fontSize: "25px",
+        lineHeight: '1',
         gap: "30px",
     };
 
-
-    return(
+    return (
         <div>
             <h1>계정 정보 확인</h1>
             <div style={mainContent}>
 
-                <div style={detailContent}> {/*사용자 정보에 관한 div*/}
+                <div style={detailContent}>
                     <div>
                         <p>현재 접속한 계정 타입</p>
                         <p>사용자 아이디</p>
@@ -156,21 +161,17 @@ const Account = () => {
                     >
                         회원정보 수정
                     </button>
-                    { edit && (
-                            <div>
-                                <EditPop onClose={closePopup} />
-                            </div>
+                    {edit && (
+                        <div>
+                            <EditPop onClose={closePopup} />
+                        </div>
                     )}
                 </div>
-
             </div>
 
             <div style={pushMain}>
-                <div style={{bottom: "0px"}}>
-                    <div>
-                        <h1 >PUSH 알림 동의</h1>
-                    </div>
-
+                <div>
+                    <h1>PUSH 알림 동의</h1>
                     <div style={pushCheck}>
                         <p>메시지 알림동의</p>
                         <Switch checked={switches[0]} onChange={() => toggleSwitch(0)} />
@@ -181,19 +182,15 @@ const Account = () => {
                 </div>
 
                 <div>
-                    <div>
-                        <h1>SNS 연결 여부</h1>
-                    </div>
-
+                    <h1>SNS 연결 여부</h1>
                     <div style={pushCheck}>
                         <p>카카오톡 연결</p>
-                        <Switch checked={switches[2]} onChange={() => toggleSwitch(0)} />
+                        <Switch checked={switches[2]} onChange={() => toggleSwitch(2)} />
                     </div>
                 </div>
             </div>
-
         </div>
     );
-}
+};
 
 export default Account;
