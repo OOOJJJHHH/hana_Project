@@ -12,18 +12,19 @@ const Header = () => {
     const setUserInfo = useContext(UserUpdateContext);  // setUserInfo 가져오기
 
     const Logout = async () => {
-        try{
-            await axios.post("http://localhost:8080/api/logout", {}, {
+        try {
+            console.log("로그아웃 시도 중...");
+            const res = await axios.post("http://localhost:8080/api/logout", {}, {
                 withCredentials: true,
             });
+            console.log("로그아웃 성공:", res.data);
             setUserInfo(null);
-            localStorage.removeItem('loginUser');  // 로그인 정보를 삭제
+            localStorage.removeItem('loginUser');
             navigate("/login");
+        } catch (error) {
+            console.error("에러가 발생했습니다", error.response || error);
         }
-    catch (error){
-            console.error("에러가 발생했습니다", error);
-        }
-    }
+    };
 
     // useEffect(() => {
     //     console.log("userInfo: ", userInfo);
