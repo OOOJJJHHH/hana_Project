@@ -8,7 +8,6 @@ import com.example.oneproject.Service.CityService;
 import com.example.oneproject.Service.LodService;
 import com.example.oneproject.Service.UserService;
 import jakarta.servlet.http.HttpSession;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -70,7 +69,7 @@ public class CityController {
 
 
 
-
+    
     // === 숙소 ===
     //숙소의 정보를 저장
     @PostMapping("/saveLod")
@@ -87,24 +86,13 @@ public class CityController {
 
     // === 유저 정보===
     @PostMapping("/saveUser")
-    public void saveUser(@RequestBody UserContent userContent, HttpSession session) {
+    public void saveUser(@RequestBody UserContent userContent) {
         userService.saveUser(userContent);
     }
-
     @GetMapping("/getUser")
     public List<UserContent> getUser() {
         return userService.getUsers();
     }
-
-    @GetMapping("/getOneUser")
-    public List<UserContent> getOneUser(HttpSession session) {
-        UserDTO user = (UserDTO) session.getAttribute("loginUser");
-        System.out.println(user);
-            String uId = user.getuId();
-            return userService.getOneUsers(uId);
-    }
-
-
 
 
 
@@ -123,7 +111,6 @@ public class CityController {
         if("로그인성공".equals(result)){
             System.out.println("잘되었어요");
             UserDTO user = (UserDTO) session.getAttribute("loginUser");
-            System.out.println(user);
             return ResponseEntity.ok(user);
         }
         else{
@@ -131,8 +118,6 @@ public class CityController {
             return ResponseEntity.status(401).body(result);
         }
     }
-
-
 
 
     @GetMapping("/api/getSessionInfo")
@@ -146,7 +131,6 @@ public class CityController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 필요");
         }
     }
-
 
     @PostMapping("/api/logout")
     public ResponseEntity<String> logout(HttpSession session) {
