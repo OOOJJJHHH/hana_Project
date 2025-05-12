@@ -1,5 +1,9 @@
 import React, { useState, useRef } from 'react';
 import styled from 'styled-components';
+import ReView from "./ReView";
+import Revation from "./Revation";
+import Wishlist from "./Wishlist";
+import Account from "./Account";
 
 const User = () => {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -43,6 +47,7 @@ const User = () => {
 
   const handleMenuClick = (menu) => {
     setSelectedMenu(menu);
+    renderContent();
   };
 
   const handleImageChange = (event) => {
@@ -63,219 +68,18 @@ const User = () => {
   const renderContent = () => {
     switch (selectedMenu) {
       case 'info':
-        return (
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
-              <button
-                style={{
-                  padding: '10px',
-                  fontSize: '15px',
-                  marginRight: '5px',
-                  background: "white"
-                }}
-                onClick={isEditing ? handleSaveClick : handleEditClick}
-              >
-                {isEditing ? '저장' : '편집'}
-              </button>
-              {isEditing && (
-                <button
-                  style={{
-                    padding: '5px',
-                    fontSize: '15px',
-                    
-                  }}
-                  onClick={handleCancelClick}
-                >
-                  취소
-                </button>
-              )}
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                marginBottom: '10px',
-                fontSize: '20px',
-                alignItems: 'center',
-              }}
-            >
-              <p style={{ fontWeight: 'bold', marginRight: '10px' }}>이름:</p>
-              {isEditing ? (
-                <input
-                  type="text"
-                  name="name"
-                  value={editData.name}
-                  onChange={handleInputChange}
-                  style={{ fontSize: '20px' }}
-                />
-              ) : (
-                <p style={{ fontSize: '20px', marginLeft: "250px" }}>{name}</p>
-              )}
-            </div>
-            <div
-              style={{
-                marginTop: '100px',
-                display: 'flex',
-                flexDirection: 'row',
-                marginBottom: '10px',
-                fontSize: '20px',
-                alignItems: 'center',
-              }}
-            >
-              <p style={{ fontWeight: 'bold', marginRight: '10px' }}>나이:</p>
-              {isEditing ? (
-                <input
-                  type="text"
-                  name="age"
-                  value={editData.age}
-                  onChange={handleInputChange}
-                  style={{ fontSize: '20px' }}
-                />
-              ) : (
-                <p style={{ fontSize: '20px', marginLeft: "250px" }}>{age}</p>
-              )}
-            </div>
-            <div
-              style={{
-                marginTop: '100px',
-                display: 'flex',
-                flexDirection: 'row',
-                marginBottom: '20px',
-                fontSize: '20px',
-                alignItems: 'center',
-              }}
-            >
-              <p style={{ fontWeight: 'bold', marginRight: '10px' }}>이메일:</p>
-              {isEditing ? (
-                <input
-                  type="email"
-                  name="email"
-                  value={editData.email}
-                  onChange={handleInputChange}
-                  style={{ fontSize: '20px' }}
-                />
-              ) : (
-                <p style={{ fontSize: '20px', marginLeft: "250px" }}>{email}</p>
-              )}
-            </div>
-            <div
-              style={{
-                marginTop: '100px',
-                display: 'flex',
-                flexDirection: 'row',
-                marginBottom: '20px',
-                fontSize: '20px',
-                alignItems: 'center',
-              }}
-            >
-              <p style={{ fontWeight: 'bold', marginRight: '10px' }}>전화번호:</p>
-              {isEditing ? (
-                <input
-                  type="phone"
-                  name="phone"
-                  value={editData.phone}
-                  onChange={handleInputChange}
-                  style={{ fontSize: '20px' }}
-                />
-              ) : (
-                <p style={{ fontSize: '20px', marginLeft: "250px" }}>{phone}</p>
-              )}
-            </div>
-            <div
-              style={{
-                marginTop: '100px',
-                display: 'flex',
-                flexDirection: 'row',
-                marginBottom: '20px',
-                fontSize: '20px',
-                alignItems: 'center',
-              }}
-            >
-              <p style={{ fontWeight: 'bold', marginRight: '10px' }}>연동:</p>
-              {isEditing ? (
-                <input
-                  type="email"
-                  name="email"
-                  value={editData.email}
-                  onChange={handleInputChange}
-                  style={{ fontSize: '20px' }}
-                />
-              ) : (
-                <p style={{ fontSize: '20px', marginLeft: "250px" }}>{email}</p>
-              )}
-            </div>
-            <div
-              style={{
-                marginTop: '100px',
-                display: 'flex',
-                flexDirection: 'row',
-                marginBottom: '20px',
-                fontSize: '20px',
-                alignItems: 'center',
-              }}
-            >
-              <p style={{ fontWeight: 'bold', marginRight: '10px' }}>수신동의:</p>
-              {isEditing ? (
-                <input
-                  type="email"
-                  name="email"
-                  value={editData.email}
-                  onChange={handleInputChange}
-                  style={{ fontSize: '20px' }}
-                />
-              ) : (
-                <p style={{ fontSize: '20px', marginLeft: "250px" }}>{email}</p>
-              )}
-            </div>
-            {/* Add more personal information here */}
-          </div>
-        );
+        return <Account />;
 
       case 'image':
-        return (
-          <div>
-            <h2>프로필 이미지</h2>
-            {selectedImage ? (
-              <img
-                src={selectedImage}
-                alt="Selected Image"
-                style={{ maxWidth: '100%', maxHeight: '300px' }}
-              />
-            ) : (
-              <p>선택된 이미지가 없습니다.</p>
-            )}
-          </div>
-        );
+        return <Revation />;
+
+
       case 'wishlist':
-        return (
-          <div>
-            <h2 >위시리스트</h2>
-            {selectedImage ? (
-              <img
-                src={selectedImage}
-                alt="Selected Image"
-                style={{ maxWidth: '100%', maxHeight: '300px' }}
-              />
-            ) : (
-              <p>선택된 이미지가 없습니다.</p>
-            )}
-          </div>
-        );
+        return <Wishlist />;
+
       case 'recently':
-        return (
-          <div>
-            <h2>최근 본</h2>
-            {selectedImage ? (
-              <img
-                src={selectedImage}
-                alt="Selected Image"
-                style={{ maxWidth: '100%', maxHeight: '300px' }}
-              />
-            ) : (
-              <p>선택된 이미지가 없습니다.</p>
-            )}
-          </div>
-        );
+        return <ReView />;
+
       default:
         return <div>선택된 메뉴가 없습니다.</div>;
     }
@@ -373,7 +177,7 @@ const User = () => {
                 border: 'none',
                 cursor: 'pointer',
                 backgroundColor: selectedMenu === 'info' ? '#f0f0f0' : 'white',
-                
+
               }}
               onClick={() => handleMenuClick('info')}
             >
@@ -425,7 +229,6 @@ const User = () => {
           style={{
             border: '1px solid gray',
             padding: '20px',
-            textAlign: 'left',
             height: '1000px',
             width: '70%',
           }}

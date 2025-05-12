@@ -24,6 +24,10 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    public List<UserContent> getOneUsers(String uId) {
+        return userRepository.findByuId(uId);
+    }
+
     public String login(String uId, String uPassword, HttpSession session){
         Optional<UserContent> userOptional = userRepository.findByUId(uId);
 

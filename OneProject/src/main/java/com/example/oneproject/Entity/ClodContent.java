@@ -2,14 +2,14 @@ package com.example.oneproject.Entity;
 
 import jakarta.persistence.*;
 import org.w3c.dom.Text;
-import java.util.*;
+
 import java.math.BigDecimal;
 
 @Entity
 public class ClodContent {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)    // 프로젝트에 연결된 DB의 numbering 전략을 따른다.
+    @GeneratedValue(strategy= GenerationType.IDENTITY)    // 프로젝트에 연결된 DB의 numbering 전략을 따른다.
     private Long id;    // 시퀀스, auto_increment
 
     // 숙소 주인
@@ -39,19 +39,6 @@ public class ClodContent {
     // 숙소 이미지
     @Column(nullable = false, columnDefinition = "TEXT")
     private String lodImag;
-
-
-    @OneToMany(mappedBy = "clodContent", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Room> rooms = new ArrayList<>();
-
-    // Getter/Setter 추가
-    public List<Room> getRooms() {
-        return rooms;
-    }
-
-    public void setRooms(List<Room> rooms) {
-        this.rooms = rooms;
-    }
 
     public Long getId() {
         return id;
@@ -117,4 +104,3 @@ public class ClodContent {
         this.lodImag = lodImag;
     }
 }
-

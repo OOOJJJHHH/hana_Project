@@ -96,7 +96,10 @@ function Signup() {
         uIdEmail: '',
         uId:'',
         uPassword: '',
-      });
+      },
+          {
+            withCredentials: true
+          });
     }
     catch (error){
       console.log("Error saving city:", error);

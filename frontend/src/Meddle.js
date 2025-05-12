@@ -14,6 +14,8 @@ import fan2_2 from './image/2-2.jpg';
 
 const Meddle = () => {
   const [startIndex, setStartIndex] = useState(0);
+  const [startCity, setStartCity] = useState(0);
+  const [startCity1, setStartCity1] = useState(0);
   const [activeButton, setActiveButton] = useState("left");
   const boxes = Array(9).fill("사진");
   const imageData = [
@@ -31,8 +33,56 @@ const Meddle = () => {
     { id: 2, name: "부산", imageUrl: fan2_2 },
     { id: 3, name: "대구", imageUrl: fan2_1 },
     { id: 4, name: "인천", imageUrl: fan2_2 },
+    { id: 5, name: "대전", imageUrl: fan2_1 },
+    { id: 6, name: "광주", imageUrl: fan2_2 },
+    { id: 7, name: "울산", imageUrl: fan2_1 },
+    { id: 8, name: "세종", imageUrl: fan2_2 },
   ]);
-  
+
+  const [cities1, setCities1] = useState([
+    { id: 1, name: "서울", imageUrl: fan2_1 },
+    { id: 2, name: "부산", imageUrl: fan2_2 },
+    { id: 3, name: "대구", imageUrl: fan2_1 },
+    { id: 4, name: "인천", imageUrl: fan2_2 },
+    { id: 5, name: "대전", imageUrl: fan2_1 },
+    { id: 6, name: "광주", imageUrl: fan2_2 },
+    { id: 7, name: "울산", imageUrl: fan2_1 },
+    { id: 8, name: "세종", imageUrl: fan2_2 },
+  ]);
+  const handleNext_3 = () => {
+    const nextStartCity = startCity1 + 4;
+    if (nextStartCity <= cities1.length - 4) {
+      setStartCity1(nextStartCity);
+    } else if (nextStartCity <= cities1.length) {
+      setStartCity1(cities1.length - 4); // 마지막 그룹이 4개 미만일 경우
+    }
+  };
+  const handlePrev_3 = () => {
+    const prevStartCity = startCity1 - 4;
+    if (prevStartCity >= 0) {
+      setStartCity1(prevStartCity);
+    } else {
+      setStartCity1(0);
+    }
+  };
+
+  const handleNext_2 = () => {
+    const nextStartCity = startCity + 4;
+    if (nextStartCity <= cities.length - 4) {
+      setStartCity(nextStartCity);
+    } else if (nextStartCity <= cities.length) {
+      setStartCity(cities.length - 4); // 마지막 그룹이 4개 미만일 경우
+    }
+  };
+  const handlePrev_2 = () => {
+    const prevStartCity = startCity - 4;
+    if (prevStartCity >= 0) {
+      setStartCity(prevStartCity);
+    } else {
+      setStartCity(0);
+    }
+  };
+
   const renderStars = (rating) => {
     const fullStars = "★".repeat(rating); // 채워진 별
     const emptyStars = "☆".repeat(5 - rating); // 빈 별
@@ -54,66 +104,99 @@ const Meddle = () => {
       setStartIndex(startIndex - 3);
     }
   };
-    
+
   return (
-    <MeddleContainer>
-      <ImageSlider />
+      <MeddleContainer>
+        <ImageSlider />
 
-      <ResponsiveContainer>
-        {/* 여가 최저가 보장 텍스트가 왼쪽에 배치 */}
-        <FanfareContainer>
-          <FanfareImage src={fanfare} alt="fanfare" />
-          <FanfareText>여가 최저가 보장!</FanfareText>
-          <FanfareImage src={fanfare} alt="fanfare" />
-        </FanfareContainer>
+        <ResponsiveContainer>
+          {/* 여가 최저가 보장 텍스트가 왼쪽에 배치 */}
+          <FanfareContainer>
+            <FanfareImage src={fanfare} alt="fanfare" />
+            <FanfareText>여가 최저가 보장!</FanfareText>
+            <FanfareImage src={fanfare} alt="fanfare" />
+          </FanfareContainer>
 
-        <ResponsiveContainer_1>
-        <ArrowButton onClick={handlePrev}>&lt;</ArrowButton>
-        <BoxWrapper>
-          <BoxSlider style={{ transform: `translateX(-${startIndex * (100 / 3)}%)` }}>
-            {boxes.map((text, index) => (
-              <ResponsiveBox key={index}>{text}</ResponsiveBox>
+          <ResponsiveContainer_1>
+            <ArrowButton onClick={handlePrev}>&lt;</ArrowButton>
+            <BoxWrapper>
+              <BoxSlider style={{ transform: `translateX(-${startIndex * (100 / 3)}%)` }}>
+                {boxes.map((text, index) => (
+                    <ResponsiveBox key={index}>{text}</ResponsiveBox>
+                ))}
+              </BoxSlider>
+            </BoxWrapper>
+            <ArrowButton onClick={handleNext}>&gt;</ArrowButton>
+          </ResponsiveContainer_1>
+        </ResponsiveContainer>
+
+        {/* ✅ 새로 추가된 컴포넌트 */}
+        <ToggleRectangles />
+        <img src={spring} alt='spring' style={{ marginTop: "20px", width: "100%", maxWidth: "1180px" }} />
+        <span style={{ fontSize: "24px", fontWeight: "bold", display: "block", width: "100%", maxWidth: "1180px" }}>평점순</span>
+        {/* ✅ 둥근 사각형 리스트 */}
+        <RoundedRectangleContainer>
+          {imageData.map((item, index) => (
+              <RoundedRectangle key={index}>
+                <img src={item.src} alt={`fan-${index + 1}`} />
+                <Rating>{renderStars(item.rating)} {item.rating}</Rating>
+              </RoundedRectangle>
+          ))}
+        </RoundedRectangleContainer>
+        <span style={{ fontSize: "24px", fontWeight: "bold", display: "block", width: "100%", maxWidth: "1180px", marginTop: "40px" }}>도시이름</span>
+        <div style={{
+          position: 'relative',
+          overflow : "hidden",
+          width : "1180px"
+        }}>
+
+          <ContainerCity style={{
+            display: 'flex',
+            gap: '20px',
+            padding: '20px',
+            transition: 'transform 0.3s ease-in-out',
+            transform: `translateX(-${startCity * 290}px)`,
+            width: '1220px'
+          }}>
+            {cities.map((city) => (
+                <SquareStyleCity key={city.id} onClick={() => handleClickcity(city.name)}>
+                  <CityImage src={city.imageUrl} alt={city.name} />
+                  <CityName>{city.name}</CityName>
+                </SquareStyleCity>
             ))}
-          </BoxSlider>
-        </BoxWrapper>
-        <ArrowButton onClick={handleNext}>&gt;</ArrowButton>
-        </ResponsiveContainer_1>
-      </ResponsiveContainer>
+          </ContainerCity>
+          <ArrowButton style={{ position: 'absolute', left: '0', top: '50%', transform: 'translateY(-50%)' }} onClick={handlePrev_2}>&lt;</ArrowButton>
+          <ArrowButton style={{ position: 'absolute', right: '0', top: '50%', transform: 'translateY(-50%)' }} onClick={handleNext_2}>&gt;</ArrowButton>
+        </div>
+        <span style={{ fontSize: "24px", fontWeight: "bold", display: "block", width: "100%", maxWidth: "1180px", marginTop: "40px"  }}>도시이름2</span>
+        <div style={{
+          position: 'relative',
+          overflow : "hidden",
+          width : "1180px"
+        }}>
 
-      {/* ✅ 새로 추가된 컴포넌트 */}
-      <ToggleRectangles />
-      <img src={spring} alt='spring' style={{ marginTop: "20px", width: "100%", maxWidth: "1180px" }} /> 
-      <span style={{ fontSize: "24px", fontWeight: "bold", display: "block", width: "100%", maxWidth: "1180px" }}>평점순</span>
-      {/* ✅ 둥근 사각형 리스트 */}
-      <RoundedRectangleContainer>
-        {imageData.map((item, index) => (
-          <RoundedRectangle key={index}>
-            <img src={item.src} alt={`fan-${index + 1}`} />
-            <Rating>{renderStars(item.rating)} {item.rating}</Rating>
-          </RoundedRectangle>
-        ))}
-      </RoundedRectangleContainer>
-      <span style={{ fontSize: "24px", fontWeight: "bold", display: "block", width: "100%", maxWidth: "1180px", marginTop: "40px" }}>도시이름</span>
-      <ContainerCity>
-      {cities.map((city) => (
-        <SquareStyleCity key={city.id} onClick={() => handleClickcity(city.name)}>
-          <CityImage src={city.imageUrl} alt={city.name} />
-          <CityName>{city.name}</CityName>
-        </SquareStyleCity>
-      ))}
-    </ContainerCity>
-    <span style={{ fontSize: "24px", fontWeight: "bold", display: "block", width: "100%", maxWidth: "1180px", marginTop: "40px"  }}>도시이름2</span>
-      <NewContainerCity>
-        {cities.map((city) => (
-          <NewSquareStyleCity key={city.id} onClick={() => handleClickcity(city.name)}>
-            <NewCityImage src={city.imageUrl} alt={city.name} />
-            <NewCityName>{city.name}</NewCityName>
-          </NewSquareStyleCity>
-        ))}
-      </NewContainerCity>
-    </MeddleContainer>
+          <NewContainerCity style={{
+            display: 'flex',
+            gap: '20px',
+            padding: '20px',
+            transition: 'transform 0.3s ease-in-out',
+            transform: `translateX(-${startCity1 * 290}px)`,
+            width: '1220px'
+          }}>
+            {cities1.map((city) => ( // <- slice 적용
+                <NewSquareStyleCity key={city.id} onClick={() => handleClickcity(city.name)}>
+                  <NewCityImage src={city.imageUrl} alt={city.name} />
+                  <NewCityName>{city.name}</NewCityName>
+                </NewSquareStyleCity>
+            ))}
+          </NewContainerCity>
+          <ArrowButton style={{ position: 'absolute', left: '0', top: '50%', transform: 'translateY(-50%)' }} onClick={handlePrev_3}>&lt;</ArrowButton>
+          <ArrowButton style={{ position: 'absolute', right: '0', top: '50%', transform: 'translateY(-50%)' }} onClick={handleNext_3}>&gt;</ArrowButton>
+        </div>
+      </MeddleContainer>
   );
 };
+
 
 const ImageSlider = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -132,39 +215,39 @@ const ImageSlider = () => {
 
   const handlePrevClick = () => {
     setCurrentImageIndex((prevIndex) =>
-      prevIndex === 0 ? images.length - 1 : prevIndex - 1
+        prevIndex === 0 ? images.length - 1 : prevIndex - 1
     );
   };
 
   const handleNextClick = () => {
     setCurrentImageIndex((prevIndex) =>
-      prevIndex === images.length - 1 ? 0 : prevIndex + 1
+        prevIndex === images.length - 1 ? 0 : prevIndex + 1
     );
   };
 
   return (
-    <SliderContainer>
-      {/* 왼쪽 화살표 */}
-      <SliderArrowLeft 
-        src={arrowLeft} 
-        alt="Previous" 
-        onClick={handlePrevClick} 
-      />
+      <SliderContainer>
+        {/* 왼쪽 화살표 */}
+        <SliderArrowLeft
+            src={arrowLeft}
+            alt="Previous"
+            onClick={handlePrevClick}
+        />
 
-      {/* 이미지 리스트 */}
-      <ImageContainer style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}>
-        {images.map((image, index) => (
-          <Image key={index} src={image} alt={`Image ${index + 1}`} />
-        ))}
-      </ImageContainer>
+        {/* 이미지 리스트 */}
+        <ImageContainer style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}>
+          {images.map((image, index) => (
+              <Image key={index} src={image} alt={`Image ${index + 1}`} />
+          ))}
+        </ImageContainer>
 
-      {/* 오른쪽 화살표 */}
-      <SliderArrowRight 
-        src={arrowRight} 
-        alt="Next" 
-        onClick={handleNextClick} 
-      />
-    </SliderContainer>
+        {/* 오른쪽 화살표 */}
+        <SliderArrowRight
+            src={arrowRight}
+            alt="Next"
+            onClick={handleNextClick}
+        />
+      </SliderContainer>
   );
 };
 
@@ -173,42 +256,42 @@ const ToggleRectangles = () => {
   const [activeButton, setActiveButton] = useState("left");
 
   return (
-    <>
-      <ButtonContainer>
-        <ToggleButton
-          isActive={activeButton === "left"}
-          onClick={() => setActiveButton("left")}
-        >
-          Johannes 님의 최저가 상품
-        </ToggleButton>
-        <ToggleButton
-          isActive={activeButton === "right"}
-          onClick={() => setActiveButton("right")}
-        >
-          Sofia 님의 최저가 상품
-        </ToggleButton>
-      </ButtonContainer>
+      <>
+        <ButtonContainer>
+          <ToggleButton
+              isActive={activeButton === "left"}
+              onClick={() => setActiveButton("left")}
+          >
+            Johannes 님의 최저가 상품
+          </ToggleButton>
+          <ToggleButton
+              isActive={activeButton === "right"}
+              onClick={() => setActiveButton("right")}
+          >
+            Sofia 님의 최저가 상품
+          </ToggleButton>
+        </ButtonContainer>
 
-      <RectangleContainer>
-        {activeButton === "left" ? (
-          <>
-            <Rectangle><img src={"fan2_1"} alt="상품1" /></Rectangle>
-            <Rectangle><img src={"fan2_2"} alt="상품2" /></Rectangle>
-            <Rectangle><img src={"fan2_1"} alt="상품3" /></Rectangle>
-            <Rectangle><img src={"fan2_2"} alt="상품4" /></Rectangle>
-          </>
-        ) : (
-          <>
-            <Rectangle><img src={"fan2_2"} alt="상품5" /></Rectangle>
-            <Rectangle><img src={"fan2_1"} alt="상품6" /></Rectangle>
-            <Rectangle><img src={"fan2_2"} alt="상품7" /></Rectangle>
-            <Rectangle><img src={"fan2_1"} alt="상품8" /></Rectangle>
-          </>
-        )}
-      </RectangleContainer>
-    </>
+        <RectangleContainer>
+          {activeButton === "left" ? (
+              <>
+                <Rectangle><img src={"fan2_1"} alt="상품1" /></Rectangle>
+                <Rectangle><img src={"fan2_2"} alt="상품2" /></Rectangle>
+                <Rectangle><img src={"fan2_1"} alt="상품3" /></Rectangle>
+                <Rectangle><img src={"fan2_2"} alt="상품4" /></Rectangle>
+              </>
+          ) : (
+              <>
+                <Rectangle><img src={"fan2_2"} alt="상품5" /></Rectangle>
+                <Rectangle><img src={"fan2_1"} alt="상품6" /></Rectangle>
+                <Rectangle><img src={"fan2_2"} alt="상품7" /></Rectangle>
+                <Rectangle><img src={"fan2_1"} alt="상품8" /></Rectangle>
+              </>
+          )}
+        </RectangleContainer>
+      </>
   );
-};  
+};
 
 // ✅ 스타일 코드
 
@@ -365,7 +448,7 @@ const Rectangle = styled.div`
   width: 280px;
   height: 200px;
   border: solid 1px;
- 
+
   img {
     width: 100%;
     height: 100%;
@@ -382,7 +465,7 @@ const RoundedRectangleContainer = styled.div`
 const RoundedRectangle = styled.div`
   width: 180px;
   height: 180px; /* 높이를 약간 늘려서 평점 표시 공간 추가 */
-  
+
   border-radius: 20px;
   overflow: hidden;
   display: flex;
@@ -390,7 +473,7 @@ const RoundedRectangle = styled.div`
   align-items: center;
   justify-content: center;
   padding: 10px;
-  
+
   img {
     width: 100%;
     height: 100%;
@@ -400,19 +483,19 @@ const RoundedRectangle = styled.div`
 
 const ContainerCity = styled.div`
   display: flex;
-  justify-content: space-evenly;  /* 자식 요소들 사이의 간격을 고르게 배분 */
-  gap: 20px;  /* 요소 간의 간격 */
-  flex-wrap: nowrap;  /* 자식 요소들이 줄 바꿈을 하지 않게 설정 */
+  justify-content: flex-start; /* 변경 */
+  gap: 20px;
   padding: 20px;
-  overflow-x: auto;  /* 컨테이너가 화면에 맞지 않으면 가로 스크롤 생성 */
- 
+  transition: transform 0.3s ease-in-out; /* 추가 */
 `;
 
-// 자식 요소: 각 사각형 스타일
+// 자식 요소
 const SquareStyleCity = styled.div`
+
   height: 280px;
   width: 280px;
   background-color: white;
+  z-index : 1;
   border: 1px solid black;
   cursor: pointer;  /* 마우스를 대면 클릭 가능하도록 설정 */
   transition: transform 0.3s ease-in-out;  /* 마우스 오버 시 애니메이션 효과 추가 */
@@ -436,8 +519,8 @@ const SquareStyleCity = styled.div`
   }
 `;
 const CityImage = styled.img`
-  width: 100%;
-  height: 70%;
+  width: 280px;
+  height: 200px;
   object-fit: cover;
 `;
 
@@ -445,14 +528,14 @@ const CityImage = styled.img`
 const CityName = styled.div`
   text-align: center;
   padding: 10px 0;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: bold;
 `;
 
 // 화살표 이미지 스타일링
 const ArrowImage = styled.img`
   position: absolute;
-  width: 50px;  
+  width: 50px;
   height: 50px;
   margin-left: 1180px;
   margin-top: 110px;
@@ -462,18 +545,17 @@ const NewContainerCity = styled.div`
   display: flex;
   justify-content: space-evenly;
   gap: 20px;
-  flex-wrap: nowrap;
   padding: 20px;
-  overflow-x: auto;
 `;
 
 const NewSquareStyleCity = styled.div`
   height: 280px;
   width: 280px;
-  background-color: white;  /* 배경색을 다르게 설정 */
-  border: 1px solid darkblue;
-  cursor: pointer;
-  transition: transform 0.3s ease-in-out;
+  background-color: white;
+  z-index : 1;
+  border: 1px solid black;
+  cursor: pointer;  /* 마우스를 대면 클릭 가능하도록 설정 */
+  transition: transform 0.3s ease-in-out;  /* 마우스 오버 시 애니메이션 효과 추가 */
 
   @media (max-width: 768px) {
     height: 200px;
@@ -492,16 +574,16 @@ const NewSquareStyleCity = styled.div`
 `;
 
 const NewCityImage = styled.img`
-  width: 100%;
-  height: 70%;
+  width: 280px;
+  height: 200px;
   object-fit: cover;
 `;
 
 const NewCityName = styled.div`
   text-align: center;
-  font-size: 16px;
+  padding: 10px 0;
+  font-size: 20px;
   font-weight: bold;
-  color: darkblue;  /* 글자 색상 다르게 설정 */
 `;
 
 

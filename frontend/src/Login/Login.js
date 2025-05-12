@@ -24,6 +24,7 @@ export default function LoginForm() {
       );
 
       if (response.data) {
+        console.log(response.data);
         // 로그인 성공 시 userInfo 업데이트
         setUserInfo(response.data);  // 서버에서 받은 사용자 정보로 상태 업데이트
 

@@ -45,10 +45,12 @@ function AppWrapper() {
 
 function App() {
     return (
+        <UserProvider>
             <Router>
                 <AppWrapper />
 
             </Router>
+        </UserProvider>
     );
 }
 

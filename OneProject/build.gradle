@@ -21,6 +21,8 @@ dependencies {
     // Spring Boot 핵심
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
 
     // DB
     runtimeOnly 'com.mysql:mysql-connector-j'
