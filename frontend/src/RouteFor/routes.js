@@ -18,6 +18,10 @@ import CityLodging from "../Cities/CityLodging";
 import Owner from "../Cities/Owner";
 import CityForm from "../Cities/CityForm";
 import CitySerch from "../Cities/CitySerch";
+import About from "../About/About";
+import SpringSale from "../About/spring-sale";
+import wineDinner from "../About/wine-dinner";
+import giftEvent from "../About/gift-event";
 
 const routes = [
     {
@@ -81,6 +85,22 @@ const routes = [
     {  //도시 추가하는 컴포넌트
         path: '/cityserch',
         component: CitySerch,
+    },
+    {  //도시 추가하는 컴포넌트
+        path: '/About',
+        component: About,
+    },
+    {  //도시 추가하는 컴포넌트
+        path: '/spring-sale',
+        component: SpringSale,
+    },
+    {  //도시 추가하는 컴포넌트
+        path: '/wine-dinner',
+        component: wineDinner,
+    },
+    {  //도시 추가하는 컴포넌트
+        path: '/gift-event',
+        component: giftEvent,
     },
 
 
