@@ -103,95 +103,95 @@ const Lodging = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={styles.form}>
-      <h2 style={styles.title}>숙소 정보</h2>
+      <form onSubmit={handleSubmit} style={styles.form}>
+        <h2 style={styles.title}>숙소 정보</h2>
 
-      <input
-        name="owner"
-        value={lodgingInfo.owner}
-        readOnly
-        style={{ ...styles.input, backgroundColor: "#eee", cursor: "not-allowed" }}
-      />
-      <input name="name" placeholder="숙소 명" value={lodgingInfo.name} onChange={handleLodgingChange} style={styles.input} />
-      <input name="city" placeholder="숙소 위치 (도시)" value={lodgingInfo.city} onChange={handleLodgingChange} style={styles.input} />
-      <input name="address" placeholder="숙소 주소" value={lodgingInfo.address} onChange={handleLodgingChange} style={styles.input} />
-      <input name="phone" placeholder="숙소 전화번호" value={lodgingInfo.phone} onChange={handleLodgingChange} style={styles.input} />
+        <input
+            name="owner"
+            value={lodgingInfo.owner}
+            readOnly
+            style={{ ...styles.input, backgroundColor: "#eee", cursor: "not-allowed" }}
+        />
+        <input name="name" placeholder="숙소 명" value={lodgingInfo.name} onChange={handleLodgingChange} style={styles.input} />
+        <input name="city" placeholder="숙소 위치 (도시)" value={lodgingInfo.city} onChange={handleLodgingChange} style={styles.input} />
+        <input name="address" placeholder="숙소 주소" value={lodgingInfo.address} onChange={handleLodgingChange} style={styles.input} />
+        <input name="phone" placeholder="숙소 전화번호" value={lodgingInfo.phone} onChange={handleLodgingChange} style={styles.input} />
 
-      <h2 style={styles.title}>객실 정보</h2>
+        <h2 style={styles.title}>객실 정보</h2>
 
-      {rooms.map((room, index) => (
-        <div key={index} style={styles.roomBox}>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={(e) => handleImageChange(index, e)}
-            style={styles.input}
-          />
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "8px" }}>
-            {room.imageFiles &&
-              room.imageFiles.map((file, fileIdx) => (
-                <div key={fileIdx} style={{ position: "relative" }}>
-                  <img
-                    src={URL.createObjectURL(file)}
-                    alt="preview"
-                    style={{
-                      width: "100px",
-                      height: "100px",
-                      objectFit: "cover",
-                      borderRadius: "6px",
-                      border: "1px solid #ccc"
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleImageDelete(index, fileIdx)}
-                    style={{
-                      position: "absolute",
-                      top: "-8px",
-                      right: "-8px",
-                      background: "red",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "50%",
-                      width: "20px",
-                      height: "20px",
-                      cursor: "pointer",
-                      fontSize: "12px"
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-          </div>
+        {rooms.map((room, index) => (
+            <div key={index} style={styles.roomBox}>
+              <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => handleImageChange(index, e)}
+                  style={styles.input}
+              />
+              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "8px" }}>
+                {room.imageFiles &&
+                    room.imageFiles.map((file, fileIdx) => (
+                        <div key={fileIdx} style={{ position: "relative" }}>
+                          <img
+                              src={URL.createObjectURL(file)}
+                              alt="preview"
+                              style={{
+                                width: "100px",
+                                height: "100px",
+                                objectFit: "cover",
+                                borderRadius: "6px",
+                                border: "1px solid #ccc"
+                              }}
+                          />
+                          <button
+                              type="button"
+                              onClick={() => handleImageDelete(index, fileIdx)}
+                              style={{
+                                position: "absolute",
+                                top: "-8px",
+                                right: "-8px",
+                                background: "red",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "50%",
+                                width: "20px",
+                                height: "20px",
+                                cursor: "pointer",
+                                fontSize: "12px"
+                              }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                    ))}
+              </div>
 
-          <input name="roomName" placeholder="객실 명" value={room.roomName} onChange={(e) => handleRoomChange(index, e)} style={styles.input} />
-          <input name="price" placeholder="가격" value={room.price} onChange={(e) => handleRoomChange(index, e)} style={styles.input} />
+              <input name="roomName" placeholder="객실 명" value={room.roomName} onChange={(e) => handleRoomChange(index, e)} style={styles.input} />
+              <input name="price" placeholder="가격" value={room.price} onChange={(e) => handleRoomChange(index, e)} style={styles.input} />
 
-          <button
-            type="button"
-            onClick={() => removeRoom(index)}
-            style={{
-              ...styles.button,
-              backgroundColor: "#e74c3c",
-              color: "#fff",
-              marginTop: "8px"
-            }}
-          >
-            객실 삭제
-          </button>
-        </div>
-      ))}
+              <button
+                  type="button"
+                  onClick={() => removeRoom(index)}
+                  style={{
+                    ...styles.button,
+                    backgroundColor: "#e74c3c",
+                    color: "#fff",
+                    marginTop: "8px"
+                  }}
+              >
+                객실 삭제
+              </button>
+            </div>
+        ))}
 
-      <button type="button" onClick={addRoom} style={{ ...styles.button, ...styles.blueBtn }}>
-        객실 추가
-      </button>
+        <button type="button" onClick={addRoom} style={{ ...styles.button, ...styles.blueBtn }}>
+          객실 추가
+        </button>
 
-      <button type="submit" style={{ ...styles.button, ...styles.greenBtn }}>
-        저장
-      </button>
-    </form>
+        <button type="submit" style={{ ...styles.button, ...styles.greenBtn }}>
+          저장
+        </button>
+      </form>
   );
 };
 
