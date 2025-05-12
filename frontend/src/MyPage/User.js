@@ -73,6 +73,7 @@ const User = () => {
       case 'image':
         return <Revation />;
 
+
       case 'wishlist':
         return <Wishlist />;
 

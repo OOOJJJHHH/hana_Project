@@ -70,7 +70,7 @@ public class CityController {
 
 
 
-    
+
     // === 숙소 ===
     //숙소의 정보를 저장
     @PostMapping("/saveLod")
@@ -88,7 +88,7 @@ public class CityController {
     // === 유저 정보===
     @PostMapping("/saveUser")
     public void saveUser(@RequestBody UserContent userContent, HttpSession session) {
-        userService.saveUser(userContent, session);
+        userService.saveUser(userContent);
     }
 
     @GetMapping("/getUser")
@@ -103,6 +103,7 @@ public class CityController {
             String uId = user.getuId();
             return userService.getOneUsers(uId);
     }
+
 
 
 
@@ -132,6 +133,8 @@ public class CityController {
     }
 
 
+
+
     @GetMapping("/api/getSessionInfo")
     public ResponseEntity<?> getSessionInfo(HttpSession session) {
         UserDTO user = (UserDTO) session.getAttribute("loginUser");
@@ -143,6 +146,7 @@ public class CityController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 필요");
         }
     }
+
 
     @PostMapping("/api/logout")
     public ResponseEntity<String> logout(HttpSession session) {
