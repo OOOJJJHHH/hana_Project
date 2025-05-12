@@ -8,10 +8,8 @@ const Owner = () => {
         lodName: "",
         lodLocation: "",
         lodCallNum: "",
-        lodImag: "",
-        roomName: "",
-        price: "",
-        roomImag: "",
+        lodImag: null,
+        lodImagPreview: "",
     });
 
     const [rooms, setRooms] = useState([]);
@@ -21,6 +19,29 @@ const Owner = () => {
         setFormData({ ...formData, [name]: value });
     };
 
+    const handleLodImagChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData({
+                    ...formData,
+                    lodImag: file,
+                    lodImagPreview: reader.result,
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const removeLodImage = () => {
+        setFormData({
+            ...formData,
+            lodImag: null,
+            lodImagPreview: "",
+        });
+    };
+
     const handleRoomChange = (index, e) => {
         const { name, value } = e.target;
         const updatedRooms = [...rooms];
@@ -28,8 +49,42 @@ const Owner = () => {
         setRooms(updatedRooms);
     };
 
+    const handleRoomImageChange = (index, e) => {
+        const files = Array.from(e.target.files);
+        const updatedRooms = [...rooms];
+        updatedRooms[index].roomImag = files;
+
+        const readerPromises = files.map((file) => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(file);
+            });
+        });
+
+        Promise.all(readerPromises).then((images) => {
+            updatedRooms[index].roomImagPreview = images;
+            setRooms(updatedRooms);
+        });
+    };
+
+    const removeRoomImage = (roomIndex, imageIndex) => {
+        const updatedRooms = [...rooms];
+        updatedRooms[roomIndex].roomImag.splice(imageIndex, 1);
+        updatedRooms[roomIndex].roomImagPreview.splice(imageIndex, 1);
+        setRooms(updatedRooms);
+    };
+
     const addRoom = () => {
-        setRooms([...rooms, { roomName: "", price: "", roomImag: "" }]);
+        setRooms([
+            ...rooms,
+            {
+                roomName: "",
+                price: "",
+                roomImag: [],
+                roomImagPreview: [],
+            },
+        ]);
     };
 
     const removeRoom = (index) => {
@@ -49,13 +104,22 @@ const Owner = () => {
         try {
             const form = new FormData();
 
-            Object.entries(formData).forEach(([key, value]) => {
-                form.append(key, value);
+            form.append("lodOwner", formData.lodOwner);
+            form.append("lodCity", formData.lodCity);
+            form.append("lodName", formData.lodName);
+            form.append("lodLocation", formData.lodLocation);
+            form.append("lodCallNum", formData.lodCallNum);
+            if (formData.lodImag) {
+                form.append("lodImag", formData.lodImag);
+            }
+
+            rooms.forEach((room, index) => {
+                form.append(`room_${index}_name`, room.roomName);
+                form.append(`room_${index}_price`, room.price);
+                room.roomImag.forEach((file, fileIndex) => {
+                    form.append(`room_${index}_roomImag_${fileIndex}`, file);
+                });
             });
-
-            console.log("📦 전송할 rooms:", rooms); // 디버깅용 콘솔
-
-            form.append("rooms", JSON.stringify(rooms));
 
             await axios.post("http://localhost:8080/getRoom", form, {
                 headers: { "Content-Type": "multipart/form-data" },
@@ -68,10 +132,8 @@ const Owner = () => {
                 lodName: "",
                 lodLocation: "",
                 lodCallNum: "",
-                lodImag: "",
-                roomName: "",
-                price: "",
-                roomImag: "",
+                lodImag: null,
+                lodImagPreview: "",
             });
             setRooms([]);
         } catch (error) {
@@ -125,6 +187,35 @@ const Owner = () => {
             backgroundColor: "#2ecc71",
             color: "#fff",
         },
+        imagePreview: {
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "8px",
+            marginTop: "8px",
+        },
+        imageContainer: {
+            position: "relative",
+            display: "inline-block",
+        },
+        image: {
+            width: "100px",
+            height: "100px",
+            objectFit: "cover",
+            borderRadius: "8px",
+        },
+        removeBtn: {
+            position: "absolute",
+            top: "-5px",
+            right: "-5px",
+            backgroundColor: "red",
+            color: "white",
+            borderRadius: "50%",
+            border: "none",
+            width: "20px",
+            height: "20px",
+            cursor: "pointer",
+            fontWeight: "bold",
+        },
     };
 
     return (
@@ -136,14 +227,32 @@ const Owner = () => {
                 <input type="text" name="lodCity" value={formData.lodCity} onChange={handleChange} style={styles.input} placeholder="숙소 위치 도시" required />
                 <input type="text" name="lodLocation" value={formData.lodLocation} onChange={handleChange} style={styles.input} placeholder="숙소 주소" required />
                 <input type="text" name="lodCallNum" value={formData.lodCallNum} onChange={handleChange} style={styles.input} placeholder="숙소 전화번호" required />
-                <input type="text" name="lodImag" value={formData.lodImag} onChange={handleChange} style={styles.input} placeholder="숙소 대표 이미지 (링크)" required />
+                <input type="file" name="lodImag" onChange={handleLodImagChange} style={styles.input} accept="image/*" required />
+                {formData.lodImagPreview && (
+                    <div style={styles.imagePreview}>
+                        <div style={styles.imageContainer}>
+                            <img src={formData.lodImagPreview} alt="lod-imag-preview" style={styles.image} />
+                            <button type="button" onClick={removeLodImage} style={styles.removeBtn}>×</button>
+                        </div>
+                    </div>
+                )}
 
                 <h3 style={styles.title}>객실 정보</h3>
                 {rooms.map((room, index) => (
                     <div key={index} style={styles.roomBox}>
                         <input type="text" name="roomName" value={room.roomName} onChange={(e) => handleRoomChange(index, e)} style={styles.input} placeholder="객실명" required />
                         <input type="number" name="price" value={room.price} onChange={(e) => handleRoomChange(index, e)} style={styles.input} placeholder="객실 가격" required />
-                        <input type="text" name="roomImag" value={room.roomImag} onChange={(e) => handleRoomChange(index, e)} style={styles.input} placeholder="객실 이미지 URL" required />
+                        <input type="file" name="roomImag" onChange={(e) => handleRoomImageChange(index, e)} style={styles.input} accept="image/*" multiple required />
+                        {room.roomImagPreview && room.roomImagPreview.length > 0 && (
+                            <div style={styles.imagePreview}>
+                                {room.roomImagPreview.map((image, imageIndex) => (
+                                    <div key={imageIndex} style={styles.imageContainer}>
+                                        <img src={image} alt={`room-image-${imageIndex}`} style={styles.image} />
+                                        <button type="button" onClick={() => removeRoomImage(index, imageIndex)} style={styles.removeBtn}>×</button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                         <button type="button" onClick={() => removeRoom(index)} style={styles.button}>객실 삭제</button>
                     </div>
                 ))}
