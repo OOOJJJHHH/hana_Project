@@ -4,6 +4,9 @@ import jakarta.persistence.Column;
 
 public class UserDTO {
 
+    private String roomName;
+    private String price;
+    private String roomImag;
 
     private String uUser;
     private String uFirstName;
@@ -39,5 +42,29 @@ public class UserDTO {
 
     public void setuId(String uId) {
         this.uId = uId;
+    }
+
+    public String getroomName() {
+        return roomName;
+    }
+
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
+    }
+
+    public String getPrice() {
+        return price;
+    }
+
+    public void setPrice(String price) {
+        this.price = price;
+    }
+
+    public String getRoomImag() {
+        return roomImag;
+    }
+
+    public void setRoomImag(String roomImag) {
+        this.roomImag = roomImag;
     }
 }
