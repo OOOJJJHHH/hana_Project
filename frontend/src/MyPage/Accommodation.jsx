@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { UserContext } from "../Session/UserContext";
-import EditPop from "./PopUp/EditPop";
+
 
 
 const Accommodation = () => {

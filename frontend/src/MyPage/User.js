@@ -1,11 +1,12 @@
 import React, { useState, useRef, useContext, useEffect } from 'react';
 import styled from 'styled-components';
 import ReView from "./ReView";
-import Accommodation from "./Accommodation";
 import Wishlist from "./Wishlist";
 import Account from "./Account";
 import { UserContext } from '../Session/UserContext';
-
+import Accommodation from "./Accommodation";
+import Reservation from "./Reservation";
+import Revation from "./Revation";
 const User = () => {
     const userInfo = useContext(UserContext);
 
@@ -70,11 +71,15 @@ const User = () => {
             case 'info':
                 return <Account />;
             case 'image':
-                return <Accommodation />;
+                return <Revation />;
             case 'wishlist':
                 return <Wishlist />;
             case 'recently':
                 return <ReView />;
+            case 'Reservation':
+                return <Reservation />;
+            case 'Accommodation':
+                return <Accommodation />;
             default:
                 return <div>선택된 메뉴가 없습니다.</div>;
         }
@@ -296,9 +301,9 @@ const User = () => {
                                     padding: '10px',
                                     border: 'none',
                                     cursor: 'pointer',
-                                    backgroundColor: selectedMenu === 'image' ? '#f0f0f0' : 'white',
+                                    backgroundColor: selectedMenu === 'Accommodation' ? '#f0f0f0' : 'white',
                                 }}
-                                onClick={() => handleMenuClick('image')}
+                                onClick={() => handleMenuClick('Accommodation')}
                             >
                                 숙박 확인
                             </button>
@@ -309,9 +314,9 @@ const User = () => {
                                     padding: '10px',
                                     border: 'none',
                                     cursor: 'pointer',
-                                    backgroundColor: selectedMenu === 'wishlist' ? '#f0f0f0' : 'white',
+                                    backgroundColor: selectedMenu === 'Reservation' ? '#f0f0f0' : 'white',
                                 }}
-                                onClick={() => handleMenuClick('wishlist')}
+                                onClick={() => handleMenuClick('Reservation')}
                             >
                                 예약 확인
                             </button>
