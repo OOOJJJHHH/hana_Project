@@ -1,137 +1,160 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 
 const Owner = () => {
-
-    // 객체 형식으로 상태 관리
-    const [formData, setformData] = useState({
+    const [formData, setFormData] = useState({
         lodOwner: "",
         lodCity: "",
         lodName: "",
         lodLocation: "",
         lodCallNum: "",
-        lodPrice: "",
-        lodImag: ""
+        lodImag: "",
+        roomName: "",
+        price: "",
+        roomImag: "",
     });
 
-    // 입력값을 상태로 업데이트하는 함수
+    const [rooms, setRooms] = useState([]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setformData({ ...formData, [name]: value });
+        setFormData({ ...formData, [name]: value });
     };
 
-    // 폼 제출 처리
+    const handleRoomChange = (index, e) => {
+        const { name, value } = e.target;
+        const updatedRooms = [...rooms];
+        updatedRooms[index][name] = value;
+        setRooms(updatedRooms);
+    };
+
+    const addRoom = () => {
+        setRooms([...rooms, { roomName: "", price: "", roomImag: "" }]);
+    };
+
+    const removeRoom = (index) => {
+        const updatedRooms = [...rooms];
+        updatedRooms.splice(index, 1);
+        setRooms(updatedRooms);
+    };
+
     const handleSubmit = async (e) => {
-        e.preventDefault();  // 기본 폼 제출 동작 방지
-        console.log(formData);  // 입력된 데이터를 콘솔에 출력 (나중에 API로 보낼 수 있음)
+        e.preventDefault();
 
-        try{
-            await axios.post('http://localhost:8080/saveLod', formData);
-            alert("데이터가 성공적으로 저장되었습니다");
+        if (rooms.length === 0) {
+            alert("최소 하나 이상의 객실을 추가해주세요.");
+            return;
+        }
 
-            // 폼 리셋
-            setformData({
+        try {
+            const form = new FormData();
+
+            Object.entries(formData).forEach(([key, value]) => {
+                form.append(key, value);
+            });
+
+            console.log("📦 전송할 rooms:", rooms); // 디버깅용 콘솔
+
+            form.append("rooms", JSON.stringify(rooms));
+
+            await axios.post("http://localhost:8080/getCity", form, {
+                headers: { "Content-Type": "multipart/form-data" },
+            });
+
+            alert("데이터가 성공적으로 저장되었습니다.");
+            setFormData({
                 lodOwner: "",
                 lodCity: "",
                 lodName: "",
                 lodLocation: "",
                 lodCallNum: "",
-                lodPrice: "",
-                lodImag: ""
+                lodImag: "",
+                roomName: "",
+                price: "",
+                roomImag: "",
             });
-
-        } catch (error){
-            console.error('Error saving city:', error);
-            alert('데이터 저장에 실패했습니다.');
+            setRooms([]);
+        } catch (error) {
+            console.error("❌ 저장 실패:", error);
+            alert("데이터 저장에 실패했습니다.");
         }
+    };
 
+    const styles = {
+        form: {
+            maxWidth: "600px",
+            margin: "0 auto",
+            padding: "24px",
+            backgroundColor: "#f9f9f9",
+            borderRadius: "12px",
+            boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
+            fontFamily: "Arial, sans-serif",
+        },
+        title: {
+            fontSize: "20px",
+            fontWeight: "bold",
+            marginTop: "24px",
+            marginBottom: "12px",
+        },
+        input: {
+            width: "100%",
+            padding: "10px",
+            marginBottom: "12px",
+            border: "1px solid #ccc",
+            borderRadius: "6px",
+            boxSizing: "border-box",
+        },
+        roomBox: {
+            padding: "16px",
+            border: "1px solid #ddd",
+            borderRadius: "8px",
+            marginBottom: "16px",
+            backgroundColor: "#fff",
+        },
+        button: {
+            padding: "10px 16px",
+            marginRight: "10px",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontWeight: "bold",
+            backgroundColor: "#3498db",
+            color: "#fff",
+        },
+        greenBtn: {
+            backgroundColor: "#2ecc71",
+            color: "#fff",
+        },
     };
 
     return (
-        <div>
-            <h2>숙소 등록 페이지</h2>
+        <div style={styles.form}>
+            <h2 style={styles.title}>숙소 정보</h2>
             <form onSubmit={handleSubmit}>
+                <input type="text" name="lodOwner" value={formData.lodOwner} onChange={handleChange} style={styles.input} placeholder="숙소 올린 사람" required />
+                <input type="text" name="lodName" value={formData.lodName} onChange={handleChange} style={styles.input} placeholder="숙소명" required />
+                <input type="text" name="lodCity" value={formData.lodCity} onChange={handleChange} style={styles.input} placeholder="숙소 위치 도시" required />
+                <input type="text" name="lodLocation" value={formData.lodLocation} onChange={handleChange} style={styles.input} placeholder="숙소 주소" required />
+                <input type="text" name="lodCallNum" value={formData.lodCallNum} onChange={handleChange} style={styles.input} placeholder="숙소 전화번호" required />
+                <input type="text" name="lodImag" value={formData.lodImag} onChange={handleChange} style={styles.input} placeholder="숙소 대표 이미지 (링크)" required />
+
+                <h3 style={styles.title}>객실 정보</h3>
+                {rooms.map((room, index) => (
+                    <div key={index} style={styles.roomBox}>
+                        <input type="text" name="roomName" value={room.roomName} onChange={(e) => handleRoomChange(index, e)} style={styles.input} placeholder="객실명" required />
+                        <input type="number" name="price" value={room.price} onChange={(e) => handleRoomChange(index, e)} style={styles.input} placeholder="객실 가격" required />
+                        <input type="text" name="roomImag" value={room.roomImag} onChange={(e) => handleRoomChange(index, e)} style={styles.input} placeholder="객실 이미지 URL" required />
+                        <button type="button" onClick={() => removeRoom(index)} style={styles.button}>객실 삭제</button>
+                    </div>
+                ))}
+
+                <button type="button" onClick={addRoom} style={styles.button}>객실 추가</button>
                 <div>
-                    <label>숙소 올린 사람:</label>
-                    <input
-                        type="text"
-                        name="lodOwner"
-                        value={formData.lodOwner}
-                        onChange={handleChange}
-                        placeholder="올린 사람 입력"
-                        required
-                    />
+                    <button type="submit" style={{ ...styles.button, ...styles.greenBtn }}>저장</button>
                 </div>
-                <div>
-                    <label>숙소가 위치한 도시:</label>
-                    <input
-                        type="text"
-                        name="lodCity"  // name 속성을 통해 상태의 key와 일치시킴
-                        value={formData.lodCity}
-                        onChange={handleChange}
-                        placeholder="도시 입력"
-                        required
-                    />
-                </div>
-                <div>
-                    <label>숙소명:</label>
-                    <input
-                        type="text"
-                        name="lodName"
-                        value={formData.lodName}
-                        onChange={handleChange}
-                        placeholder="숙소명 입력"
-                        required
-                    />
-                </div>
-                <div>
-                    <label>숙소 주소:</label>
-                    <input
-                        type="text"
-                        name="lodLocation"
-                        value={formData.lodLocation}
-                        onChange={handleChange}
-                        placeholder="주소 입력"
-                        required
-                    />
-                </div>
-                <div>
-                    <label>숙소 전화번호:</label>
-                    <input
-                        type="text"
-                        name="lodCallNum"
-                        value={formData.lodCallNum}
-                        onChange={handleChange}
-                        placeholder="전화번호 입력"
-                        required
-                    />
-                </div>
-                <div>
-                    <label>숙소 가격:</label>
-                    <input
-                        type="number"
-                        name="lodPrice"
-                        value={formData.lodPrice}
-                        onChange={handleChange}
-                        placeholder="전화번호 입력"
-                        required
-                    />
-                </div>
-                <div>
-                    <label>숙소 이미지:</label>
-                    <input
-                        type="text"
-                        name="lodImag"
-                        value={formData.lodImag}
-                        onChange={handleChange}
-                        placeholder="숙소 이미지 입력"
-                        required
-                    />
-                </div>
-                <button type="submit">저장</button>
             </form>
         </div>
     );
-}
+};
 
 export default Owner;
