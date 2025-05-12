@@ -22,7 +22,6 @@ import About from "../About/About";
 import SpringSale from "../About/spring-sale";
 import wineDinner from "../About/wine-dinner";
 import giftEvent from "../About/gift-event";
-import ImageUploader from "../image/ImageUploader";
 
 const routes = [
     {
@@ -102,10 +101,6 @@ const routes = [
     {  //도시 추가하는 컴포넌트
         path: '/gift-event',
         component: giftEvent,
-    },
-    {  //도시 추가하는 컴포넌트
-        path: '/image',
-        component: ImageUploader,
     },
 
 
