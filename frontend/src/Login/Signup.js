@@ -2,8 +2,10 @@
 import React, {useEffect, useState} from 'react';
 import './Signup.css';
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
 
 function Signup() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     uUser: '', // 사용자, 집주인 선택
     uLastName: '',
@@ -80,29 +82,30 @@ function Signup() {
     e.preventDefault();
     console.log(formData);
     console.log(selectedUserType);
+
     if (formData.uPassword !== cfPassword) {
       alert('비밀번호가 일치하지 않습니다.');
       return;
     }
 
-    try{
+    try {
       await axios.post("http://localhost:8080/saveUser", formData);
-      alert("성공적으로 데이터가 저장되었습니다");
+
+      // ✅ 여기에 추가
+      window.alert("회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.");
+      navigate("/login");  // 로그인 페이지로 이동
 
       setFormData({
-        uUser: '', // 사용자, 집주인 선택
+        uUser: '',
         uLastName: '',
         uFirstName: '',
         uIdEmail: '',
-        uId:'',
+        uId: '',
         uPassword: '',
-      },
-          {
-            withCredentials: true
-          });
-    }
-    catch (error){
-      console.log("Error saving city:", error);
+      });
+
+    } catch (error) {
+      console.log("Error saving user:", error);
       alert("데이터 저장에 실패하였습니다");
     }
 

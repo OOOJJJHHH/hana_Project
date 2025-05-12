@@ -8,32 +8,28 @@ const Owner = () => {
         lodName: "",
         lodLocation: "",
         lodCallNum: "",
-        lodImag: null,  // 이미지 파일
+        lodImag: "",
+        roomName: "",
+        price: "",
+        roomImag: "",
     });
 
     const [rooms, setRooms] = useState([]);
 
     const handleChange = (e) => {
-        const { name, value, files } = e.target;
-        if (name === "lodImag") {
-            setFormData({ ...formData, lodImag: files[0] });
-        } else {
-            setFormData({ ...formData, [name]: value });
-        }
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
     };
 
     const handleRoomChange = (index, e) => {
-        const { name, value, files } = e.target;
+        const { name, value } = e.target;
         const updatedRooms = [...rooms];
-        updatedRooms[index] = {
-            ...updatedRooms[index],
-            [name]: files ? files[0] : value,
-        };
+        updatedRooms[index][name] = value;
         setRooms(updatedRooms);
     };
 
     const addRoom = () => {
-        setRooms([...rooms, { roomName: "", price: "", roomImag: null }]);
+        setRooms([...rooms, { roomName: "", price: "", roomImag: "" }]);
     };
 
     const removeRoom = (index) => {
@@ -53,22 +49,13 @@ const Owner = () => {
         try {
             const form = new FormData();
 
-            // 숙소 정보 추가
-            form.append("lodOwner", formData.lodOwner);
-            form.append("lodCity", formData.lodCity);
-            form.append("lodName", formData.lodName);
-            form.append("lodLocation", formData.lodLocation);
-            form.append("lodCallNum", formData.lodCallNum);
-            form.append("lodImag", formData.lodImag); // 이미지 파일
-
-            // 객실 JSON 문자열
-            const roomDataToJson = rooms.map(({ roomName, price }) => ({ roomName, price }));
-            form.append("rooms", JSON.stringify(roomDataToJson));
-
-            // 객실 이미지 파일들 따로 append
-            rooms.forEach((room, index) => {
-                form.append(`roomImag${index}`, room.roomImag);
+            Object.entries(formData).forEach(([key, value]) => {
+                form.append(key, value);
             });
+
+            console.log("📦 전송할 rooms:", rooms); // 디버깅용 콘솔
+
+            form.append("rooms", JSON.stringify(rooms));
 
             await axios.post("http://localhost:8080/getRoom", form, {
                 headers: { "Content-Type": "multipart/form-data" },
@@ -81,7 +68,10 @@ const Owner = () => {
                 lodName: "",
                 lodLocation: "",
                 lodCallNum: "",
-                lodImag: null,
+                lodImag: "",
+                roomName: "",
+                price: "",
+                roomImag: "",
             });
             setRooms([]);
         } catch (error) {
@@ -146,14 +136,14 @@ const Owner = () => {
                 <input type="text" name="lodCity" value={formData.lodCity} onChange={handleChange} style={styles.input} placeholder="숙소 위치 도시" required />
                 <input type="text" name="lodLocation" value={formData.lodLocation} onChange={handleChange} style={styles.input} placeholder="숙소 주소" required />
                 <input type="text" name="lodCallNum" value={formData.lodCallNum} onChange={handleChange} style={styles.input} placeholder="숙소 전화번호" required />
-                <input type="file" name="lodImag" onChange={handleChange} style={styles.input} required />
+                <input type="text" name="lodImag" value={formData.lodImag} onChange={handleChange} style={styles.input} placeholder="숙소 대표 이미지 (링크)" required />
 
                 <h3 style={styles.title}>객실 정보</h3>
                 {rooms.map((room, index) => (
                     <div key={index} style={styles.roomBox}>
                         <input type="text" name="roomName" value={room.roomName} onChange={(e) => handleRoomChange(index, e)} style={styles.input} placeholder="객실명" required />
                         <input type="number" name="price" value={room.price} onChange={(e) => handleRoomChange(index, e)} style={styles.input} placeholder="객실 가격" required />
-                        <input type="file" name="roomImag" onChange={(e) => handleRoomChange(index, e)} style={styles.input} required />
+                        <input type="text" name="roomImag" value={room.roomImag} onChange={(e) => handleRoomChange(index, e)} style={styles.input} placeholder="객실 이미지 URL" required />
                         <button type="button" onClick={() => removeRoom(index)} style={styles.button}>객실 삭제</button>
                     </div>
                 ))}

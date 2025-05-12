@@ -1,19 +1,20 @@
-import React, {useContext, useState} from "react";
+import React, { useContext, useState } from "react";
 import axios from "axios";
-import {UserUpdateContext} from "../Session/UserContext";
+import { UserUpdateContext } from "../Session/UserContext";
 
-export default function LoginForm() {
+export default function Login() {
 
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const setUserInfo = useContext(UserUpdateContext);
+  const [userType, setUserType] = useState(""); // 사용자 타입 추가 (tenant, landlord)
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
       const response = await axios.post(
-          "http://localhost:8080/api/login",
+          "http://localhost:8080/api/login",  // 로그인 API 호출
           {
             uId: id,
             uPassword: password,
@@ -25,8 +26,9 @@ export default function LoginForm() {
 
       if (response.data) {
         console.log(response.data);
-        // 로그인 성공 시 userInfo 업데이트
-        setUserInfo(response.data);  // 서버에서 받은 사용자 정보로 상태 업데이트
+        // 서버에서 반환된 데이터에 userType을 추가하여 상태 업데이트
+        setUserInfo(response.data);  // 로그인 성공 시 userInfo 업데이트
+        setUserType(response.data.userType); // userType 업데이트 (tenant 또는 landlord)
 
         // 유저 정보를 localStorage에 저장
         localStorage.setItem('loginUser', JSON.stringify(response.data));
@@ -34,38 +36,31 @@ export default function LoginForm() {
         // 로그인 성공 후 홈 페이지로 이동 (리로드 없이)
         window.location.href = "/";  // 이 부분 수정
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error("로그인 실패", error);
     }
   };
 
-
   const handleFindClick = () => {
     window.open("/popup/find", "FindPopup", "width=400,height=600,left=200,top=100");
-
   };
 
   const containerStyle = {
     minHeight: "100vh",
     display: "flex",
-    //justifyContent: "center",
     alignItems: "flex-start",
     backgroundColor: "#ffffff",
     paddingTop: "4rem",
-    
   };
-  
-  
+
   const boxStyle = {
     backgroundColor: "#AAD1E7",
     padding: "2rem",
     borderRadius: "1rem",
     width: "100%",
     maxWidth: "400px",
-    border : "1px solid #111111"
+    border: "1px solid #111111"
   };
-  
 
   const inputStyle = {
     width: "100%",
@@ -118,55 +113,55 @@ export default function LoginForm() {
   };
 
   return (
-    <div style={containerStyle}>
-      <div style={boxStyle}>
-        <h2 style={{ textAlign: "center", marginBottom: "1.5rem", fontSize: "1.5rem" }}>
-          로그인
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label>아이디</label>
-            <input
-              type="text"
-              style={inputStyle}
-              value={id}
-              onChange={(e) => setId(e.target.value)}
-              required
-              placeholder="   id"
-            />
-          </div>
-          <div>
-            <label>비밀번호</label>
-            <input
-              type="password"
-              style={inputStyle}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="   pw"
-            />
-          </div>
-          <button type="submit" style={buttonStyle}>
+      <div style={containerStyle}>
+        <div style={boxStyle}>
+          <h2 style={{ textAlign: "center", marginBottom: "1.5rem", fontSize: "1.5rem" }}>
             로그인
-          </button>
-        </form>
+          </h2>
+          <form onSubmit={handleSubmit}>
+            <div>
+              <label>아이디</label>
+              <input
+                  type="text"
+                  style={inputStyle}
+                  value={id}
+                  onChange={(e) => setId(e.target.value)}
+                  required
+                  placeholder="id"
+              />
+            </div>
+            <div>
+              <label>비밀번호</label>
+              <input
+                  type="password"
+                  style={inputStyle}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="pw"
+              />
+            </div>
+            <button type="submit" style={buttonStyle}>
+              로그인
+            </button>
+          </form>
 
-        <p style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.9rem" }}>
-          계정이 없으신가요?
-          <a href="/signup" style={linkStyle}> 회원가입 </a>
-        </p>
+          <p style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.9rem" }}>
+            계정이 없으신가요?
+            <a href="/signup" style={linkStyle}>회원가입</a>
+          </p>
 
-        <p style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.9rem" }}>
-          아이디, 비밀번호를 잊으셨나요?
-          <br />
-          <span onClick={handleFindClick} style={{ ...linkStyle, cursor: "pointer" }}>
+          <p style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.9rem" }}>
+            아이디, 비밀번호를 잊으셨나요?
+            <br />
+            <span onClick={handleFindClick} style={{ ...linkStyle, cursor: "pointer" }}>
             아이디/비밀번호 찾기
           </span>
-        </p>
+          </p>
 
-        <button type="submit" style={kakaoButtonStyle}>Kakao로 로그인</button>
-        <button type="submit" style={naverButtonStyle}>Naver로 로그인</button>
+          <button type="submit" style={kakaoButtonStyle}>Kakao로 로그인</button>
+          <button type="submit" style={naverButtonStyle}>Naver로 로그인</button>
+        </div>
       </div>
-    </div>
   );
 }
