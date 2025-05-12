@@ -5,6 +5,7 @@ import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.CityContent;
 import com.example.oneproject.Entity.UserContent;
 import com.example.oneproject.Entity.Room;
+import com.example.oneproject.Image.S3Uploader;
 import com.example.oneproject.Service.CityService;
 import com.example.oneproject.Service.LodService;
 import com.example.oneproject.Service.UserService;
@@ -15,10 +16,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.io.File;
+
+
 
 @RestController
 public class CityController {
@@ -160,4 +165,25 @@ public class CityController {
         session.invalidate();
         return ResponseEntity.ok("로그아웃 성공");
     }
+
+
+
+    // 이미지 업로드
+    private final S3Uploader s3Uploader;
+
+    public CityController(S3Uploader s3Uploader) {
+        this.s3Uploader = s3Uploader;
+    }
+
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
+        try {
+            String fileName = s3Uploader.upload(file);
+            return ResponseEntity.ok("성공입니다: " + fileName);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("업로드 실패");
+        }
+    }
+
 }
