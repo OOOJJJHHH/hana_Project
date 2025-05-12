@@ -43,3 +43,6 @@ out/
 
 # Spring
 /OneProject/build
+
+# Env
+.env*
