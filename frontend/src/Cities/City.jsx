@@ -153,13 +153,50 @@ function City(){
                 setLodContents={setlodContents}
             />
 
-            <div>
-                <button onClick={() => {makeCity()}}>도시 추가</button>
-                <button onClick={() => {makeLod()}}>숙소 추가</button>
-            </div>
-            <div>
-                <button onClick={() => {serchCity()}}>도시 검색</button>
-                <button onClick={() => {makeLod()}}>숙소 삭제</button>
+            <div style={{
+                display: "flex",
+                justifyContent: "center",
+                gap: "60px",
+
+            }}>
+                <button
+                    style={{
+                        color: "white",
+                        backgroundColor: "gray",
+                        borderRadius: "10px",
+                        fontSize: "30px",
+                        width: "200px",
+                        height: "50px"
+                    }}
+                    onClick={() => {makeCity()}}>도시 추가</button>
+                <button style={{
+                        color: "white",
+                        backgroundColor: "gray",
+                        borderRadius: "10px",
+                        fontSize: "30px",
+                        width: "200px",
+                        height: "50px"
+                    }}
+                    onClick={() => {makeLod()}}>숙소 추가</button>
+
+                <button style={{
+                        color: "white",
+                        backgroundColor: "gray",
+                        borderRadius: "10px",
+                        fontSize: "30px",
+                        width: "200px",
+                        height: "50px"
+                    }}
+                    onClick={() => {serchCity()}}>도시 검색</button>
+                <button style={{
+                        color: "white",
+                        backgroundColor: "gray",
+                        borderRadius: "10px",
+                        fontSize: "30px",
+                        width: "200px",
+                        height: "50px"
+                    }}
+                    onClick={() => {makeLod()}}>숙소 삭제</button>
             </div>
 
             <CitySearch />
