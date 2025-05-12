@@ -57,7 +57,7 @@ const Owner = () => {
 
             form.append("rooms", JSON.stringify(rooms));
 
-            await axios.post("http://localhost:8080/getCity", form, {
+            await axios.post("http://localhost:8080/getRoom", form, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
