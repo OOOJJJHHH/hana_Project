@@ -104,6 +104,7 @@ const Owner = () => {
         try {
             const form = new FormData();
 
+            // 숙소 정보
             form.append("lodOwner", formData.lodOwner);
             form.append("lodCity", formData.lodCity);
             form.append("lodName", formData.lodName);
@@ -113,12 +114,18 @@ const Owner = () => {
                 form.append("lodImag", formData.lodImag);
             }
 
+            // rooms JSON (roomName, price만)
+            const roomMeta = rooms.map((room) => ({
+                roomName: room.roomName,
+                price: room.price,
+            }));
+            form.append("rooms", JSON.stringify(roomMeta));
+
+            // 객실 이미지들: 최대 3개까지 전송
             rooms.forEach((room, index) => {
-                form.append(`room_${index}_name`, room.roomName);
-                form.append(`room_${index}_price`, room.price);
-                room.roomImag.forEach((file, fileIndex) => {
-                    form.append(`room_${index}_roomImag_${fileIndex}`, file);
-                });
+                if (index < 3 && room.roomImag.length > 0) {
+                    form.append(`roomImag${index}`, room.roomImag[0]); // 첫 번째 이미지만 전송
+                }
             });
 
             await axios.post("http://localhost:8080/getRoom", form, {
@@ -141,6 +148,7 @@ const Owner = () => {
             alert("데이터 저장에 실패했습니다.");
         }
     };
+
 
     const styles = {
         form: {
