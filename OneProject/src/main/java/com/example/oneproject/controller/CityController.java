@@ -1,5 +1,13 @@
 package com.example.oneproject.controller;
 
+
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import com.example.oneproject.DTO.UserDTO;
 import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.CityContent;
@@ -18,9 +26,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
-import java.io.File;
+import java.util.UUID;
+
+
 
 
 
@@ -67,34 +79,57 @@ public class CityController {
         }
     }
 
-    // ✅ 숙소 + 객실 저장 (rooms JSON 포함)
     @PostMapping("/getRoom")
-    public ResponseEntity<String> saveLodWithRooms(@RequestParam Map<String, String> formData,
-                                                   @RequestParam("rooms") String roomsJson) {
-        try {
-            System.out.println("💡 받은 rooms JSON 문자열: " + roomsJson);
+    public ResponseEntity<String> saveLodWithImage(
+            @RequestParam("lodOwner") String lodOwner,
+            @RequestParam("lodCity") String lodCity,
+            @RequestParam("lodName") String lodName,
+            @RequestParam("lodLocation") String lodLocation,
+            @RequestParam("lodCallNum") String lodCallNum,
+            @RequestParam("lodImag") MultipartFile lodImag,
 
+            @RequestParam("rooms") String roomsJson,
+
+            @RequestParam("roomImag0") MultipartFile roomImag0,
+            @RequestParam(value = "roomImag1", required = false) MultipartFile roomImag1,
+            @RequestParam(value = "roomImag2", required = false) MultipartFile roomImag2
+    ) {
+        try {
+            // ✅ uploads 디렉토리 자동 생성
+            Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+            }
+
+            // ✅ rooms JSON 파싱
             ObjectMapper mapper = new ObjectMapper();
             List<Room> roomList = mapper.readValue(roomsJson, new TypeReference<List<Room>>() {});
 
+            // ✅ 숙소 정보 설정
             ClodContent content = new ClodContent();
-            content.setLodOwner(formData.get("lodOwner"));
-            content.setLodCity(formData.get("lodCity"));
-            content.setLodName(formData.get("lodName"));
-            content.setLodLocation(formData.get("lodLocation"));
-            content.setLodCallNum(formData.get("lodCallNum"));
-            content.setLodImag(formData.get("lodImag"));
-            content.setLodPrice(new BigDecimal("0")); // TODO: 추후 평균 계산 등 가능
+            content.setLodOwner(lodOwner);
+            content.setLodCity(lodCity);
+            content.setLodName(lodName);
+            content.setLodLocation(lodLocation);
+            content.setLodCallNum(lodCallNum);
+            content.setLodPrice(new BigDecimal("0"));
 
-            for (Room room : roomList) {
-                System.out.println("📦 roomName: " + room.getRoomName());
-                System.out.println("📦 roomPrice: " + room.getPrice());
-                System.out.println("📦 roomImag: " + room.getRoomImag());
+            // ✅ 숙소 이미지 저장 + 경로 설정
+            String lodFileName = UUID.randomUUID() + "_" + lodImag.getOriginalFilename();
+            Path lodTargetPath = uploadDir.resolve(lodFileName);
+            lodImag.transferTo(lodTargetPath.toFile());
+            content.setLodImag("/uploads/" + lodFileName);
 
-                if (room.getPrice() == null) {
-                    System.err.println("❗ 오류: room.price가 null입니다!");
+            // ✅ 객실 이미지 저장
+            MultipartFile[] roomImgs = {roomImag0, roomImag1, roomImag2};
+            for (int i = 0; i < roomList.size(); i++) {
+                Room room = roomList.get(i);
+                if (i < roomImgs.length && roomImgs[i] != null && !roomImgs[i].isEmpty()) {
+                    String roomFileName = UUID.randomUUID() + "_" + roomImgs[i].getOriginalFilename();
+                    Path roomPath = uploadDir.resolve(roomFileName);
+                    roomImgs[i].transferTo(roomPath.toFile());
+                    room.setRoomImag("/uploads/" + roomFileName);
                 }
-
                 room.setClodContent(content);
             }
 
@@ -108,6 +143,7 @@ public class CityController {
                     .body("저장 실패: " + e.getMessage());
         }
     }
+
 
     // 숙소 정보 조회
     @GetMapping("/getLod")
@@ -163,6 +199,26 @@ public class CityController {
     public ResponseEntity<String> logout(HttpSession session) {
         session.invalidate();
         return ResponseEntity.ok("로그아웃 성공");
+    }
+
+    @GetMapping("/images/{filename:.+}")
+    public ResponseEntity<Resource> serveImage(@PathVariable String filename) {
+        try {
+            Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+            Path filePath = uploadDir.resolve(filename).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, Files.probeContentType(filePath))
+                    .body(resource);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
 
