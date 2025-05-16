@@ -79,7 +79,7 @@ public class CityController {
         }
     }
 
-    @PostMapping("/getRoom")
+    @PostMapping("/addRoom")
     public ResponseEntity<String> saveLodWithImage(
             @RequestParam("lodOwner") String lodOwner,
             @RequestParam("lodCity") String lodCity,
