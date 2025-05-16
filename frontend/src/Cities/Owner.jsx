@@ -128,7 +128,7 @@ const Owner = () => {
                 }
             });
 
-            await axios.post("http://localhost:8080/getRoom", form, {
+            await axios.post("http://localhost:8080/addRoom", form, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
