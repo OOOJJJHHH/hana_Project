@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Local.css';
+import Popup from './Popup';
+import { UserContext } from '../Session/UserContext'; // 유저 컨텍스트 임포트
 
-const localData = [
+const initialLocalData = [
   {
     id: 1,
     name: "Sofia",
@@ -87,28 +89,90 @@ const localData = [
 
 function Local() {
   const navigate = useNavigate();
+  const [localData, setLocalData] = useState([]);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const userInfo = useContext(UserContext);
+
+  // 🔹 1. 컴포넌트 마운트 시 localStorage에서 데이터 불러오기
+  useEffect(() => {
+    const storedData = localStorage.getItem('localData');
+    if (storedData) {
+      setLocalData(JSON.parse(storedData));
+    } else {
+      setLocalData(initialLocalData);
+    }
+  }, []);
 
   const handleMoreClick = (user) => {
     navigate(`/locals?name=${user.name}`);
   };
 
+  const openPopup = () => {
+    if (!userInfo) {
+      alert('로그인이 필요합니다!');
+      return;
+    }
+
+    // ✅ userId가 정의된 항목만 중복 체크
+    const alreadyCreated = localData.some(local => local.userId && local.userId === userInfo.userId);
+    if (alreadyCreated) {
+      alert('이미 등록한 현지인이 있습니다.');
+      return;
+    }
+
+    setIsPopupOpen(true);
+  };
+
+  const closePopup = () => setIsPopupOpen(false);
+
+  const handleAddLocal = (newLocal) => {
+    const updatedData = [
+      ...localData,
+      {
+        id: localData.length + 1,
+        userId: userInfo.userId,
+        ...newLocal,
+      },
+    ];
+    setLocalData(updatedData);
+
+    // 🔹 2. localStorage에 저장
+    localStorage.setItem('localData', JSON.stringify(updatedData));
+
+    closePopup();
+  };
+
   return (
-    <div className="local-container">
-      <h1 className="local-title">현지인 소개</h1>
-      <div className="local-list">
-        {localData.map((user) => (
-          <div key={user.id} className="user-card">
-            <img src={user.image} alt={user.name} />
-            <div className="user-info">
-              <h2>{user.name}</h2>
-              <p>📍 {user.location}</p>
-              <p>{user.intro}</p>
-            </div>
-            <button onClick={() => handleMoreClick(user)}>더 알아보기 ▶</button>
-          </div>
-        ))}
+      <div className="local-container">
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <h1 className="local-title">현지인 소개</h1>
+          <button className="myButton" type="button" onClick={openPopup}>
+            생성
+          </button>
+        </div>
+
+        <div className="local-list">
+          {localData.map((user) => (
+              <div key={user.id} className="user-card">
+                <img src={user.image} alt={user.name} />
+                <div className="user-info">
+                  <h2>{user.name}</h2>
+                  <p>📍 {user.location}</p>
+                  <p>{user.intro}</p>
+                </div>
+                <button onClick={() => handleMoreClick(user)}>더 알아보기 ▶</button>
+              </div>
+          ))}
+        </div>
+
+        {isPopupOpen && (
+            <Popup
+                onClose={closePopup}
+                userInfo={userInfo}
+                onAddLocal={handleAddLocal}
+            />
+        )}
       </div>
-    </div>
   );
 }
 

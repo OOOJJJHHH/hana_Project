@@ -56,13 +56,16 @@ const EditPop = ({onClose}) => {
                 });
             alert("데이터가 성공적으로 수정되었습니다");
 
-                const a = {
-                    uUser: formData.uUser,
-                    uFirstName: formData.uFirstName,
-                    uId: formData.uId,
-                };
-                console.log("yes");
-                setUserInfo(a);
+            // userInfo는 기존 정보 forData는 수정한 정보 ( 덮어쓰기함 )
+            const updatedUserInfo = {
+                ...userInfo,
+                ...formData
+            };
+            // state를 변경하는 함수 ( 기존 정보에서 updatedUserInfo로 변경해줘 )
+            setUserInfo(updatedUserInfo);
+
+            localStorage.setItem('loginUser', JSON.stringify(updatedUserInfo));
+            // localStorage 공간에 loginUser를 저장 , 문자로 변경
 
             onClose();
         }
@@ -127,15 +130,15 @@ const EditPop = ({onClose}) => {
         <div style={overlayStyle}>
             <div style={popupStyle}>
 
-               <div style={{marginBottom : "20px"}}>
-                   <label style={{fontSize: "25px"}}><strong>현재 정보 수정</strong></label>
-               </div>
+                <div style={{marginBottom : "20px"}}>
+                    <label style={{fontSize: "25px"}}><strong>현재 정보 수정</strong></label>
+                </div>
 
                 <div>
                     <form onSubmit={handleSubmit}>
                         {
                             Object.entries(formData).map(([key, value]) =>
-                                !(key == "id" || key == "uUser") && (
+                                    !(key === "id" || key === "uUser") && (
                                         <div style={{fontSize: "18px"}} key={key}>
                                             <span style={{display: "inline-block", width: "70px"}}>{formContent[key]}</span>
                                             <span style={{marginRight : "5px"}}> : </span>
@@ -177,7 +180,7 @@ const EditPop = ({onClose}) => {
 
             </div>
         </div>
-            );
+    );
 }
 
 export default EditPop;

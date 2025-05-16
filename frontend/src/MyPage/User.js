@@ -218,13 +218,19 @@ const User = () => {
                 </div>
             </div>
         );
-    } else if (userInfo.uUser === 'landlord') {
-        // landlord용 콘텐츠 (현재는 동일하게 렌더링, 이후 수정 가능)
+    } // User.js landlord 분기 부분 예시 수정본
+
+    else if (userInfo.uUser === 'landlord') {
         return (
             <div>
-        <span style={{ marginTop: '100px', display: 'block', fontSize: '35px' }}>
-          마이페이지
-        </span>
+      <span style={{ marginTop: '100px', display: 'block', fontSize: '35px' }}>
+        마이페이지
+      </span>
+
+                {/* 로그인한 landlord 이름 인사말 추가 */}
+                <p style={{ marginRight: "15px", fontSize: "20px", marginTop: "10px" }}>
+                    !! <strong style={{ fontSize: "25px" }}>{userInfo.uFirstName}</strong> !!님 반가워요
+                </p>
 
                 <div style={{ width: '1180px', display: 'flex', flexDirection: 'row', gap: '20px' }}>
                     <div style={{ width: '30%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -335,7 +341,7 @@ const User = () => {
                 </div>
             </div>
         );
-    } else {
+    }  else {
         return <div>알 수 없는 사용자 유형입니다.</div>;
     }
 };
