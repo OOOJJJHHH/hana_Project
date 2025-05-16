@@ -121,9 +121,9 @@ const Owner = () => {
             }));
             form.append("rooms", JSON.stringify(roomMeta));
 
-            // 객실 이미지들: 최대 3개까지 전송
+            // 객실 이미지들: 최대 5개까지 전송
             rooms.forEach((room, index) => {
-                if (index < 3 && room.roomImag.length > 0) {
+                if (index < 5 && room.roomImag.length > 0) {
                     form.append(`roomImag${index}`, room.roomImag[0]); // 첫 번째 이미지만 전송
                 }
             });
