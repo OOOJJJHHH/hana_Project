@@ -95,17 +95,17 @@ public class CityController {
             @RequestParam(value = "roomImag2", required = false) MultipartFile roomImag2
     ) {
         try {
-            // ✅ uploads 디렉토리 자동 생성
+            //  uploads 디렉토리 자동 생성
             Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
             if (!Files.exists(uploadDir)) {
                 Files.createDirectories(uploadDir);
             }
 
-            // ✅ rooms JSON 파싱
+            //  rooms JSON 파싱
             ObjectMapper mapper = new ObjectMapper();
             List<Room> roomList = mapper.readValue(roomsJson, new TypeReference<List<Room>>() {});
 
-            // ✅ 숙소 정보 설정
+            //  숙소 정보 설정
             ClodContent content = new ClodContent();
             content.setLodOwner(lodOwner);
             content.setLodCity(lodCity);
@@ -114,13 +114,13 @@ public class CityController {
             content.setLodCallNum(lodCallNum);
             content.setLodPrice(new BigDecimal("0"));
 
-            // ✅ 숙소 이미지 저장 + 경로 설정
+            //  숙소 이미지 저장 + 경로 설정
             String lodFileName = UUID.randomUUID() + "_" + lodImag.getOriginalFilename();
             Path lodTargetPath = uploadDir.resolve(lodFileName);
             lodImag.transferTo(lodTargetPath.toFile());
             content.setLodImag("/uploads/" + lodFileName);
 
-            // ✅ 객실 이미지 저장
+            //  객실 이미지 저장
             MultipartFile[] roomImgs = {roomImag0, roomImag1, roomImag2};
             for (int i = 0; i < roomList.size(); i++) {
                 Room room = roomList.get(i);
