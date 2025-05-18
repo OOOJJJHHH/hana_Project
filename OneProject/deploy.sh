@@ -11,6 +11,10 @@ docker stop spring-container 2>/dev/null
 docker rm spring-container 2>/dev/null
 
 echo "🚀 새 컨테이너 실행 중..."
-docker run -d -p 8080:8080 --name spring-container my-spring-app || { echo "❌ 컨테이너 실행 실패"; exit 1; }
+docker run -d \
+  -v /home/ec2-user/app/uploads:/app/lodUploads \
+  -p 8080:8080 \
+  --name spring-container \
+  my-spring-app || { echo "❌ 컨테이너 실행 실패"; exit 1; }
 
 echo "✅ 배포 완료!"

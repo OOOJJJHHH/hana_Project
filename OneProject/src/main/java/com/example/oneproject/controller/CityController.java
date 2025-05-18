@@ -96,7 +96,10 @@ public class CityController {
     ) {
         try {
             //  uploads 디렉토리 자동 생성
-            Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
+            Path uploadDir = Paths.get("/app/loduploads");
+            //Path uploadDir = Paths.get("app/loduploads").toAbsolutePath().normalize();
+            // .toAbsolutePath()는 상대 경로를 절대 경로로 변환
+            // .normalize() 는 경로 내에 ".", ".."와 같은 불필요한 요소들을 제거해줌
             if (!Files.exists(uploadDir)) {
                 Files.createDirectories(uploadDir);
             }
@@ -118,7 +121,7 @@ public class CityController {
             String lodFileName = UUID.randomUUID() + "_" + lodImag.getOriginalFilename();
             Path lodTargetPath = uploadDir.resolve(lodFileName);
             lodImag.transferTo(lodTargetPath.toFile());
-            content.setLodImag("/uploads/" + lodFileName);
+            content.setLodImag("/lodUploads/" + lodFileName);
 
             //  객실 이미지 저장
             MultipartFile[] roomImgs = {roomImag0, roomImag1, roomImag2};
@@ -128,7 +131,7 @@ public class CityController {
                     String roomFileName = UUID.randomUUID() + "_" + roomImgs[i].getOriginalFilename();
                     Path roomPath = uploadDir.resolve(roomFileName);
                     roomImgs[i].transferTo(roomPath.toFile());
-                    room.setRoomImag("/uploads/" + roomFileName);
+                    room.setRoomImag("/lodUploads/" + roomFileName);
                 }
                 room.setClodContent(content);
             }
