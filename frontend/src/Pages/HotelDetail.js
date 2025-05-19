@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect, useContext} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./HotelDetail.css";
+import { UserContext } from '../Session/UserContext';
 
 // 내부 이미지 임포트
 import Hotel1Inside1 from "../image/Hotel1(inside1).jpg";
@@ -182,6 +183,15 @@ const HotelDetail = () => {
   const [selectedRoom, setSelectedRoom] = useState("Standard"); // 기본 선택 방
   const [roomPrice, setRoomPrice] = useState(0); // 기본 가격
 
+  const userInfo = useContext(UserContext);
+
+  const handleReservationClick = () => {
+    if (!userInfo) {
+      alert("로그인을 하셔야 합니다.");
+      return;
+    }
+    alert("예약이 완료되었습니다.");
+  };
   useEffect(() => {
     if (hotelName && hotelDetails[hotelName]) {
       setHotelInfo(hotelDetails[hotelName]);
@@ -265,7 +275,9 @@ const HotelDetail = () => {
         </div>
 
         <div className="action-buttons">
-          <button className="reserve-button">예약하기</button>
+          <button className="reserve-button" onClick={handleReservationClick}>
+            예약하기
+          </button>
           <button className="wishlist-button">찜하기</button>
         </div>
       </div>
