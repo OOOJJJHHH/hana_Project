@@ -11,6 +11,8 @@ import arrowRight from './image/arrow-right.png';
 import spring from './image/spring.png';
 import fan2_1 from './image/2-1.jpg';
 import fan2_2 from './image/2-2.jpg';
+import {contents} from "./Locals/Locals";
+import { useNavigate } from "react-router-dom";
 
 const Meddle = () => {
   const [startIndex, setStartIndex] = useState(0);
@@ -254,6 +256,16 @@ const ImageSlider = () => {
 // ✅ 새로 추가된 컴포넌트
 const ToggleRectangles = () => {
   const [activeButton, setActiveButton] = useState("left");
+  const navigate = useNavigate();
+
+  const avaHotels = contents.hotels.filter(hotel => hotel.recommendedBy === "Ava");
+  const sofiaHotels = contents.hotels.filter(hotel => hotel.recommendedBy === "Sofia");
+
+  const selectedHotels = activeButton === "left" ? avaHotels : sofiaHotels;
+
+  const handleCardClick = (hotel) => {
+    navigate(`/hotel-detail?name=${encodeURIComponent(hotel.name)}`);
+  };
 
   return (
       <>
@@ -262,7 +274,7 @@ const ToggleRectangles = () => {
               isActive={activeButton === "left"}
               onClick={() => setActiveButton("left")}
           >
-            Johannes 님의 최저가 상품
+            Ava님의 최저가 상품
           </ToggleButton>
           <ToggleButton
               isActive={activeButton === "right"}
@@ -273,21 +285,11 @@ const ToggleRectangles = () => {
         </ButtonContainer>
 
         <RectangleContainer>
-          {activeButton === "left" ? (
-              <>
-                <Rectangle><img src={"fan2_1"} alt="상품1" /></Rectangle>
-                <Rectangle><img src={"fan2_2"} alt="상품2" /></Rectangle>
-                <Rectangle><img src={"fan2_1"} alt="상품3" /></Rectangle>
-                <Rectangle><img src={"fan2_2"} alt="상품4" /></Rectangle>
-              </>
-          ) : (
-              <>
-                <Rectangle><img src={"fan2_2"} alt="상품5" /></Rectangle>
-                <Rectangle><img src={"fan2_1"} alt="상품6" /></Rectangle>
-                <Rectangle><img src={"fan2_2"} alt="상품7" /></Rectangle>
-                <Rectangle><img src={"fan2_1"} alt="상품8" /></Rectangle>
-              </>
-          )}
+          {selectedHotels.map((hotel, index) => (
+              <Rectangle key={index} onClick={() => handleCardClick(hotel)} style={{cursor: "pointer"}}>
+                <img src={hotel.image} alt={`호텔 ${index + 1}`} />
+              </Rectangle>
+          ))}
         </RectangleContainer>
       </>
   );
