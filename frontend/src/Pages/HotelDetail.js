@@ -304,5 +304,8 @@ const HotelDetail = () => {
     </div>
   );
 };
+export const topRatedHotels = Object.values(hotelDetails)
+    .sort((a, b) => b.rating - a.rating) // 평점 내림차순 정렬
+    .slice(0, 6); // 상위 6개
 
 export default HotelDetail;
