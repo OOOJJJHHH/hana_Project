@@ -13,7 +13,7 @@ import Hotel5Image from "../image/Hotel5.jpg";
 import Hotel6Image from "../image/Locals.jpg";
 import Hotel7Image from "../image/Hotel7.jpg";
 
-const contents = {
+export const contents = {
   header: {},
   hotels: [
     { image: Hotel1Image, name: "Hotel Artemide", location: "Rome, Italy", recommendedBy: "Sofia" },

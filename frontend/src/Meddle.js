@@ -11,6 +11,10 @@ import arrowRight from './image/arrow-right.png';
 import spring from './image/spring.png';
 import fan2_1 from './image/2-1.jpg';
 import fan2_2 from './image/2-2.jpg';
+import {contents} from "./Locals/Locals";
+import { useNavigate } from "react-router-dom";
+import { topRatedHotels } from './Pages/HotelDetail';
+
 
 const Meddle = () => {
   const [startIndex, setStartIndex] = useState(0);
@@ -18,14 +22,12 @@ const Meddle = () => {
   const [startCity1, setStartCity1] = useState(0);
   const [activeButton, setActiveButton] = useState("left");
   const boxes = Array(9).fill("사진");
-  const imageData = [
-    { src: fan2_1, rating: 5 },
-    { src: fan2_2, rating: 4 },
-    { src: fan2_1, rating: 3 },
-    { src: fan2_2, rating: 2 },
-    { src: fan2_1, rating: 1 },
-    { src: fan2_2, rating: 1 },
-  ];
+  const navigate = useNavigate();
+  const [hotelList, setHotelList] = useState([]);
+
+  useEffect(() => {
+    setHotelList(topRatedHotels);  // 기존 데이터 대신 평점 상위 6개 호텔로 덮어쓰기
+  }, []);
 
   // 예시 데이터 (DB에서 받아올 예정)
   const [cities, setCities] = useState([
@@ -84,11 +86,16 @@ const Meddle = () => {
   };
 
   const renderStars = (rating) => {
-    const fullStars = "★".repeat(rating); // 채워진 별
-    const emptyStars = "☆".repeat(5 - rating); // 빈 별
-    return fullStars + emptyStars;
-  };
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
 
+    for (let i = 0; i < fullStars; i++) stars.push("★");
+    if (hasHalfStar) stars.push("☆");
+    while (stars.length < 5) stars.push("✩");
+
+    return stars.join("");
+  };
   const handleClickcity = (cityName) => {
     alert(`You clicked on ${cityName}`);
   };
@@ -136,12 +143,20 @@ const Meddle = () => {
         <span style={{ fontSize: "24px", fontWeight: "bold", display: "block", width: "100%", maxWidth: "1180px" }}>평점순</span>
         {/* ✅ 둥근 사각형 리스트 */}
         <RoundedRectangleContainer>
-          {imageData.map((item, index) => (
-              <RoundedRectangle key={index}>
-                <img src={item.src} alt={`fan-${index + 1}`} />
-                <Rating>{renderStars(item.rating)} {item.rating}</Rating>
-              </RoundedRectangle>
-          ))}
+
+          <div style={{ display: 'flex', gap: '20px', flexWrap: 'nowrap', marginTop: '20px' }}>
+            {topRatedHotels.map((hotel, idx) => (
+                <div
+                    key={idx}
+                    style={{ cursor: 'pointer', border: '1px solid #ccc', padding: '10px', width: '150px' }}
+                    onClick={() => navigate(`/hotel-detail?name=${encodeURIComponent(hotel.name)}`)}
+                >
+                  <img src={hotel.thumbnail} alt={hotel.name} style={{ width: '100%' }} />
+                  <h3>{hotel.name}</h3>
+                  <p>{renderStars(hotel.rating)} ({hotel.rating})</p>
+                </div>
+            ))}
+          </div>
         </RoundedRectangleContainer>
         <span style={{ fontSize: "24px", fontWeight: "bold", display: "block", width: "100%", maxWidth: "1180px", marginTop: "40px" }}>도시이름</span>
         <div style={{
@@ -254,6 +269,16 @@ const ImageSlider = () => {
 // ✅ 새로 추가된 컴포넌트
 const ToggleRectangles = () => {
   const [activeButton, setActiveButton] = useState("left");
+  const navigate = useNavigate();
+
+  const avaHotels = contents.hotels.filter(hotel => hotel.recommendedBy === "Ava");
+  const sofiaHotels = contents.hotels.filter(hotel => hotel.recommendedBy === "Sofia");
+
+  const selectedHotels = activeButton === "left" ? avaHotels : sofiaHotels;
+
+  const handleCardClick = (hotel) => {
+    navigate(`/hotel-detail?name=${encodeURIComponent(hotel.name)}`);
+  };
 
   return (
       <>
@@ -262,7 +287,7 @@ const ToggleRectangles = () => {
               isActive={activeButton === "left"}
               onClick={() => setActiveButton("left")}
           >
-            Johannes 님의 최저가 상품
+            Ava님의 최저가 상품
           </ToggleButton>
           <ToggleButton
               isActive={activeButton === "right"}
@@ -273,21 +298,11 @@ const ToggleRectangles = () => {
         </ButtonContainer>
 
         <RectangleContainer>
-          {activeButton === "left" ? (
-              <>
-                <Rectangle><img src={"fan2_1"} alt="상품1" /></Rectangle>
-                <Rectangle><img src={"fan2_2"} alt="상품2" /></Rectangle>
-                <Rectangle><img src={"fan2_1"} alt="상품3" /></Rectangle>
-                <Rectangle><img src={"fan2_2"} alt="상품4" /></Rectangle>
-              </>
-          ) : (
-              <>
-                <Rectangle><img src={"fan2_2"} alt="상품5" /></Rectangle>
-                <Rectangle><img src={"fan2_1"} alt="상품6" /></Rectangle>
-                <Rectangle><img src={"fan2_2"} alt="상품7" /></Rectangle>
-                <Rectangle><img src={"fan2_1"} alt="상품8" /></Rectangle>
-              </>
-          )}
+          {selectedHotels.map((hotel, index) => (
+              <Rectangle key={index} onClick={() => handleCardClick(hotel)} style={{cursor: "pointer"}}>
+                <img src={hotel.image} alt={`호텔 ${index + 1}`} />
+              </Rectangle>
+          ))}
         </RectangleContainer>
       </>
   );
