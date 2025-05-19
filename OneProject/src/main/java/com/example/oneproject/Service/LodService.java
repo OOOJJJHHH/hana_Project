@@ -21,13 +21,11 @@ import java.util.UUID;
 public class LodService{
 
     private final CLodRepository clodRepository;
-    private final S3Client s3Client; // S3Client 주입
+    private final S3Uploader s3Uploader;
 
-    // 생성자 주입 방식으로 리포지토리와 S3Client를 주입받음
-    @Autowired
-    public LodService(CLodRepository clodRepository, S3Client s3Client) {
+    public LodService(CLodRepository clodRepository, S3Uploader s3Uploader) {
         this.clodRepository = clodRepository;
-        this.s3Client = s3Client;
+        this.s3Uploader = s3Uploader;
     }
 
     //숙소저장
@@ -68,51 +66,23 @@ public class LodService{
             content.setLodCallNum(lodCallNum);
             content.setLodPrice(new BigDecimal("0"));
 
-            // 숙소 이미지 저장 + S3 업로드
-            String lodFileName = UUID.randomUUID() + "_" + lodImag.getOriginalFilename();
-            PutObjectRequest putRequest = PutObjectRequest.builder()
-                    .bucket("hana-leeej-bucket")
-                    .key("lodUploads/" + lodFileName)
-                    .acl("public-read")
-                    .contentType(lodImag.getContentType())
-                    .build();
+            // S3 업로드
+            String lodImageUrl = s3Uploader.uploadFile("hana-leeej-bucket", "lodUploads", lodImag);
+            content.setLodImag(lodImageUrl);
 
-            s3Client.putObject(putRequest, RequestBody.fromInputStream(
-                    lodImag.getInputStream(), lodImag.getSize()
-            ));
-
-            // S3 URL 저장
-            String s3Url = "https://hana-leeej-bucket.s3.amazonaws.com/lodUploads/" + lodFileName;
-            content.setLodImag(s3Url); // DB 등에 저장
-
-            // 객실 이미지 저장 + S3 업로드
+            // 객실 이미지들
             MultipartFile[] roomImgs = {roomImag0, roomImag1, roomImag2};
             for (int i = 0; i < roomList.size(); i++) {
                 Room room = roomList.get(i);
                 if (i < roomImgs.length && roomImgs[i] != null && !roomImgs[i].isEmpty()) {
-                    String roomFileName = UUID.randomUUID() + "_" + roomImgs[i].getOriginalFilename();
-                    PutObjectRequest roomPutRequest = PutObjectRequest.builder()
-                            .bucket("hana-leeej-bucket")
-                            .key("roomUploads/" + roomFileName)
-                            .acl("public-read")
-                            // contentType을 지정하면 S3에서 파일을 열 때 MIME 타입이 정확하게 인식
-                            .contentType(roomImgs[i].getContentType())
-                            .build();
-
-                    // RequestBody.fromInputStream(...)을 쓰는 방식은 MultipartFile을 직접 S3로 전송할 때 가장 많이 쓰
-                    s3Client.putObject(roomPutRequest, RequestBody.fromInputStream(
-                            roomImgs[i].getInputStream(), roomImgs[i].getSize()
-                    ));
-
-                    // S3 URL 저장
-                    String roomS3Url = "https://hana-leeej-bucket.s3.amazonaws.com/roomUploads/" + roomFileName;
-                    room.setRoomImag(roomS3Url);
+                    String roomImageUrl = s3Uploader.uploadFile("hana-leeej-bucket", "roomUploads", roomImgs[i]);
+                    room.setRoomImag(roomImageUrl);
                 }
-                room.setClodContent(content); // 객실에 숙소 정보 설정
+                room.setClodContent(content);
             }
 
-            content.setRooms(roomList); // 객실 리스트 설정
-            clodRepository.save(content); // DB에 저장
+            content.setRooms(roomList);
+            clodRepository.save(content);
 
         } catch (Exception e) {
             e.printStackTrace();
