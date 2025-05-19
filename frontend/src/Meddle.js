@@ -143,9 +143,7 @@ const Meddle = () => {
         <span style={{ fontSize: "24px", fontWeight: "bold", display: "block", width: "100%", maxWidth: "1180px" }}>평점순</span>
         {/* ✅ 둥근 사각형 리스트 */}
         <RoundedRectangleContainer>
-          {/* 기존 imageData 부분 제거 */}
 
-          {/* topRatedHotels 리스트만 보여주기 */}
           <div style={{ display: 'flex', gap: '20px', flexWrap: 'nowrap', marginTop: '20px' }}>
             {topRatedHotels.map((hotel, idx) => (
                 <div
