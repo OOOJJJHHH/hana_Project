@@ -139,7 +139,12 @@ const Meddle = () => {
 
         {/* ✅ 새로 추가된 컴포넌트 */}
         <ToggleRectangles />
-        <img src={spring} alt='spring' style={{ marginTop: "20px", width: "100%", maxWidth: "1180px" }} />
+
+        <ClickableImage
+            src={spring}
+            alt="spring"
+            onClick={() => navigate('/about')}
+        />
         <span style={{ fontSize: "24px", fontWeight: "bold", display: "block", width: "100%", maxWidth: "1180px" }}>평점순</span>
         {/* ✅ 둥근 사각형 리스트 */}
         <RoundedRectangleContainer>
@@ -601,7 +606,17 @@ const NewCityName = styled.div`
   font-weight: bold;
 `;
 
+const ClickableImage = styled.img`
+  margin-top: 20px;
+  width: 100%;
+  max-width: 1180px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
 
+  &:active {
+    transform: scale(0.97);
+  }
+`;
 
 
 export default Meddle;
