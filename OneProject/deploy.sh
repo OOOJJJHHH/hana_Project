@@ -15,7 +15,8 @@ docker run -d \
   -v /home/ec2-user/app/uploads:/app/lodUploads \
   -p 8080:8080 \
   --name spring-container \
-  --network host \  # EC2의 네트워크를 사용하여 IAM Role 상속
+  --network host \
   my-spring-app || { echo "❌ 컨테이너 실행 실패"; exit 1; }
 
+# EC2의 네트워크를 사용하여 IAM Role 상속
 echo "✅ 배포 완료!"
