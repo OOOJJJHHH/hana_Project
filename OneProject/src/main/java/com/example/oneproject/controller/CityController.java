@@ -24,6 +24,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -40,12 +42,16 @@ import java.util.UUID;
 public class CityController {
 
     @Autowired
+    private S3Client s3Client;
+
+    @Autowired
     private CityService cityService;
     @Autowired
     private LodService lodService;
     @Autowired
     private UserService userService;
 
+    // 도시
     // 도시 정보 저장
     @PostMapping("/saveCity")
     public void saveCity(@RequestBody CityContent cityContent) {
@@ -79,6 +85,8 @@ public class CityController {
         }
     }
 
+    // 숙소
+    // 숙소 저장
     @PostMapping("/addRoom")
     public ResponseEntity<String> saveLodWithImage(
             @RequestParam("lodOwner") String lodOwner,
@@ -87,56 +95,20 @@ public class CityController {
             @RequestParam("lodLocation") String lodLocation,
             @RequestParam("lodCallNum") String lodCallNum,
             @RequestParam("lodImag") MultipartFile lodImag,
-
             @RequestParam("rooms") String roomsJson,
-
             @RequestParam("roomImag0") MultipartFile roomImag0,
             @RequestParam(value = "roomImag1", required = false) MultipartFile roomImag1,
             @RequestParam(value = "roomImag2", required = false) MultipartFile roomImag2
     ) {
         try {
-            //  uploads 디렉토리 자동 생성
-            Path uploadDir = Paths.get("uploads").toAbsolutePath().normalize();
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
-
-            //  rooms JSON 파싱
+            // rooms JSON 파싱
             ObjectMapper mapper = new ObjectMapper();
             List<Room> roomList = mapper.readValue(roomsJson, new TypeReference<List<Room>>() {});
 
-            //  숙소 정보 설정
-            ClodContent content = new ClodContent();
-            content.setLodOwner(lodOwner);
-            content.setLodCity(lodCity);
-            content.setLodName(lodName);
-            content.setLodLocation(lodLocation);
-            content.setLodCallNum(lodCallNum);
-            content.setLodPrice(new BigDecimal("0"));
+            // 숙소 저장 서비스 호출
+            lodService.saveLodWithImage(lodOwner, lodCity, lodName, lodLocation, lodCallNum, lodImag, roomList, roomImag0, roomImag1, roomImag2);
 
-            //  숙소 이미지 저장 + 경로 설정
-            String lodFileName = UUID.randomUUID() + "_" + lodImag.getOriginalFilename();
-            Path lodTargetPath = uploadDir.resolve(lodFileName);
-            lodImag.transferTo(lodTargetPath.toFile());
-            content.setLodImag("/uploads/" + lodFileName);
-
-            //  객실 이미지 저장
-            MultipartFile[] roomImgs = {roomImag0, roomImag1, roomImag2};
-            for (int i = 0; i < roomList.size(); i++) {
-                Room room = roomList.get(i);
-                if (i < roomImgs.length && roomImgs[i] != null && !roomImgs[i].isEmpty()) {
-                    String roomFileName = UUID.randomUUID() + "_" + roomImgs[i].getOriginalFilename();
-                    Path roomPath = uploadDir.resolve(roomFileName);
-                    roomImgs[i].transferTo(roomPath.toFile());
-                    room.setRoomImag("/uploads/" + roomFileName);
-                }
-                room.setClodContent(content);
-            }
-
-            content.setRooms(roomList);
-            lodService.savelod(content);
             return ResponseEntity.ok("저장 완료");
-
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -144,13 +116,14 @@ public class CityController {
         }
     }
 
-
     // 숙소 정보 조회
     @GetMapping("/getLod")
     public List<ClodContent> getLod() {
         return lodService.getAllLods();
     }
 
+
+    // 유저
     // 유저 정보 저장
     @PostMapping("/saveUser")
     public void saveUser(@RequestBody UserContent userContent) {
@@ -162,15 +135,15 @@ public class CityController {
         return userService.getUsers();
     }
 
-    @GetMapping("/getOneUser")
-    public List<UserContent> getOneUser(HttpSession session) {
-        UserDTO user = (UserDTO) session.getAttribute("loginUser");
-        System.out.println(user);
-        String uId = user.getuId();
-        return userService.getOneUsers(uId);
+    @GetMapping("getLandlord")
+    public List<UserContent> getLandlord() {
+        return userService.getLandlord();
     }
 
-    // 로그인
+
+
+    //로그인
+    // 로그in
     @PostMapping("/api/login")
     public ResponseEntity<?> login(@RequestBody UserContent userContent, HttpSession session) {
         String uId = userContent.getuId();
@@ -185,6 +158,15 @@ public class CityController {
         }
     }
 
+    //로그아웃
+    @PostMapping("/api/logout")
+    public ResponseEntity<String> logout(HttpSession session) {
+        session.invalidate();
+        return ResponseEntity.ok("로그아웃 성공");
+    }
+
+
+    // 세션
     @GetMapping("/api/getSessionInfo")
     public ResponseEntity<?> getSessionInfo(HttpSession session) {
         UserDTO user = (UserDTO) session.getAttribute("loginUser");
@@ -195,11 +177,14 @@ public class CityController {
         }
     }
 
-    @PostMapping("/api/logout")
-    public ResponseEntity<String> logout(HttpSession session) {
-        session.invalidate();
-        return ResponseEntity.ok("로그아웃 성공");
+    @GetMapping("/getOneUser")
+    public List<UserContent> getOneUser(HttpSession session) {
+        UserDTO user = (UserDTO) session.getAttribute("loginUser");
+        System.out.println(user);
+        String uId = user.getuId();
+        return userService.getOneUsers(uId);
     }
+
 
     @GetMapping("/images/{filename:.+}")
     public ResponseEntity<Resource> serveImage(@PathVariable String filename) {

@@ -128,7 +128,7 @@ const Owner = () => {
                 }
             });
 
-            await axios.post("http://localhost:8080/addRoom", form, {
+            await axios.post(`${process.env.REACT_APP_API_URL}/addRoom`, form, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
