@@ -618,5 +618,4 @@ const ClickableImage = styled.img`
   }
 `;
 
-
 export default Meddle;

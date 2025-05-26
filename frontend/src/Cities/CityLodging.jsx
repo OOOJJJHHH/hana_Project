@@ -154,7 +154,7 @@ const CityLodging = () => {
                                     zIndex: "-2"
                                 }} />
                             </div>
-                        ) :null
+                        ) : null
                     ))}
                 </div>
             </div>
