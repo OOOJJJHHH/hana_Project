@@ -276,8 +276,8 @@ const ToggleRectangles = () => {
   const [activeButton, setActiveButton] = useState("left");
   const navigate = useNavigate();
 
-  const avaHotels = contents.hotels.filter(hotel => hotel.recommendedBy === "Ava");
-  const sofiaHotels = contents.hotels.filter(hotel => hotel.recommendedBy === "Sofia");
+  const avaHotels = contents.hotels.filter(hotel => hotel.recommendedBy === "오오오");
+  const sofiaHotels = contents.hotels.filter(hotel => hotel.recommendedBy === "승범");
 
   const selectedHotels = activeButton === "left" ? avaHotels : sofiaHotels;
 
@@ -292,13 +292,13 @@ const ToggleRectangles = () => {
               isActive={activeButton === "left"}
               onClick={() => setActiveButton("left")}
           >
-            Ava님의 최저가 상품
+            오오오 님의 최저가 상품
           </ToggleButton>
           <ToggleButton
               isActive={activeButton === "right"}
               onClick={() => setActiveButton("right")}
           >
-            Sofia 님의 최저가 상품
+            승범 님의 최저가 상품
           </ToggleButton>
         </ButtonContainer>
 

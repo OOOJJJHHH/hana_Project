@@ -270,3 +270,13 @@ html, body {
 .review-card p {
   margin: 5px 0;
 }
+.recommender-slider {
+  display: flex;
+  align-items: center;
+}
+
+.slider-btn:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+

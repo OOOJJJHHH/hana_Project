@@ -8,7 +8,7 @@ import axios from "axios"; // 유저 컨텍스트 임포트
 const initialLocalData = [
   {
     id: 1,
-    name: "Sofia",
+    // name: "Sofia",
     location: "볼테라 (Volterra)",
     image: "https://randomuser.me/api/portraits/women/44.jpg",
     intro: "Hi 내 이름은 Sofia~ 잘 부탁해요!",
@@ -157,9 +157,6 @@ function Local() {
       <div className="local-container">
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <h1 className="local-title">현지인 소개</h1>
-          <button className="myButton" type="button" onClick={openPopup}>
-            생성
-          </button>
         </div>
 
         <div className="local-list">
@@ -173,7 +170,9 @@ function Local() {
                 </div>
                 <button onClick={() => handleMoreClick(user)}>더 알아보기 ▶</button>
               </div>
+
           ))}
+
         </div>
 
         {isPopupOpen && (
