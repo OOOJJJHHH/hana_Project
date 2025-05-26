@@ -133,6 +133,8 @@ public class CityController {
             return lodService.getAllLods();
     }
 
+
+
     // ✅ 도시 이름(lodCity)으로 숙소 검색
     @GetMapping("/getLodByCity/{cityName}")
     public ResponseEntity<List<ClodContent>> getLodByCity(@PathVariable String cityName) {
