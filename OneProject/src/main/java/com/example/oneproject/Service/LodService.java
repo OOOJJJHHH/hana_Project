@@ -89,7 +89,7 @@ public class LodService {
 
         // lodName을 기반으로 숙소(ClodContent)를 데이터베이스에서 조회
         // 없으면 예외 발생 (RuntimeException)
-        ClodContent content = lodRepository.findByLodName(lodName)
+        ClodContent content = (ClodContent) lodRepository.findByLodName(lodName)
                 .orElseThrow(() -> new RuntimeException("숙소 없음"));
 
         // lodImag에는 S3에 저장된 이미지의 '객체 키(key)'만 들어 있으므로
