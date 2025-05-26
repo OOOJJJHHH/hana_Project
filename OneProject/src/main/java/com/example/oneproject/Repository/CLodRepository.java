@@ -8,8 +8,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CLodRepository extends JpaRepository<ClodContent, Integer> {
+public interface CLodRepository extends JpaRepository<ClodContent, Long> {
 
-    List<ClodContent> findByLodCity(String cityName);
+    List<ClodContent> findByLodCity(String lodcity);
 
 }

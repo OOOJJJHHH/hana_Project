@@ -1,11 +1,15 @@
 package com.example.oneproject.Entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import com.fasterxml.jackson.annotation.JsonSetter;
-
-import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Room {
 
     @Id
@@ -13,58 +17,40 @@ public class Room {
     private Long id;
 
     private String roomName;
-
-    private BigDecimal price;
-
-    @Column(columnDefinition = "TEXT")
     private String roomImag;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "clod_content_id")
+    @JsonBackReference
     private ClodContent clodContent;
 
+    // ✅ Getter / Setter
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getRoomName() {
         return roomName;
     }
 
-    public BigDecimal getPrice() {
-        return price;
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
     }
 
     public String getRoomImag() {
         return roomImag;
     }
 
-    public ClodContent getClodContent() {
-        return clodContent;
-    }
-
-    public void setRoomName(String roomName) {
-        this.roomName = roomName;
-    }
-
-    @JsonSetter("price")
-    public void setPrice(Object value) {
-        try {
-            if (value instanceof Number) {
-                this.price = new BigDecimal(((Number) value).toString());
-            } else if (value instanceof String && !((String) value).isEmpty()) {
-                this.price = new BigDecimal((String) value);
-            } else {
-                this.price = BigDecimal.ZERO;
-            }
-        } catch (Exception e) {
-            System.err.println("Room 가격 변환 실패: " + value);
-            this.price = BigDecimal.ZERO;
-        }
-    }
-
     public void setRoomImag(String roomImag) {
         this.roomImag = roomImag;
+    }
+
+    public ClodContent getClodContent() {
+        return clodContent;
     }
 
     public void setClodContent(ClodContent clodContent) {

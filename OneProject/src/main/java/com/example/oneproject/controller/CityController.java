@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+
 import com.example.oneproject.DTO.UserDTO;
 import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.CityContent;
@@ -62,12 +63,11 @@ public class CityController {
     @GetMapping("/findByName")
     public ResponseEntity<List<ClodContent>> getCityByName(@RequestParam("cityName") String cityName) {
         List<ClodContent> lodContents = lodService.getCityByName(cityName);
-        if (lodContents.isEmpty()) {
-            return ResponseEntity.notFound().build();
+        if (lodContents == null || lodContents.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 더 깔끔한 반환
         }
         return ResponseEntity.ok(lodContents);
     }
-
     // 도시 상태 업데이트
     @PatchMapping("/updateCity/{cityName}")
     public ResponseEntity<String> updateCity(@PathVariable("cityName") String cityName) {
@@ -115,7 +115,8 @@ public class CityController {
             content.setLodName(lodName);
             content.setLodLocation(lodLocation);
             content.setLodCallNum(lodCallNum);
-            content.setLodPrice(new BigDecimal("0"));
+            content.setLodPrice(new BigDecimal("0").doubleValue());
+
 
             //  숙소 이미지 저장 + 경로 설정
             String lodFileName = UUID.randomUUID() + "_" + lodImag.getOriginalFilename();
@@ -151,8 +152,20 @@ public class CityController {
     // 숙소 정보 조회
     @GetMapping("/getLod")
     public List<ClodContent> getLod() {
-        return lodService.getAllLods();
+            return lodService.getAllLods();
     }
+
+    // ✅ 도시 이름(lodCity)으로 숙소 검색
+    @GetMapping("/getLodByCity/{cityName}")
+    public ResponseEntity<List<ClodContent>> getLodByCity(@PathVariable String cityName) {
+        List<ClodContent> lodList = lodService.findByLodCity(cityName);
+        if (lodList.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(lodList);
+    }
+
+
 
     // 유저 정보 저장
     @PostMapping("/saveUser")

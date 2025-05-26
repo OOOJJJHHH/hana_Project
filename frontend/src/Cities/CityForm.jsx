@@ -23,7 +23,7 @@ const CityForm = () => {
         try {
             // Spring Boot 서버로 POST 요청 보내기
             console.log("시도")
-            await axios.post(`${process.env.REACT_APP_API_URL}/saveCity`, city);
+            await axios.post("http://localhost:8080/saveCity", city);
             alert('데이터가 성공적으로 저장되었습니다.');
 
             // 데이터 제출 후 폼 초기화

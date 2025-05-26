@@ -1,58 +1,36 @@
 package com.example.oneproject.Entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import org.w3c.dom.Text;
-import java.util.*;
-import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ClodContent {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)    // 프로젝트에 연결된 DB의 numbering 전략을 따른다.
-    private Long id;    // 시퀀스, auto_increment
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    // 숙소 주인
-    @Column(length = 1000, nullable = false)
     private String lodOwner;
-
-    // 숙소가 위치한 도시
-    @Column(length = 1000, nullable = false)
     private String lodCity;
-
-    // 숙소 이름
-    @Column(length = 1000, nullable = false)
     private String lodName;
-
-    // 숙소 위치 (길이 제한 없이 TEXT 타입으로)
-    @Column(nullable = false, columnDefinition = "TEXT")
     private String lodLocation;
-
-    // 숙소 전화번호
-    @Column(length = 100, nullable = false)
     private String lodCallNum;
-
-    // 숙소 가격
-    @Column(nullable = false)
-    private BigDecimal lodPrice;
-
-    // 숙소 이미지
-    @Column(nullable = false, columnDefinition = "TEXT")
+    private double lodPrice;
     private String lodImag;
 
+    @OneToMany(mappedBy = "clodContent", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Room> rooms;
 
-    @OneToMany(mappedBy = "clodContent", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Room> rooms = new ArrayList<>();
-
-    // Getter/Setter 추가
-    public List<Room> getRooms() {
-        return rooms;
-    }
-
-    public void setRooms(List<Room> rooms) {
-        this.rooms = rooms;
-    }
-
+    // ✅ Getter / Setter
     public Long getId() {
         return id;
     }
@@ -101,11 +79,11 @@ public class ClodContent {
         this.lodCallNum = lodCallNum;
     }
 
-    public BigDecimal getLodPrice() {
+    public double getLodPrice() {
         return lodPrice;
     }
 
-    public void setLodPrice(BigDecimal lodPrice) {
+    public void setLodPrice(double lodPrice) {
         this.lodPrice = lodPrice;
     }
 
@@ -116,5 +94,12 @@ public class ClodContent {
     public void setLodImag(String lodImag) {
         this.lodImag = lodImag;
     }
-}
 
+    public List<Room> getRooms() {
+        return rooms;
+    }
+
+    public void setRooms(List<Room> rooms) {
+        this.rooms = rooms;
+    }
+}
