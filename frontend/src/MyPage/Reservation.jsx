@@ -6,9 +6,12 @@ function Reservation() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    const lodName = "숙소1";  // 동적으로 바꿔도 됨
+    const encodedLodName = encodeURIComponent(lodName);
+
     useEffect(() => {
         setLoading(true);
-        axios.get(`${process.env.REACT_APP_API_URL}/getlodUseN/숙소1`)  // 여기서 숙소1 하드코딩
+        axios.get(`${process.env.REACT_APP_API_URL}/getlodUseN/${encodedLodName}`)  // 여기서 숙소1 하드코딩
             .then(response => {
                 setData(response.data);
                 setError(null);

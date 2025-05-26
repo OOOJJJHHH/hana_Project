@@ -82,7 +82,7 @@ public class CityController {
 
     // 숙소
     // 숙소 이름으로 조회
-    @GetMapping("/lodAddPre/{lodName}")
+    @GetMapping("/getlodUseN/{lodName}")
     public ResponseEntity<LodAddPre> getLodAddPre(@PathVariable String lodName) {
         LodAddPre lodAddPre = lodService.getLodDtoByName(lodName);
         return ResponseEntity.ok(lodAddPre);
