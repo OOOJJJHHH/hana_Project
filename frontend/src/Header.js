@@ -47,7 +47,8 @@ const Header = () => {
           ):(
               <LoginText>
                   <p style={{marginRight: "15px"}}>!! <strong style={{fontSize: "25px"}}>{userInfo.uFirstName}</strong> !!님 반가워요</p>
-                  <button style={headMyLogButton} onClick={() => navigate("/UserMyPage")}>마이페이지</button>
+                  <button
+                      style={headMyLogButton} onClick={() => navigate("/UserMyPage")}>마이페이지</button>
                   <button style={headMyLogButton} onClick={Logout}>로그아웃</button> {/* Link 컴포넌트를 사용하여 로그인 페이지로 이동 */}
               </LoginText>
           )}

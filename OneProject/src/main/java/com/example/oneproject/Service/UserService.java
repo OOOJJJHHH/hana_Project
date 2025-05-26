@@ -16,18 +16,27 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    // user 데이터 저장
     public void saveUser(UserContent userContent) {
         userRepository.save(userContent);
     }
 
+    // 유저 전부다 get
     public List<UserContent> getUsers() {
         return userRepository.findAll();
     }
 
+    // 특정한 아이디 값에 해당하는 데이터를 get
     public List<UserContent> getOneUsers(String uId) {
         return userRepository.findByuId(uId);
     }
 
+    // landlord인 사용자의 데이터 get
+    public List<UserContent> getLandlord(){
+        return userRepository.findByUUser("landlord");
+    }
+
+    // 로그인을 위해서 세션에 값 저장
     public String login(String uId, String uPassword, HttpSession session){
         Optional<UserContent> userOptional = userRepository.findByUId(uId);
 
