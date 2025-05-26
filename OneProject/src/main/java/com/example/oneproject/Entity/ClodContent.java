@@ -23,7 +23,6 @@ public class ClodContent {
     private String lodName;
     private String lodLocation;
     private String lodCallNum;
-    private double lodPrice;
     private String lodImag;
 
     @OneToMany(mappedBy = "clodContent", cascade = CascadeType.ALL)
@@ -79,13 +78,6 @@ public class ClodContent {
         this.lodCallNum = lodCallNum;
     }
 
-    public double getLodPrice() {
-        return lodPrice;
-    }
-
-    public void setLodPrice(double lodPrice) {
-        this.lodPrice = lodPrice;
-    }
 
     public String getLodImag() {
         return lodImag;
