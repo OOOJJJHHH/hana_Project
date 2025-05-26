@@ -1,5 +1,7 @@
 package com.example.oneproject.Service;
 
+import com.example.oneproject.DTO.LodAddPre;
+import com.example.oneproject.DTO.RoomAddPre;
 import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.Room;
 import com.example.oneproject.Repository.CLodRepository;
@@ -84,26 +86,37 @@ public class LodService {
 
 
 
-    // 특정 숙소 이름(lodName)으로 숙소 데이터를 가져오는 메서드
-    public ClodContent getLodEntityByName(String lodName) {
-
-        // lodName을 기반으로 숙소(ClodContent)를 데이터베이스에서 조회
-        // 없으면 예외 발생 (RuntimeException)
-        ClodContent content = (ClodContent) lodRepository.findByLodName(lodName)
+    /**
+     * lodName으로 숙소 데이터 조회 후 DTO로 변환하여 반환
+     * 숙소 및 객실 이미지 URL은 S3 프리사인드 URL로 변환
+     */
+    public LodAddPre getLodDtoByName(String lodName) {
+        ClodContent content = lodRepository.findByLodName(lodName)
                 .orElseThrow(() -> new RuntimeException("숙소 없음"));
 
-        // lodImag에는 S3에 저장된 이미지의 '객체 키(key)'만 들어 있으므로
-        // 이 키를 가지고 프리사인드 URL을 생성해서 클라이언트가 직접 접근 가능하게 변환
-        content.setLodImag(s3Service.generatePresignedUrl(content.getLodImag())); // ✅ 숙소 이미지 프리사인드 URL 설정
+        // 숙소 이미지 프리사인드 URL 변환
+        String lodImageUrl = s3Service.generatePresignedUrl(content.getLodImag());
 
-        // 해당 숙소에 연결된 객실(Room) 리스트를 순회
-        for (Room room : content.getRooms()) {
-            // 각 객실 이미지도 마찬가지로 객체 키로 되어 있으므로 프리사인드 URL로 변환
-            room.setRoomImag(s3Service.generatePresignedUrl(room.getRoomImag())); // ✅ 객실 이미지 프리사인드 URL 설정
-        }
+        // 객실 목록을 DTO로 변환 + 객실 이미지 프리사인드 URL 적용
+        List<RoomAddPre> roomDtos = content.getRooms().stream()
+                .map(room -> new RoomAddPre(
+                        room.getId(),
+                        room.getRoomName(),
+                        s3Service.generatePresignedUrl(room.getRoomImag()),
+                        room.getPrice()
+                ))
+                .collect(Collectors.toList());
 
-        // 숙소 엔티티(객실 포함)를 리턴 (React 등 클라이언트에 전달)
-        return content;
+        return new LodAddPre(
+                content.getId(),
+                content.getLodName(),
+                content.getLodCity(),
+                lodImageUrl,
+                content.getLodLocation(),
+                content.getLodOwner(),
+                content.getLodCallNum(),
+                roomDtos
+        );
     }
 
 }

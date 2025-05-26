@@ -1,6 +1,7 @@
 package com.example.oneproject.controller;
 
 
+import com.example.oneproject.DTO.LodAddPre;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -81,10 +82,10 @@ public class CityController {
 
     // 숙소
     // 숙소 이름으로 조회
-    @GetMapping("/getlodUseN/{lodName}")
-    public ResponseEntity<ClodContent> getLodByName(@PathVariable String lodName) {
-        ClodContent content = lodService.getLodEntityByName(lodName);
-        return ResponseEntity.ok(content);
+    @GetMapping("/lodAddPre/{lodName}")
+    public ResponseEntity<LodAddPre> getLodAddPre(@PathVariable String lodName) {
+        LodAddPre lodAddPre = lodService.getLodDtoByName(lodName);
+        return ResponseEntity.ok(lodAddPre);
     }
 
     // 숙소 저장
