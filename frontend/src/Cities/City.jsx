@@ -31,7 +31,7 @@ function City(){
         update(cityName);
 
         // navigate로 다른 페이지로 이동
-        navigate('/cityLodging');
+        navigate('/cityLodging', { state: { cityName: cityName } });
     };
 
     const serchCity = () => {

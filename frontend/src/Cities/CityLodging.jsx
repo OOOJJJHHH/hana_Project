@@ -3,14 +3,29 @@ import SelectBox from "./Custom/SelectBox";
 import DataFetcher from "../dbLogic/DataFetcher";
 import MapPopupContent from "./PopUp/MapPopupContent";
 import axios from "axios";
+import { useLocation } from 'react-router-dom';
+
+
 
 const CityLodging = () => {
     const [cityContents, setCityContents] = useState([]);
     const [lodContents, setLodContents] = useState([]);
-    const [nowTitle, setNowTitle] = useState('');
+    const location = useLocation();
+    const initialCityName = location.state?.cityName || ''; // 전달받은 도시 이름
+    const [nowTitle, setNowTitle] = useState(initialCityName);
     const [isHovered, setIsHovered] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const mapContainerRef = useRef(null);
+
+
+    useEffect(() => {
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTo(0,0 );
+            document.body.scrollTo(0,0 );
+        }, 0);
+    }, []);
+
 
 
     useEffect(() => {
@@ -55,6 +70,8 @@ const CityLodging = () => {
             document.body.removeChild(script);
         };
     }, []);
+
+
 
     // 카드 hover 효과
     const handleMouseEnter = (index) => setIsHovered(index);
