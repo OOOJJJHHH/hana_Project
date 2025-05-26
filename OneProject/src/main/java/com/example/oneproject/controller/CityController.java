@@ -79,6 +79,15 @@ public class CityController {
         }
     }
 
+    // 숙소
+    // 숙소 이름으로 조회
+    @GetMapping("/getlodUseN/{lodName}")
+    public ResponseEntity<ClodContent> getLodByName(@PathVariable String lodName) {
+        ClodContent content = lodService.getLodEntityByName(lodName);
+        return ResponseEntity.ok(content);
+    }
+
+    // 숙소 저장
     @PostMapping("/addRoom")
     public ResponseEntity<String> saveLodWithImage(
             @RequestParam("lodOwner") String lodOwner,
@@ -87,66 +96,35 @@ public class CityController {
             @RequestParam("lodLocation") String lodLocation,
             @RequestParam("lodCallNum") String lodCallNum,
             @RequestParam("lodImag") MultipartFile lodImag,
-
             @RequestParam("rooms") String roomsJson,
-
             @RequestParam("roomImag0") MultipartFile roomImag0,
             @RequestParam(value = "roomImag1", required = false) MultipartFile roomImag1,
             @RequestParam(value = "roomImag2", required = false) MultipartFile roomImag2
     ) {
         try {
-            //  uploads 디렉토리 자동 생성
-            Path uploadDir = Paths.get("/app/loduploads");
-            //Path uploadDir = Paths.get("app/loduploads").toAbsolutePath().normalize();
-            // .toAbsolutePath()는 상대 경로를 절대 경로로 변환
-            // .normalize() 는 경로 내에 ".", ".."와 같은 불필요한 요소들을 제거해줌
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
-
-            //  rooms JSON 파싱
             ObjectMapper mapper = new ObjectMapper();
             List<Room> roomList = mapper.readValue(roomsJson, new TypeReference<List<Room>>() {});
 
-            //  숙소 정보 설정
-            ClodContent content = new ClodContent();
-            content.setLodOwner(lodOwner);
-            content.setLodCity(lodCity);
-            content.setLodName(lodName);
-            content.setLodLocation(lodLocation);
-            content.setLodCallNum(lodCallNum);
-            content.setLodPrice(new BigDecimal("0").doubleValue());
-
-
-            //  숙소 이미지 저장 + 경로 설정
-            String lodFileName = UUID.randomUUID() + "_" + lodImag.getOriginalFilename();
-            Path lodTargetPath = uploadDir.resolve(lodFileName);
-            lodImag.transferTo(lodTargetPath.toFile());
-            content.setLodImag("/lodUploads/" + lodFileName);
-
-            //  객실 이미지 저장
-            MultipartFile[] roomImgs = {roomImag0, roomImag1, roomImag2};
-            for (int i = 0; i < roomList.size(); i++) {
-                Room room = roomList.get(i);
-                if (i < roomImgs.length && roomImgs[i] != null && !roomImgs[i].isEmpty()) {
-                    String roomFileName = UUID.randomUUID() + "_" + roomImgs[i].getOriginalFilename();
-                    Path roomPath = uploadDir.resolve(roomFileName);
-                    roomImgs[i].transferTo(roomPath.toFile());
-                    room.setRoomImag("/lodUploads/" + roomFileName);
-                }
-                room.setClodContent(content);
-            }
-
-            content.setRooms(roomList);
-            lodService.savelod(content);
+            lodService.saveLodWithImages(
+                    lodOwner,
+                    lodCity,
+                    lodName,
+                    lodLocation,
+                    lodCallNum,
+                    lodImag,
+                    roomList,
+                    roomImag0,
+                    roomImag1,
+                    roomImag2
+            );
             return ResponseEntity.ok("저장 완료");
-
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("저장 실패: " + e.getMessage());
         }
     }
+
 
 
     // 숙소 정보 조회

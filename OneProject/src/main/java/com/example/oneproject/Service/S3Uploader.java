@@ -16,16 +16,20 @@ public class S3Uploader {
     @Autowired
     private S3Client s3Client;
 
-    public String uploadFile(String bucket, String dir, MultipartFile file) throws IOException {
+    private final String bucket = "hana-leeej-bucket"; // 버킷명을 상수로 관리
+
+    public String uploadFile(String dir, MultipartFile file) throws IOException {
         String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        String key = dir + "/" + fileName;
+
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(bucket)
-                .key(dir + "/" + fileName)
+                .key(key)
                 .contentType(file.getContentType())
                 .build();
 
         s3Client.putObject(request, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
-        return "https://" + bucket + ".s3.amazonaws.com/" + dir + "/" + fileName;
-    }
 
+        return key;
+    }
 }
