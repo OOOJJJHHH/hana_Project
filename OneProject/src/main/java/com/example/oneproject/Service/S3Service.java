@@ -14,7 +14,7 @@ import java.time.Duration;
 public class S3Service {
 
     private final String bucketName = "hana-leeej-bucket"; // 당신의 버킷 이름
-    private final Region region = Region.AP_NORTHEAST_2;    // 서울 리전
+    private final Region region = Region.AP_NORTHEAST_3;    // 서울 리전
 
     public String generatePresignedUrl(String objectKey) {
         try (S3Presigner presigner = S3Presigner.builder()
