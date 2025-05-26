@@ -19,6 +19,8 @@ public class Room {
     private String roomName;
     private String roomImag;
 
+    private int price; // ✅ 숙박 가격 필드 추가
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "clod_content_id")
     @JsonBackReference
@@ -47,6 +49,14 @@ public class Room {
 
     public void setRoomImag(String roomImag) {
         this.roomImag = roomImag;
+    }
+
+    public int getPrice() {
+        return price;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
     }
 
     public ClodContent getClodContent() {
