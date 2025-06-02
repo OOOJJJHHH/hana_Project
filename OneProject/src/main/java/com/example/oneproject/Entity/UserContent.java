@@ -1,3 +1,4 @@
+
 package com.example.oneproject.Entity;
 
 import jakarta.persistence.*;
@@ -26,6 +27,9 @@ public class UserContent {
 
     @Column(length = 100, nullable = false)
     private String uPassword;
+
+    // ✅ 프로필 이미지 필드 추가
+    private String profileImage;
 
     public long getId() {
         return id;
@@ -81,5 +85,14 @@ public class UserContent {
 
     public void setuPassword(String uPassword) {
         this.uPassword = uPassword;
+    }
+
+    // ✅ 프로필 이미지 Getter/Setter
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String imageUrl) {
+        this.profileImage = imageUrl;
     }
 }
