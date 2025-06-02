@@ -2,6 +2,8 @@ package com.example.oneproject.controller;
 
 
 import com.example.oneproject.DTO.LodAddPre;
+import com.example.oneproject.Repository.UserRepository;
+import com.example.oneproject.Service.S3Uploader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -40,6 +42,13 @@ import java.util.UUID;
 
 @RestController
 public class CityController {
+
+
+    @Autowired
+    private S3Uploader s3Uploader;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private CityService cityService;
@@ -217,6 +226,51 @@ public class CityController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    @PostMapping("/uploadProfileImage")
+    public ResponseEntity<String> uploadProfileImage(@RequestParam("file") MultipartFile file,
+                                                     @RequestParam("userId") Long userId) {
+        try {
+            String dir = "profileImages"; // 원하는 디렉토리 이름
+            String key = s3Uploader.uploadFile(dir, file); // ✅ 순서 맞춰서 호출
+
+            // S3에 저장된 파일 URL 생성
+            String imageUrl = "https://hana-leeej-bucket.s3.ap-northeast-2.amazonaws.com/" + key;
+
+            UserContent user = userRepository.findById(userId).orElseThrow();
+            user.setProfileImage(imageUrl);
+            userRepository.save(user);
+
+            return ResponseEntity.ok(imageUrl);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("업로드 실패: " + e.getMessage());
+        }
+    }
+    @DeleteMapping("/deleteProfileImage")
+    public ResponseEntity<String> deleteProfileImage(@RequestParam Long userId) {
+        try {
+            UserContent user = userRepository.findById(userId).orElseThrow();
+            String imageUrl = user.getProfileImage();
+
+            if (imageUrl == null || imageUrl.isEmpty()) {
+                return ResponseEntity.badRequest().body("삭제할 이미지가 없습니다.");
+            }
+
+            // S3 키 추출: "https://버킷.s3.region.amazonaws.com/폴더/파일명" → "폴더/파일명"
+            String bucketUrlPrefix = "https://hana-leeej-bucket.s3.ap-northeast-2.amazonaws.com/";
+            String key = imageUrl.replace(bucketUrlPrefix, "");
+
+            s3Uploader.deleteFile(key);  // 🔥 S3에서 삭제
+
+            user.setProfileImage(null);  // DB 정보 제거
+            userRepository.save(user);
+
+            return ResponseEntity.ok("프로필 이미지가 삭제되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("삭제 실패: " + e.getMessage());
+        }
+    }
+
+
 
 
 }
