@@ -247,15 +247,14 @@ public class CityController {
     }
     @PostMapping("/uploadProfileImage")
     public ResponseEntity<String> uploadProfileImage(@RequestParam("file") MultipartFile file,
-                                                     @RequestParam("userId") Long userId) {
+                                                     @RequestParam("userId") String userId) {
         try {
-            String dir = "profileImages"; // 원하는 디렉토리 이름
-            String key = s3Uploader.uploadFile(dir, file); // ✅ 순서 맞춰서 호출
+            String dir = "profileImages";
+            String key = s3Uploader.uploadFile(dir, file);
+            String imageUrl = "https://hana-leeej-bucket.s3.ap-northeast-3.amazonaws.com/" + key;
 
-            // S3에 저장된 파일 URL 생성
-            String imageUrl = "https://hana-leeej-bucket.s3.ap-northeast-2.amazonaws.com/" + key;
-
-            UserContent user = userRepository.findById(userId).orElseThrow();
+            UserContent user = userRepository.findByUId(userId)
+                    .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
             user.setProfileImage(imageUrl);
             userRepository.save(user);
 
@@ -264,23 +263,23 @@ public class CityController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("업로드 실패: " + e.getMessage());
         }
     }
+
     @DeleteMapping("/deleteProfileImage")
-    public ResponseEntity<String> deleteProfileImage(@RequestParam Long userId) {
+    public ResponseEntity<String> deleteProfileImage(@RequestParam String userId) {
         try {
-            UserContent user = userRepository.findById(userId).orElseThrow();
+            UserContent user = userRepository.findByUId(userId)
+                    .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
             String imageUrl = user.getProfileImage();
 
             if (imageUrl == null || imageUrl.isEmpty()) {
                 return ResponseEntity.badRequest().body("삭제할 이미지가 없습니다.");
             }
 
-            // S3 키 추출: "https://버킷.s3.region.amazonaws.com/폴더/파일명" → "폴더/파일명"
-            String bucketUrlPrefix = "https://hana-leeej-bucket.s3.ap-northeast-2.amazonaws.com/";
-            String key = imageUrl.replace(bucketUrlPrefix, "");
+            String prefix = "https://hana-leeej-bucket.s3.ap-northeast-3.amazonaws.com/";
+            String key = imageUrl.replace(prefix, "");
 
-            s3Uploader.deleteFile(key);  // 🔥 S3에서 삭제
-
-            user.setProfileImage(null);  // DB 정보 제거
+            s3Uploader.deleteFile(key);
+            user.setProfileImage(null);
             userRepository.save(user);
 
             return ResponseEntity.ok("프로필 이미지가 삭제되었습니다.");
@@ -288,6 +287,7 @@ public class CityController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("삭제 실패: " + e.getMessage());
         }
     }
+
 
 
 
