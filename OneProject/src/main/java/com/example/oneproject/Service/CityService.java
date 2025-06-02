@@ -5,7 +5,9 @@ import com.example.oneproject.Repository.CityReporesitory;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -14,12 +16,30 @@ public class CityService {
     @Autowired
     private final CityReporesitory cityReporesitory;
 
+    @Autowired
+    private S3Uploader s3Uploader;
+
     public CityService(CityReporesitory cityReporesitory) {
         this.cityReporesitory = cityReporesitory;
     }
 
     //도시저장
-    public void saveCity(CityContent cityContent) {
+    public void saveCity(
+            String cityName,
+            String cityDetail,
+            MultipartFile cityImag,
+            String cityState
+    ) throws IOException {
+
+        CityContent cityContent = new CityContent();
+        cityContent.setCityName(cityName);
+        cityContent.setCityDetail(cityDetail);
+        cityContent.setCityState(cityState);
+
+        String cityImageKey = s3Uploader.uploadFile("cityUploads", cityImag);
+        cityContent.setCityImag(cityImageKey);
+
+
         cityReporesitory.save(cityContent);
     }
 

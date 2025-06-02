@@ -50,8 +50,27 @@ public class CityController {
 
     // 도시 정보 저장
     @PostMapping("/saveCity")
-    public void saveCity(@RequestBody CityContent cityContent) {
-        cityService.saveCity(cityContent);
+    public ResponseEntity<String> saveCity(
+        @RequestParam("cityName") String cityName,
+        @RequestParam("cityDetail") String cityDetail,
+        @RequestParam("cityImag") MultipartFile cityImag,
+        @RequestParam("cityState") String cityState
+    ) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+
+            cityService.saveCity(
+                    cityName,
+                    cityDetail,
+                    cityImag,
+                    cityState
+            );
+            return ResponseEntity.ok("저장 완료");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("저장 실패: " + e.getMessage());
+        }
     }
 
     // 도시 정보 가져오기
