@@ -62,11 +62,10 @@ public class CityController {
     public ResponseEntity<String> saveCity(
         @RequestParam("cityName") String cityName,
         @RequestParam("cityDetail") String cityDetail,
-        @RequestParam("cityImag") MultipartFile cityImag,
+        @RequestParam(value = "cityImag", required = false) MultipartFile cityImag,
         @RequestParam("cityState") String cityState
     ) {
         try {
-            ObjectMapper mapper = new ObjectMapper();
 
             cityService.saveCity(
                     cityName,
