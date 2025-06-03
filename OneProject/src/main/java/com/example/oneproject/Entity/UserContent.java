@@ -5,9 +5,9 @@ import jakarta.persistence.*;
 @Entity
 public class UserContent {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @Id  // 기본 키를 나타내는 애너테이션
+    @GeneratedValue(strategy= GenerationType.IDENTITY)    // 프로젝트에 연결된 DB의 numbering 전략을 따른다.
+    private long id;    // 시퀀스, auto_increment
 
     @Column(nullable = false)
     private String uUser;
@@ -26,13 +26,6 @@ public class UserContent {
 
     @Column(length = 100, nullable = false)
     private String uPassword;
-
-    // === 추가된 필드 ===
-
-    @Column(length = 100, unique = true)
-    private String kakaoId; // 카카오 고유 ID (예: "1234567890")
-
-    // === 기존 getter/setter 유지 ===
 
     public long getId() {
         return id;
@@ -88,15 +81,5 @@ public class UserContent {
 
     public void setuPassword(String uPassword) {
         this.uPassword = uPassword;
-    }
-
-    // === 추가된 getter/setter ===
-
-    public String getKakaoId() {
-        return kakaoId;
-    }
-
-    public void setKakaoId(String kakaoId) {
-        this.kakaoId = kakaoId;
     }
 }

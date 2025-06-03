@@ -32,4 +32,10 @@ public class S3Uploader {
 
         return key;
     }
+    public void deleteFile(String key) {
+        s3Client.deleteObject(builder -> builder
+                .bucket(bucket)
+                .key(key)
+                .build());
+    }
 }

@@ -2,6 +2,8 @@ package com.example.oneproject.controller;
 
 
 import com.example.oneproject.DTO.LodAddPre;
+import com.example.oneproject.Repository.UserRepository;
+import com.example.oneproject.Service.S3Uploader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -42,6 +44,13 @@ import java.util.Optional;
 @RestController
 public class CityController {
 
+
+    @Autowired
+    private S3Uploader s3Uploader;
+
+    @Autowired
+    private UserRepository userRepository;
+
     @Autowired
     private CityService cityService;
     @Autowired
@@ -52,8 +61,26 @@ public class CityController {
 
     // 도시 정보 저장
     @PostMapping("/saveCity")
-    public void saveCity(@RequestBody CityContent cityContent) {
-        cityService.saveCity(cityContent);
+    public ResponseEntity<String> saveCity(
+        @RequestParam("cityName") String cityName,
+        @RequestParam("cityDetail") String cityDetail,
+        @RequestParam(value = "cityImag", required = false) MultipartFile cityImag,
+        @RequestParam("cityState") String cityState
+    ) {
+        try {
+
+            cityService.saveCity(
+                    cityName,
+                    cityDetail,
+                    cityImag,
+                    cityState
+            );
+            return ResponseEntity.ok("저장 완료");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("저장 실패: " + e.getMessage());
+        }
     }
 
     // 도시 정보 가져오기
@@ -219,6 +246,51 @@ public class CityController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    @PostMapping("/uploadProfileImage")
+    public ResponseEntity<String> uploadProfileImage(@RequestParam("file") MultipartFile file,
+                                                     @RequestParam("userId") String userId) {
+        try {
+            String dir = "profileImages";
+            String key = s3Uploader.uploadFile(dir, file);
+            String imageUrl = "https://hana-leeej-bucket.s3.ap-northeast-3.amazonaws.com/" + key;
+
+            UserContent user = userRepository.findByUId(userId)
+                    .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
+            user.setProfileImage(imageUrl);
+            userRepository.save(user);
+
+            return ResponseEntity.ok(imageUrl);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("업로드 실패: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/deleteProfileImage")
+    public ResponseEntity<String> deleteProfileImage(@RequestParam String userId) {
+        try {
+            UserContent user = userRepository.findByUId(userId)
+                    .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
+            String imageUrl = user.getProfileImage();
+
+            if (imageUrl == null || imageUrl.isEmpty()) {
+                return ResponseEntity.badRequest().body("삭제할 이미지가 없습니다.");
+            }
+
+            String prefix = "https://hana-leeej-bucket.s3.ap-northeast-3.amazonaws.com/";
+            String key = imageUrl.replace(prefix, "");
+
+            s3Uploader.deleteFile(key);
+            user.setProfileImage(null);
+            userRepository.save(user);
+
+            return ResponseEntity.ok("프로필 이미지가 삭제되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("삭제 실패: " + e.getMessage());
+        }
+    }
+
+
+
 
     // 카카오 로그인 API 추가
     @PostMapping("/api/kakaoLogin")

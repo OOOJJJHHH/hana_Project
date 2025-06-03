@@ -1,4 +1,6 @@
+
 import React, { useState, useRef, useContext, useEffect } from 'react';
+import axios from 'axios';
 import styled from 'styled-components';
 import ReView from "./ReView";
 import Wishlist from "./Wishlist";
@@ -7,58 +9,65 @@ import { UserContext } from '../Session/UserContext';
 import Accommodation from "./Accommodation";
 import Reservation from "./Reservation";
 import Revation from "./Revation";
+
 const User = () => {
     const userInfo = useContext(UserContext);
-
     const [selectedImage, setSelectedImage] = useState(null);
     const [selectedMenu, setSelectedMenu] = useState('info');
     const fileInputRef = useRef(null);
+    const [uploading, setUploading] = useState(false);
+    const [uploadSuccess, setUploadSuccess] = useState(false);
 
-    const [name, setName] = useState('이름을 입력해주세요');
-    const [age, setAge] = useState('나이를 입력해주세요');
-    const [email, setEmail] = useState('이메일을 입력해주세요');
-    const [isEditing, setIsEditing] = useState(false);
-    const [editData, setEditData] = useState({ name: '', age: '', email: '' });
-    const [phone, setPhone] = useState("전화번호를 입력해주세요");
 
-    const handleEditClick = () => {
-        setIsEditing(true);
-        setEditData({ name, age, email, phone });
+    useEffect(() => {
+        console.log("🧾 userInfo:", userInfo);
+    }, [userInfo]);
+
+    const uploadImageToServer = async (file) => {
+        if (!userInfo?.id) {
+            alert("로그인 정보가 없습니다. 다시 로그인해주세요.");
+            return null;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('userId', userInfo.uId); // ✅ 문자열 "jun"
+
+
+        try {
+            setUploading(true);
+            const response = await axios.post('http://localhost:8080/uploadProfileImage', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            setUploading(false);
+            setUploadSuccess(true);
+            setTimeout(() => setUploadSuccess(false), 2000);
+            return response.data;
+        } catch (error) {
+            console.error('이미지 업로드 실패:', error);
+            setUploading(false);
+            alert("이미지 업로드에 실패했습니다.");
+            return null;
+        }
     };
 
-    const handleSaveClick = () => {
-        setName(editData.name);
-        setAge(editData.age);
-        setEmail(editData.email);
-        setPhone(editData.phone);
-        setIsEditing(false);
-    };
-
-    const handleCancelClick = () => {
-        setIsEditing(false);
-        setEditData({ name, age, email, phone });
-    };
-
-    const handleInputChange = (event) => {
-        const { name, value } = event.target;
-        setEditData(prevData => ({
-            ...prevData,
-            [name]: value,
-        }));
-    };
-
-    const handleMenuClick = (menu) => {
-        setSelectedMenu(menu);
-    };
-
-    const handleImageChange = (event) => {
+    const handleImageChange = async (event) => {
         const file = event.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setSelectedImage(reader.result);
-            };
-            reader.readAsDataURL(file);
+            const uploadedUrl = await uploadImageToServer(file);
+            if (uploadedUrl) {
+                setSelectedImage(uploadedUrl);
+            }
+        }
+    };
+
+    const handleDeleteImage = async () => {
+        try {
+            await axios.delete(`http://localhost:8080/deleteProfileImage?userId=${userInfo.id}`);
+            setSelectedImage(null);
+        } catch (error) {
+            alert("이미지 삭제 실패");
+            console.error(error);
         }
     };
 
@@ -66,22 +75,30 @@ const User = () => {
         fileInputRef.current.click();
     };
 
+    useEffect(() => {
+        const fetchProfileImage = async () => {
+            try {
+                const res = await axios.get(`http://localhost:8080/getProfileImage?userId=${userInfo.id}`);
+                setSelectedImage(res.data);
+            } catch (err) {
+                console.error('프로필 이미지 불러오기 실패', err);
+            }
+        };
+
+        if (userInfo?.id) fetchProfileImage();
+    }, [userInfo]);
+
+    const handleMenuClick = (menu) => setSelectedMenu(menu);
+
     const renderContent = () => {
         switch (selectedMenu) {
-            case 'info':
-                return <Account />;
-            case 'image':
-                return <Revation />;
-            case 'wishlist':
-                return <Wishlist />;
-            case 'recently':
-                return <ReView />;
-            case 'Reservation':
-                return <Reservation />;
-            case 'Accommodation':
-                return <Accommodation />;
-            default:
-                return <div>선택된 메뉴가 없습니다.</div>;
+            case 'info': return <Account />;
+            case 'image': return <Revation />;
+            case 'wishlist': return <Wishlist />;
+            case 'recently': return <ReView />;
+            case 'Reservation': return <Reservation />;
+            case 'Accommodation': return <Accommodation />;
+            default: return <div>선택된 메뉴가 없습니다.</div>;
         }
     };
 
@@ -89,38 +106,40 @@ const User = () => {
         return <div>사용자 정보를 불러올 수 없습니다. 다시 로그인 해주세요.</div>;
     }
 
-    // === 분기 ===
-    if (userInfo.uUser === 'tenant') {
-        return (
-            <div>
-        <span style={{ marginTop: '100px', display: 'block', fontSize: '35px' }}>
-          마이페이지
-        </span>
+    return (
+        <div>
+            <span style={{ marginTop: '100px', display: 'block', fontSize: '35px' }}>
+                마이페이지
+            </span>
 
-                <div style={{ width: '1180px', display: 'flex', flexDirection: 'row', gap: '20px' }}>
-                    <div style={{ width: '30%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <div style={{
-                            border: '1px solid gray',
-                            padding: '20px',
-                            height: '400px',
-                            textAlign: 'center',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            overflow: 'hidden',
-                        }}>
-                            <div
-                                style={{
-                                    width: '80%',
-                                    height: '65%',
-                                    borderRadius: '50%',
-                                    overflow: 'hidden',
-                                    cursor: 'pointer',
-                                }}
-                                onClick={handleClickChangeImage}
-                            >
-                                {selectedImage ? (
+            <div style={{ width: '1180px', display: 'flex', flexDirection: 'row', gap: '20px' }}>
+                <div style={{ width: '30%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                    <div style={{
+                        border: '1px solid gray',
+                        padding: '20px',
+                        height: '400px',
+                        textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        overflow: 'hidden',
+                    }}>
+                        <div
+                            style={{
+                                width: '80%',
+                                height: '65%',
+                                borderRadius: '50%',
+                                overflow: 'hidden',
+                                cursor: 'pointer',
+                                position: 'relative'
+                            }}
+                            onClick={handleClickChangeImage}
+                        >
+                            {uploading ? (
+                                <div style={{ textAlign: 'center', paddingTop: '60px' }}>업로드 중...</div>
+                            ) : selectedImage ? (
+                                <>
                                     <img
                                         src={selectedImage}
                                         alt="Profile"
@@ -130,220 +149,70 @@ const User = () => {
                                             objectFit: 'cover',
                                         }}
                                     />
-                                ) : (
-                                    <div style={{ marginTop: '100px' }}>이미지가 없습니다.</div>
-                                )}
-                            </div>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageChange}
-                                style={{ display: 'none' }}
-                                ref={fileInputRef}
-                            />
-                        </div>
-
-                        <div style={{
-                            border: '1px solid gray',
-                            padding: '20px',
-                            textAlign: 'center',
-                            height: '580px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '10px',
-                        }}>
-                            <button
-                                style={{
-                                    fontSize: '20px',
-                                    fontWeight: 'bold',
-                                    padding: '10px',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    backgroundColor: selectedMenu === 'info' ? '#f0f0f0' : 'white',
-                                }}
-                                onClick={() => handleMenuClick('info')}
-                            >
-                                계정
-                            </button>
-                            <button
-                                style={{
-                                    fontSize: '20px',
-                                    fontWeight: 'bold',
-                                    padding: '10px',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    backgroundColor: selectedMenu === 'image' ? '#f0f0f0' : 'white',
-                                }}
-                                onClick={() => handleMenuClick('image')}
-                            >
-                                예약 내역
-                            </button>
-                            <button
-                                style={{
-                                    fontSize: '20px',
-                                    fontWeight: 'bold',
-                                    padding: '10px',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    backgroundColor: selectedMenu === 'wishlist' ? '#f0f0f0' : 'white',
-                                }}
-                                onClick={() => handleMenuClick('wishlist')}
-                            >
-                                위시리스트
-                            </button>
-                            <button
-                                style={{
-                                    fontSize: '20px',
-                                    fontWeight: 'bold',
-                                    padding: '10px',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    backgroundColor: selectedMenu === 'recently' ? '#f0f0f0' : 'white',
-                                }}
-                                onClick={() => handleMenuClick('recently')}
-                            >
-                                최근 본
-                            </button>
-                        </div>
-                    </div>
-
-                    <div style={{
-                        border: '1px solid gray',
-                        padding: '20px',
-                        height: '1000px',
-                        width: '70%',
-                    }}>
-                        {renderContent()}
-                    </div>
-                </div>
-            </div>
-        );
-    } // User.js landlord 분기 부분 예시 수정본
-
-    else if (userInfo.uUser === 'landlord') {
-        return (
-            <div>
-      <span style={{ marginTop: '100px', display: 'block', fontSize: '35px' }}>
-        마이페이지
-      </span>
-
-                {/* 로그인한 landlord 이름 인사말 추가 */}
-                <p style={{ marginRight: "15px", fontSize: "20px", marginTop: "10px" }}>
-                    !! <strong style={{ fontSize: "25px" }}>{userInfo.uFirstName}</strong> !!님 반가워요
-                </p>
-
-                <div style={{ width: '1180px', display: 'flex', flexDirection: 'row', gap: '20px' }}>
-                    <div style={{ width: '30%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <div style={{
-                            border: '1px solid gray',
-                            padding: '20px',
-                            height: '400px',
-                            textAlign: 'center',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            overflow: 'hidden',
-                        }}>
-                            <div
-                                style={{
-                                    width: '80%',
-                                    height: '65%',
-                                    borderRadius: '50%',
-                                    overflow: 'hidden',
-                                    cursor: 'pointer',
-                                }}
-                                onClick={handleClickChangeImage}
-                            >
-                                {selectedImage ? (
-                                    <img
-                                        src={selectedImage}
-                                        alt="Profile"
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleDeleteImage(); }}
                                         style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'cover',
+                                            position: 'absolute',
+                                            top: '5px',
+                                            right: '5px',
+                                            backgroundColor: 'rgba(0,0,0,0.5)',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '5px',
+                                            padding: '2px 6px',
+                                            cursor: 'pointer',
+                                            fontSize: '12px'
                                         }}
-                                    />
-                                ) : (
-                                    <div style={{ marginTop: '100px' }}>이미지가 없습니다.</div>
-                                )}
-                            </div>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageChange}
-                                style={{ display: 'none' }}
-                                ref={fileInputRef}
-                            />
+                                    >
+                                        삭제
+                                    </button>
+                                </>
+                            ) : (
+                                <div style={{ marginTop: '100px' }}>이미지가 없습니다.</div>
+                            )}
                         </div>
-
-                        <div style={{
-                            border: '1px solid gray',
-                            padding: '20px',
-                            textAlign: 'center',
-                            height: '580px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '10px',
-                        }}>
-                            <button
-                                style={{
-                                    fontSize: '20px',
-                                    fontWeight: 'bold',
-                                    padding: '10px',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    backgroundColor: selectedMenu === 'info' ? '#f0f0f0' : 'white',
-                                }}
-                                onClick={() => handleMenuClick('info')}
-                            >
-                                계정
-                            </button>
-                            <button
-                                style={{
-                                    fontSize: '20px',
-                                    fontWeight: 'bold',
-                                    padding: '10px',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    backgroundColor: selectedMenu === 'Accommodation' ? '#f0f0f0' : 'white',
-                                }}
-                                onClick={() => handleMenuClick('Accommodation')}
-                            >
-                                숙박 확인
-                            </button>
-                            <button
-                                style={{
-                                    fontSize: '20px',
-                                    fontWeight: 'bold',
-                                    padding: '10px',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    backgroundColor: selectedMenu === 'Reservation' ? '#f0f0f0' : 'white',
-                                }}
-                                onClick={() => handleMenuClick('Reservation')}
-                            >
-                                예약 확인
-                            </button>
-
-                        </div>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            style={{ display: 'none' }}
+                            ref={fileInputRef}
+                        />
+                        {uploadSuccess && (
+                            <p style={{ color: 'green', fontSize: '14px', marginTop: '10px' }}>
+                                ✅ 업로드 성공!
+                            </p>
+                        )}
                     </div>
 
                     <div style={{
                         border: '1px solid gray',
                         padding: '20px',
-                        height: '1000px',
-                        width: '70%',
+                        textAlign: 'center',
+                        height: '580px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '10px',
                     }}>
-                        {renderContent()}
+                        <button onClick={() => handleMenuClick('info')}>계정</button>
+                        <button onClick={() => handleMenuClick('Accommodation')}>숙박 확인</button>
+                        <button onClick={() => handleMenuClick('Reservation')}>예약 확인</button>
+                        <button onClick={() => handleMenuClick('wishlist')}>위시리스트</button>
+                        <button onClick={() => handleMenuClick('recently')}>최근 본</button>
                     </div>
                 </div>
+
+                <div style={{
+                    border: '1px solid gray',
+                    padding: '20px',
+                    height: '1000px',
+                    width: '70%',
+                }}>
+                    {renderContent()}
+                </div>
             </div>
-        );
-    }  else {
-        return <div>알 수 없는 사용자 유형입니다.</div>;
-    }
+        </div>
+    );
 };
 
 export default User;
