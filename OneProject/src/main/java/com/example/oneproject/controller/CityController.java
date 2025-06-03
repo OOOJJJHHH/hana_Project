@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -33,7 +34,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
-
+import java.util.Optional;
 
 
 
@@ -47,6 +48,7 @@ public class CityController {
     private LodService lodService;
     @Autowired
     private UserService userService;
+
 
     // 도시 정보 저장
     @PostMapping("/saveCity")
@@ -218,5 +220,36 @@ public class CityController {
         }
     }
 
+    // 카카오 로그인 API 추가
+    @PostMapping("/api/kakaoLogin")
+    public ResponseEntity<?> kakaoLogin(@RequestBody UserDTO kakaoLoginRequest, HttpSession session) {
+        String actualKakaoId = kakaoLoginRequest.getuId().replace("kakao_", "");
+        Optional<UserContent> existingUserOptional = userService.findByKakaoId(actualKakaoId);
+
+        UserContent userToReturn;
+
+        if (existingUserOptional.isPresent()) {
+            userToReturn = existingUserOptional.get();
+            userToReturn.setuFirstName(kakaoLoginRequest.getuFirstName());
+            if (kakaoLoginRequest.getUIdEmail() != null && !kakaoLoginRequest.getUIdEmail().isEmpty()) {
+                userToReturn.setuIdEmail(kakaoLoginRequest.getUIdEmail());
+            }
+            userService.saveUser(userToReturn);
+        } else {
+            UserContent newUser = new UserContent();
+            newUser.setuId(kakaoLoginRequest.getuId());
+            newUser.setuIdEmail(kakaoLoginRequest.getUIdEmail());
+            newUser.setuFirstName(kakaoLoginRequest.getuFirstName());
+            newUser.setuLastName(kakaoLoginRequest.getULastName());
+            newUser.setuUser(kakaoLoginRequest.getuUser());
+            newUser.setKakaoId(actualKakaoId);
+            newUser.setuPassword(""); // 비밀번호는 카카오 로그인 시 사용 안 함
+
+            userToReturn = userService.saveUser(newUser);
+        }
+
+        session.setAttribute("loginUser", userToReturn); // UserContent 저장
+        return ResponseEntity.ok(userToReturn);
+    }
 
 }
