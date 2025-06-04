@@ -50,7 +50,7 @@ const CityForm = () => {
             }
 
             // 서버에 POST 요청 (멀티파트/form-data)
-            await axios.post("http://localhost:8080/saveCity", formData, {
+            await axios.post(`${process.env.REACT_APP_API_URL}/saveCity`, formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
