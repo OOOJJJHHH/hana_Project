@@ -1,6 +1,7 @@
 package com.example.oneproject.controller;
 
 
+import com.example.oneproject.DTO.CityContentDTO;
 import com.example.oneproject.DTO.LodAddPre;
 import com.example.oneproject.Repository.UserRepository;
 import com.example.oneproject.Service.S3Uploader;
@@ -159,10 +160,9 @@ public class CityController {
 
     // 숙소 정보 조회
     @GetMapping("/getLod")
-    public List<ClodContent> getLod() {
-            return lodService.getAllLods();
+    public ResponseEntity<List<CityContentDTO>> getAllCities() {
+        return ResponseEntity.ok(cityService.getAllCityContents());
     }
-
 
 
     // ✅ 도시 이름(lodCity)으로 숙소 검색
@@ -246,6 +246,7 @@ public class CityController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
     @PostMapping("/uploadProfileImage")
     public ResponseEntity<String> uploadProfileImage(@RequestParam("file") MultipartFile file,
                                                      @RequestParam("userId") String userId) {

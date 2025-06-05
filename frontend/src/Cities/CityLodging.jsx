@@ -2,11 +2,26 @@ import React, {useRef, useEffect, useState} from 'react';
 import SelectBox from "./Custom/SelectBox";
 import DataFetcher from "../dbLogic/DataFetcher";
 import MapPopupContent from "./PopUp/MapPopupContent";
+import {useLocation, useNavigate} from "react-router-dom";
 
 const CityLodging = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    // state로 전달된 값 받기
+    const cityFromState = location.state?.cityName;
+
+    // 전달된 값 없으면 되돌리기
+    useEffect(() => {
+        if (!cityFromState) {
+            alert('잘못된 접근입니다.');
+            navigate(-1);
+        }
+    }, [cityFromState, navigate]);
+
     const [cityContents, setcityContents] = useState([]);
     const [lodContents, setlodContents] = useState([]);
-    const [nowTitle, setNowTitle] = useState('');
+    const [nowTitle, setNowTitle] = useState(cityFromState || '');
 
     useEffect(() => {
         const activeCity = cityContents.find(cContent => cContent.cityState === 1);

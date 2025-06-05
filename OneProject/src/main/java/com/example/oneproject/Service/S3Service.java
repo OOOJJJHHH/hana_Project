@@ -14,13 +14,15 @@ import java.time.Duration;
 public class S3Service {
 
     private final String bucketName = "hana-leeej-bucket"; // 당신의 버킷 이름
-    private final Region region = Region.AP_NORTHEAST_3;    // 서울 리전
+    private final Region region = Region.AP_NORTHEAST_3;    // 오사카 리전
 
     public String generatePresignedUrl(String objectKey) {
         try (S3Presigner presigner = S3Presigner.builder()
                 .region(region)
                 .credentialsProvider(DefaultCredentialsProvider.create()) // EC2 인스턴스의 IAM Role 사용
                 .build()) {
+
+            System.out.println("🔍 Presigned URL 생성 대상 key: " + objectKey);
 
             // S3에서 접근하려는 객체 설정
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
@@ -35,6 +37,9 @@ public class S3Service {
                     .build();
 
             URL presignedUrl = presigner.presignGetObject(presignRequest).url();
+
+            System.out.println("✅ 생성된 Presigned URL: " + presignedUrl);
+
             return presignedUrl.toString();
         }
     }
