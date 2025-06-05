@@ -27,6 +27,24 @@ public class UserContent {
     @Column(length = 100, nullable = false)
     private String uPassword;
 
+    public String getKakaoId() {
+        return kakaoId;
+    }
+
+    public void setKakaoId(String kakaoId) {
+        this.kakaoId = kakaoId;
+    }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String imageUrl) {
+        this.profileImage = imageUrl;
+    }
+    private String profileImage;
+
+
     public long getId() {
         return id;
     }
@@ -82,4 +100,7 @@ public class UserContent {
     public void setuPassword(String uPassword) {
         this.uPassword = uPassword;
     }
+
+    private String kakaoId;
+
 }
