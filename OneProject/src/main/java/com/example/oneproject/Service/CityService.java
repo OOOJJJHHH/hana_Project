@@ -82,10 +82,6 @@ public class CityService {
                 .collect(Collectors.toList());
     }
 
-    //도시정보 get
-    public List<CityContent> getAllCities() {
-        return cityReporesitory.findAll();
-    }
 
     @Transactional  // 트랜잭션을 통해 작업을 처리
     public void updateCityField(String cityName) {

@@ -86,8 +86,8 @@ public class CityController {
 
     // 도시 정보 가져오기
     @GetMapping("/getCity")
-    public List<CityContent> getCity() {
-        return cityService.getAllCities();
+    public List<CityContentDTO> getCity() {
+        return cityService.getAllCityContents();
     }
 
     // 도시 이름으로 숙소 검색
