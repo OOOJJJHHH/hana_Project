@@ -3,6 +3,7 @@ import SelectBox from "./Custom/SelectBox";
 import DataFetcher from "../dbLogic/DataFetcher";
 import MapPopupContent from "./PopUp/MapPopupContent";
 import {useLocation, useNavigate} from "react-router-dom";
+import axios from "axios";
 
 const CityLodging = () => {
     const location = useLocation();
@@ -30,6 +31,16 @@ const CityLodging = () => {
         }
     }, [cityContents]);
 
+    useEffect(() => {
+
+        const fetchData = async () => {
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/getCity`);
+                setNowTitle(res.data);
+        };
+        fetchData();
+
+    }, [nowTitle]);
+
     // ... (중략: 스타일, 마우스 이벤트, 지도 세팅 등)
 
     const [isOpen, setIsOpen] = useState(false);
@@ -50,9 +61,6 @@ const CityLodging = () => {
 
     const mapContainerRef = useRef(null);
 
-    useEffect(() => {
-        // 카카오맵 API 스크립트 로드 등 (생략)
-    }, []);
 
     return (
         <div style={{ padding: '10px', display: "flex", flexDirection: "row", width: "75rem" }}>

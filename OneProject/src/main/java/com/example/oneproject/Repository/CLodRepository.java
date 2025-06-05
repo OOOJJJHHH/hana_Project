@@ -15,4 +15,6 @@ public interface CLodRepository extends JpaRepository<ClodContent, Long> {
 
     Optional<ClodContent> findByLodName(String lodName);
 
+    List<ClodContent> findAllByLodCity(String lodCity);
+
 }

@@ -3,6 +3,7 @@ package com.example.oneproject.controller;
 
 import com.example.oneproject.DTO.CityContentDTO;
 import com.example.oneproject.DTO.LodAddPre;
+import com.example.oneproject.DTO.LodDTO;
 import com.example.oneproject.Repository.UserRepository;
 import com.example.oneproject.Service.S3Uploader;
 import org.springframework.core.io.Resource;
@@ -90,28 +91,17 @@ public class CityController {
         return cityService.getAllCityContents();
     }
 
-    // 도시 이름으로 숙소 검색
-    @GetMapping("/findByName")
-    public ResponseEntity<List<ClodContent>> getCityByName(@RequestParam("cityName") String cityName) {
-        List<ClodContent> lodContents = lodService.getCityByName(cityName);
-        if (lodContents == null || lodContents.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 더 깔끔한 반환
-        }
-        return ResponseEntity.ok(lodContents);
-    }
-    // 도시 상태 업데이트
-    @PatchMapping("/updateCity/{cityName}")
-    public ResponseEntity<String> updateCity(@PathVariable("cityName") String cityName) {
-        try {
-            cityService.updateCityField(cityName);
-            return ResponseEntity.ok("City updated successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating city");
-        }
+    
+    
+    // 숙소
+    // 도시 이름으로 숙소 전체 조회
+    @GetMapping("/getLodsByCity/{cityName}")
+    public ResponseEntity<List<LodDTO>> getLodsByCity(@PathVariable String cityName) {
+        List<LodDTO> lods = lodService.getLodsByCityName(cityName);
+        return ResponseEntity.ok(lods);
     }
 
-    // 숙소
-    // 숙소 이름으로 조회
+    // 숙소 이름으로 객실 조회
     @GetMapping("/getlodUseN/{lodName}")
     public ResponseEntity<LodAddPre> getLodAddPre(@PathVariable String lodName) {
         LodAddPre lodAddPre = lodService.getLodDtoByName(lodName);
@@ -156,27 +146,14 @@ public class CityController {
         }
     }
 
-
-
     // 숙소 정보 조회
     @GetMapping("/getLod")
     public ResponseEntity<List<CityContentDTO>> getAllCities() {
         return ResponseEntity.ok(cityService.getAllCityContents());
     }
 
-
-    // ✅ 도시 이름(lodCity)으로 숙소 검색
-    @GetMapping("/getLodByCity/{cityName}")
-    public ResponseEntity<List<ClodContent>> getLodByCity(@PathVariable String cityName) {
-        List<ClodContent> lodList = lodService.findByLodCity(cityName);
-        if (lodList.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(lodList);
-    }
-
-
-
+    
+    
     // 유저 정보 저장
     @PostMapping("/saveUser")
     public void saveUser(@RequestBody UserContent userContent) {

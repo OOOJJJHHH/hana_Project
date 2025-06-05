@@ -201,7 +201,7 @@ function City(){
                         <p style={{ fontSize: '15px' }}>{content.cityDetail}</p>
                     </div>
 
-                    <img src={content.cityImag} alt={`${content.cityName} 이미지`} style={backImg} />
+                    <img src={content.cityImageUrl} alt={`${content.cityName} 이미지`} style={backImg} />
                     <p>{content.cityImag}</p>
 
                     <div style={btn_content}>
