@@ -267,8 +267,6 @@ public class CityController {
         }
     }
 
-
-
     // 카카오 로그인 API 추가
     @PostMapping("/api/kakaoLogin")
     public ResponseEntity<?> kakaoLogin(@RequestBody UserDTO kakaoLoginRequest, HttpSession session) {
@@ -300,5 +298,4 @@ public class CityController {
         session.setAttribute("loginUser", userToReturn); // UserContent 저장
         return ResponseEntity.ok(userToReturn);
     }
-
 }
