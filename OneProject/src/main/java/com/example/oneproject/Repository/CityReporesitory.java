@@ -30,5 +30,6 @@ public interface CityReporesitory extends JpaRepository<CityContent, Integer> {
     @Query("UPDATE CityContent c SET c.cityState = '0' WHERE c.cityName != :cityName")
     int updateAllExceptSpecificCity_name(@Param("cityName") String cityName);
 
+    List<CityContent> findAllByCityName(String cityName);
 }
 

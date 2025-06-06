@@ -86,9 +86,9 @@ public class CityController {
     }
 
     // 도시 정보 가져오기
-    @GetMapping("/getCity")
-    public List<CityContentDTO> getCity() {
-        return cityService.getAllCityContents();
+    @GetMapping("/getCity/{cityName}")
+    public List<CityContent> getCity(@PathVariable String cityName) {
+        return cityService.getCityContentOne(cityName);
     }
 
     

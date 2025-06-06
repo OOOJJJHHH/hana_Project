@@ -54,6 +54,10 @@ public class CityService {
 //        cityReporesitory.deleteById(city_Name);
 //    }
 
+    public List<CityContent> getCityContentOne(String cityName){
+        return cityReporesitory.findAllByCityName(cityName);  // findAllBy...로 수정
+    }
+
     public List<CityContentDTO> getAllCityContents() {
         List<CityContent> entities = cityReporesitory.findAll();
 

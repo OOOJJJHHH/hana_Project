@@ -12,6 +12,10 @@ const CityLodging = () => {
     // state로 전달된 값 받기
     const cityFromState = location.state?.cityName;
 
+    const [cityContents, setcityContents] = useState([]);
+    const [lodContents, setlodContents] = useState([]);
+    const [nowTitle, setNowTitle] = useState(cityFromState || '');
+
     // 전달된 값 없으면 되돌리기
     useEffect(() => {
         if (!cityFromState) {
@@ -20,32 +24,38 @@ const CityLodging = () => {
         }
     }, [cityFromState, navigate]);
 
-    const [cityContents, setcityContents] = useState([]);
-    const [lodContents, setlodContents] = useState([]);
-    const [nowTitle, setNowTitle] = useState(cityFromState || '');
+    // 1. 도시 목록 가져오기
+    useEffect(() => {
+        const fetchCityList = async () => {
+            const res = await axios.get(`${process.env.REACT_APP_API_URL}/getCity`);
+            setcityContents(res.data);
+        };
+        fetchCityList();
+    }, []);
 
     useEffect(() => {
-        const activeCity = cityContents.find(cContent => cContent.cityState === 1);
-        if (activeCity) {
-            setNowTitle(activeCity.cityName);
-        }
-    }, [cityContents]);
-
-    useEffect(() => {
-
         const fetchData = async () => {
-                const res = await axios.get(`${process.env.REACT_APP_API_URL}/getCity`);
-                setNowTitle(res.data);
+            if (nowTitle) {  // null 또는 빈 문자열 방지
+                try {
+                    const rescity = await axios.get(`${process.env.REACT_APP_API_URL}/getCity/${nowTitle}`);
+                    setcityContents(rescity.data);
+
+                    const reslod = await axios.get(`${process.env.REACT_APP_API_URL}/getLodsByCity/${nowTitle}`);
+                    setlodContents(reslod.data);
+                } catch (error) {
+                    console.error("❌ 숙소 불러오기 실패:", error);
+                }
+            }
         };
         fetchData();
-
     }, [nowTitle]);
 
-    // ... (중략: 스타일, 마우스 이벤트, 지도 세팅 등)
+
 
     const [isOpen, setIsOpen] = useState(false);
     const openPopup = () => setIsOpen(true);
     const closePopup = () => setIsOpen(false);
+
     const popupOverlayStyle = {
         position: 'fixed',
         top: 0,
@@ -61,16 +71,8 @@ const CityLodging = () => {
 
     const mapContainerRef = useRef(null);
 
-
     return (
         <div style={{ padding: '10px', display: "flex", flexDirection: "row", width: "75rem" }}>
-
-            <DataFetcher
-                fetchCity={1}
-                fetchLod={1}
-                setCityContents={setcityContents}
-                setLodContents={setlodContents}
-            />
 
             <div style={{ width: "15rem", marginRight: "1rem", display: "flex", flexDirection: "column" }}>
                 <div
