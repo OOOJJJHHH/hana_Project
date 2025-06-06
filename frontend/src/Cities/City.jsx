@@ -14,7 +14,10 @@ function City(){
     // 버튼 클릭 시 해당 content를 state로 전달
     const handleClick = (cityName) => {
         // navigate로 다른 페이지로 이동
-        navigate('/cityLodging', { state: { cityName: cityName } });
+        navigate('/cityLodging', { state: {
+                cityName: cityName,
+                cityContents: cityContents
+            } });
     };
 
     const serchCity = () => {

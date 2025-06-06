@@ -9,6 +9,9 @@ import com.example.oneproject.Service.S3Uploader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -97,7 +100,8 @@ public class CityController {
     // 도시 이름으로 숙소 전체 조회
     @GetMapping("/getLodsByCity/{cityName}")
     public ResponseEntity<List<LodDTO>> getLodsByCity(@PathVariable String cityName) {
-        List<LodDTO> lods = lodService.getLodsByCityName(cityName);
+        String decodedCity = URLDecoder.decode(cityName, StandardCharsets.UTF_8);
+        List<LodDTO> lods = lodService.getLodsByCityName(decodedCity);
         return ResponseEntity.ok(lods);
     }
 
