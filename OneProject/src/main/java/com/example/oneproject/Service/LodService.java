@@ -1,6 +1,7 @@
 package com.example.oneproject.Service;
 
 import com.example.oneproject.DTO.LodAddPre;
+import com.example.oneproject.DTO.LodDTO;
 import com.example.oneproject.DTO.RoomAddPre;
 import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.Room;
@@ -70,21 +71,27 @@ public class LodService {
 
 
     // 모든 숙소 가져오기
-    public List<ClodContent> getAllLods() {
-        return lodRepository.findAll();
+    // 도시의 이름으로 숙소 가져오기
+    public List<LodDTO> getLodsByCityName(String cityName) {
+        List<ClodContent> contents = lodRepository.findAllByLodCity(cityName);
+
+        return contents.stream().map(content -> {
+            String lodImageUrl = null;
+            if (content.getLodImag() != null && !content.getLodImag().isEmpty()) {
+                lodImageUrl = s3Service.generatePresignedUrl(content.getLodImag());
+            }
+
+            return new LodDTO(
+                    content.getId(),
+                    content.getLodName(),
+                    content.getLodCity(),
+                    lodImageUrl,
+                    content.getLodLocation(),
+                    content.getLodOwner(),
+                    content.getLodCallNum()
+            );
+        }).collect(Collectors.toList());
     }
-
-    public List<ClodContent> getCityByName(String cityName) {
-        return lodRepository.findByLodCity(cityName);
-    }
-
-    public List<ClodContent> findByLodCity(String cityName) {
-        return lodRepository.findByLodCity(cityName);
-    }
-
-
-
-
 
     /**
      * lodName으로 숙소 데이터 조회 후 DTO로 변환하여 반환

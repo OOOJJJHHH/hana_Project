@@ -1,12 +1,17 @@
 package com.example.oneproject.controller;
 
 
+import com.example.oneproject.DTO.CityContentDTO;
 import com.example.oneproject.DTO.LodAddPre;
+import com.example.oneproject.DTO.LodDTO;
 import com.example.oneproject.Repository.UserRepository;
 import com.example.oneproject.Service.S3Uploader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -88,32 +93,22 @@ public class CityController {
 
     // 도시 정보 가져오기
     @GetMapping("/getCity")
-    public List<CityContent> getCity() {
-        return cityService.getAllCities();
+    public List<CityContentDTO> getCity() {
+        return cityService.getAllCityContents();
     }
 
-    // 도시 이름으로 숙소 검색
-    @GetMapping("/findByName")
-    public ResponseEntity<List<ClodContent>> getCityByName(@RequestParam("cityName") String cityName) {
-        List<ClodContent> lodContents = lodService.getCityByName(cityName);
-        if (lodContents == null || lodContents.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 더 깔끔한 반환
-        }
-        return ResponseEntity.ok(lodContents);
-    }
-    // 도시 상태 업데이트
-    @PatchMapping("/updateCity/{cityName}")
-    public ResponseEntity<String> updateCity(@PathVariable("cityName") String cityName) {
-        try {
-            cityService.updateCityField(cityName);
-            return ResponseEntity.ok("City updated successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating city");
-        }
-    }
-
+    
+    
     // 숙소
-    // 숙소 이름으로 조회
+    // 도시 이름으로 숙소 전체 조회
+    @GetMapping("/getLodsByCity/{cityName}")
+    public ResponseEntity<List<LodDTO>> getLodsByCity(@PathVariable String cityName) {
+        String decodedCity = URLDecoder.decode(cityName, StandardCharsets.UTF_8);
+        List<LodDTO> lods = lodService.getLodsByCityName(decodedCity);
+        return ResponseEntity.ok(lods);
+    }
+
+    // 숙소 이름으로 객실 조회
     @GetMapping("/getlodUseN/{lodName}")
     public ResponseEntity<LodAddPre> getLodAddPre(@PathVariable String lodName) {
         LodAddPre lodAddPre = lodService.getLodDtoByName(lodName);
@@ -158,28 +153,14 @@ public class CityController {
         }
     }
 
-
-
     // 숙소 정보 조회
     @GetMapping("/getLod")
-    public List<ClodContent> getLod() {
-            return lodService.getAllLods();
+    public ResponseEntity<List<CityContentDTO>> getAllCities() {
+        return ResponseEntity.ok(cityService.getAllCityContents());
     }
 
-
-
-    // ✅ 도시 이름(lodCity)으로 숙소 검색
-    @GetMapping("/getLodByCity/{cityName}")
-    public ResponseEntity<List<ClodContent>> getLodByCity(@PathVariable String cityName) {
-        List<ClodContent> lodList = lodService.findByLodCity(cityName);
-        if (lodList.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(lodList);
-    }
-
-
-
+    
+    
     // 유저 정보 저장
     @PostMapping("/saveUser")
     public void saveUser(@RequestBody UserContent userContent) {
@@ -249,6 +230,7 @@ public class CityController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
     @PostMapping("/uploadProfileImage")
     public ResponseEntity<String> uploadProfileImage(@RequestParam("file") MultipartFile file,
                                                      @RequestParam("userId") String userId) {
@@ -292,8 +274,6 @@ public class CityController {
         }
     }
 
-
-
     // 카카오 로그인 API 추가
     @PostMapping("/api/kakaoLogin")
     public ResponseEntity<?> kakaoLogin(@RequestBody UserDTO kakaoLoginRequest, HttpSession session) {
@@ -325,5 +305,4 @@ public class CityController {
         session.setAttribute("loginUser", userToReturn); // UserContent 저장
         return ResponseEntity.ok(userToReturn);
     }
-
 }

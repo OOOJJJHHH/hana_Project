@@ -2,24 +2,55 @@ import React, {useRef, useEffect, useState} from 'react';
 import SelectBox from "./Custom/SelectBox";
 import DataFetcher from "../dbLogic/DataFetcher";
 import MapPopupContent from "./PopUp/MapPopupContent";
+import {useLocation, useNavigate} from "react-router-dom";
+import axios from "axios";
+import {contents} from "../Locals/Locals";
 
 const CityLodging = () => {
-    const [cityContents, setcityContents] = useState([]);
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    // state로 전달된 값 받기
+    const cityFromNameState = location.state?.cityName;
+    const cityFromContentState = location.state?.cityContents;
+
+    const [cityContents, setcityContents] = useState(cityFromContentState || []);
     const [lodContents, setlodContents] = useState([]);
-    const [nowTitle, setNowTitle] = useState('');
+    const [nowTitle, setNowTitle] = useState(cityFromNameState || '');
+
+    // 전달된 값 없으면 되돌리기
+    useEffect(() => {
+        if (!cityFromNameState) {
+            alert('잘못된 접근입니다.');
+            navigate(-1);
+        }
+    }, [cityFromNameState, navigate]);
 
     useEffect(() => {
-        const activeCity = cityContents.find(cContent => cContent.cityState === 1);
-        if (activeCity) {
-            setNowTitle(activeCity.cityName);
-        }
-    }, [cityContents]);
+        console.log("시도");
+        console.log({nowTitle});
+        const now = encodeURIComponent(nowTitle);
+        console.log({now});
+        const fetchData = async () => {
+                try {
+                    const reslod = await axios.get(`${process.env.REACT_APP_API_URL}/getLodsByCity/${now}`);
+                    setlodContents(reslod.data);
+                    console.log(reslod.data);
+                    console.log(reslod);
 
-    // ... (중략: 스타일, 마우스 이벤트, 지도 세팅 등)
+                } catch (error) {
+                    console.error("❌ 숙소 불러오기 실패:", error);
+                }
+        };
+        fetchData();
+    }, [nowTitle]);
+
+
 
     const [isOpen, setIsOpen] = useState(false);
     const openPopup = () => setIsOpen(true);
     const closePopup = () => setIsOpen(false);
+
     const popupOverlayStyle = {
         position: 'fixed',
         top: 0,
@@ -33,21 +64,19 @@ const CityLodging = () => {
         zIndex: "1"
     };
 
-    const mapContainerRef = useRef(null);
+    const nonContent = {
+        width: "100%",
+        height: "300px",
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: "center"
+    }
 
-    useEffect(() => {
-        // 카카오맵 API 스크립트 로드 등 (생략)
-    }, []);
+    const mapContainerRef = useRef(null);
 
     return (
         <div style={{ padding: '10px', display: "flex", flexDirection: "row", width: "75rem" }}>
 
-            <DataFetcher
-                fetchCity={1}
-                fetchLod={1}
-                setCityContents={setcityContents}
-                setLodContents={setlodContents}
-            />
 
             <div style={{ width: "15rem", marginRight: "1rem", display: "flex", flexDirection: "column" }}>
                 <div
@@ -100,12 +129,19 @@ const CityLodging = () => {
 
                 <div style={{
                     display: "flex",
-                    flexDirection: "rows",
+                    flexDirection: "row",
                     marginTop: "5%",
+                    // minWidth: lodContents ? '700px' : undefined,
+                    minHeight: lodContents ? '700px' : undefined,
                     flexWrap: 'wrap',
                     gap: '30px',
                 }}>
-                    {lodContents.map((lContent, index) => (
+                    {lodContents.length == 0 ? (
+                            <div style={nonContent}>
+                                <p>현재 추가되어있는 숙소가 없습니다</p>
+                            </div>
+                        ):
+                        (lodContents.map((lContent, index) => (
                         lContent.lodCity === nowTitle ? (
                             <div
                                 key={index}
@@ -135,6 +171,7 @@ const CityLodging = () => {
                                     <div style={{
                                         borderRadius: "15px",
                                         position: "absolute",
+                                        width: "100%",
                                         top: "-2px",
                                         left: "-10px",
                                         right: "-20px",
@@ -143,7 +180,7 @@ const CityLodging = () => {
                                         zIndex: -1,
                                     }}></div>
                                     <p>숙소 이름 : {lContent.lodName}</p>
-                                    <p>숙소 위치 : {lContent.lodPrice} / (원)</p>
+                                    <p>숙소 위치 : {lContent.lodLocation}</p>
                                 </div>
                                 <img src={lContent.lodImag} style={{
                                     borderRadius: "15px",
@@ -155,7 +192,7 @@ const CityLodging = () => {
                                 }} />
                             </div>
                         ) : null
-                    ))}
+                    )))}
                 </div>
             </div>
 
