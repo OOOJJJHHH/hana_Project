@@ -58,7 +58,10 @@ public class CityController {
     @Autowired
     private UserService userService;
 
-
+    @GetMapping("/getLandlord")
+    public List<UserContent> getLandlordList() {
+        return userRepository.findAll();
+    }
     // 도시 정보 저장
     @PostMapping("/saveCity")
     public ResponseEntity<String> saveCity(
