@@ -1,7 +1,13 @@
 import { useState } from "react";
 import axios from "axios";
+import {useLocation, useNavigate} from "react-router-dom";
 
 const Owner = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    // state로 전달된 값 받기
+    const cityFromContentState = location.state?.cityContents;
+
     const [formData, setFormData] = useState({
         lodOwner: "",
         lodCity: "",
@@ -232,7 +238,21 @@ const Owner = () => {
             <form onSubmit={handleSubmit}>
                 <input type="text" name="lodOwner" value={formData.lodOwner} onChange={handleChange} style={styles.input} placeholder="숙소 올린 사람" required />
                 <input type="text" name="lodName" value={formData.lodName} onChange={handleChange} style={styles.input} placeholder="숙소명" required />
-                <input type="text" name="lodCity" value={formData.lodCity} onChange={handleChange} style={styles.input} placeholder="숙소 위치 도시" required />
+                <select
+                    name="lodCity"
+                    value={formData.lodCity}
+                    onChange={handleChange}
+                    style={styles.input}
+                    required
+                >
+                    <option value="">도시를 선택하세요</option>
+                    {cityFromContentState.map((city) => (
+                        <option key={city.id} value={city.cityName}>
+                            {city.cityName}
+                        </option>
+                    ))}
+                </select>
+
                 <input type="text" name="lodLocation" value={formData.lodLocation} onChange={handleChange} style={styles.input} placeholder="숙소 주소" required />
                 <input type="text" name="lodCallNum" value={formData.lodCallNum} onChange={handleChange} style={styles.input} placeholder="숙소 전화번호" required />
                 <input type="file" name="lodImag" onChange={handleLodImagChange} style={styles.input} accept="image/*" required />

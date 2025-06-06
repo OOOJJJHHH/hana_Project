@@ -37,6 +37,7 @@ const CityLodging = () => {
                     setlodContents(reslod.data);
                     console.log(reslod.data);
                     console.log(reslod);
+
                 } catch (error) {
                     console.error("❌ 숙소 불러오기 실패:", error);
                 }
@@ -62,6 +63,14 @@ const CityLodging = () => {
         alignItems: 'center',
         zIndex: "1"
     };
+
+    const nonContent = {
+        width: "100%",
+        height: "300px",
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: "center"
+    }
 
     const mapContainerRef = useRef(null);
 
@@ -120,12 +129,19 @@ const CityLodging = () => {
 
                 <div style={{
                     display: "flex",
-                    flexDirection: "rows",
+                    flexDirection: "row",
                     marginTop: "5%",
+                    // minWidth: lodContents ? '700px' : undefined,
+                    minHeight: lodContents ? '700px' : undefined,
                     flexWrap: 'wrap',
                     gap: '30px',
                 }}>
-                    {lodContents.map((lContent, index) => (
+                    {lodContents.length == 0 ? (
+                            <div style={nonContent}>
+                                <p>현재 추가되어있는 숙소가 없습니다</p>
+                            </div>
+                        ):
+                        (lodContents.map((lContent, index) => (
                         lContent.lodCity === nowTitle ? (
                             <div
                                 key={index}
@@ -155,6 +171,7 @@ const CityLodging = () => {
                                     <div style={{
                                         borderRadius: "15px",
                                         position: "absolute",
+                                        width: "100%",
                                         top: "-2px",
                                         left: "-10px",
                                         right: "-20px",
@@ -163,7 +180,7 @@ const CityLodging = () => {
                                         zIndex: -1,
                                     }}></div>
                                     <p>숙소 이름 : {lContent.lodName}</p>
-                                    <p>숙소 위치 : {lContent.lodPrice} / (원)</p>
+                                    <p>숙소 위치 : {lContent.lodLocation}</p>
                                 </div>
                                 <img src={lContent.lodImag} style={{
                                     borderRadius: "15px",
@@ -175,7 +192,7 @@ const CityLodging = () => {
                                 }} />
                             </div>
                         ) : null
-                    ))}
+                    )))}
                 </div>
             </div>
 

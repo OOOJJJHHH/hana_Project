@@ -29,7 +29,9 @@ function City(){
     }
 
     const makeLod = () => {
-        navigate('/owner');
+        navigate('/owner', {state:{
+                cityContents: cityContents
+            }});
     }
 
     useEffect(() => {
