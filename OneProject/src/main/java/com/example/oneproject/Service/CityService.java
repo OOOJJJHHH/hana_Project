@@ -54,9 +54,6 @@ public class CityService {
 //        cityReporesitory.deleteById(city_Name);
 //    }
 
-    public List<CityContent> getCityContentOne(String cityName){
-        return cityReporesitory.findAllByCityName(cityName);  // findAllBy...로 수정
-    }
 
     public List<CityContentDTO> getAllCityContents() {
         List<CityContent> entities = cityReporesitory.findAll();
@@ -86,12 +83,6 @@ public class CityService {
                 .collect(Collectors.toList());
     }
 
-
-    @Transactional  // 트랜잭션을 통해 작업을 처리
-    public void updateCityField(String cityName) {
-        cityReporesitory.updateSpecificCity_name(cityName);
-        cityReporesitory.updateAllExceptSpecificCity_name(cityName);
-    }
 
 }
 

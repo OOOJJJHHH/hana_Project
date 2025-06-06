@@ -37,7 +37,7 @@ const CityLodging = () => {
         const fetchData = async () => {
             if (nowTitle) {  // null 또는 빈 문자열 방지
                 try {
-                    const rescity = await axios.get(`${process.env.REACT_APP_API_URL}/getCity/${nowTitle}`);
+                    const rescity = await axios.get(`${process.env.REACT_APP_API_URL}/getallCity/${nowTitle}`);
                     setcityContents(rescity.data);
 
                     const reslod = await axios.get(`${process.env.REACT_APP_API_URL}/getLodsByCity/${nowTitle}`);
