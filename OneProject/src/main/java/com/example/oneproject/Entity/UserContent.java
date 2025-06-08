@@ -87,7 +87,6 @@ public class UserContent {
         this.uPassword = uPassword;
     }
 
-    // ✅ 프로필 이미지 Getter/Setter
     public String getProfileImage() {
         return profileImage;
     }
