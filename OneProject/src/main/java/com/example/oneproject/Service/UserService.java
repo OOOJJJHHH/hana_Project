@@ -16,9 +16,9 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    // user 데이터 저장
-    public void saveUser(UserContent userContent) {
-        userRepository.save(userContent);
+    // user 데이터 저장 (저장 후 저장된 엔티티 반환)
+    public UserContent saveUser(UserContent userContent) {
+        return userRepository.save(userContent);
     }
 
     // 유저 전부다 get
@@ -36,7 +36,7 @@ public class UserService {
         return userRepository.findByUUser("landlord");
     }
 
-    // 로그인을 위해서 세션에 값 저장
+    // 로그인
     public String login(String uId, String uPassword, HttpSession session){
         Optional<UserContent> userOptional = userRepository.findByUId(uId);
 
@@ -58,4 +58,16 @@ public class UserService {
         }
     }
 
+    // kakaoId로 사용자 찾기
+    public Optional<UserContent> findByKakaoId(String kakaoId) {
+        return userRepository.findAll()
+                .stream()
+                .filter(user -> kakaoId.equals(user.getKakaoId()))
+                .findFirst();
+    }
+
+    // 카카오 사용자 저장용 (최초 로그인 시 자동 회원가입)
+    public UserContent saveKakaoUser(UserContent userContent) {
+        return userRepository.save(userContent);
+    }
 }

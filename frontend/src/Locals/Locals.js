@@ -186,8 +186,8 @@ const Locals = () => {
                         onClick={() => handleRecommenderClick(recommenderName)}
                     >
                       <img
-                          src={recommender.image}
-                          alt={recommenderName}
+                          src={recommender.image }
+                          alt={recommenderName }
                           className="recommender-image"
                           style={{ width: "60px", height: "60px", borderRadius: "50%" }}
                       />

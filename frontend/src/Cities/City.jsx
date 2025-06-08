@@ -10,28 +10,14 @@ function City(){
     const navigate = useNavigate(); // useNavigate 훅으로 navigate 함수 생성
 
     const [cityContents, setcityContents] = useState([]);
-    const [lodContents, setlodContents] = useState([]);
 
     // 버튼 클릭 시 해당 content를 state로 전달
     const handleClick = (cityName) => {
-        // PUT 요청을 보내는 함수
-        console.log('Clicked item index:', cityName);
-
-        const update = async (cityName) => {
-            try {
-                const response = await axios.patch(
-                    `http://localhost:8080/updateCity/${cityName}`
-                );
-                console.log('Response:', response.data);
-            } catch (error) {
-                console.error('There was an error updating the city!', error);
-            }
-        };
-
-        update(cityName);
-
         // navigate로 다른 페이지로 이동
-        navigate('/cityLodging', { state: { cityName: cityName } });
+        navigate('/cityLodging', { state: {
+                cityName: cityName,
+                cityContents: cityContents
+            } });
     };
 
     const serchCity = () => {
@@ -43,8 +29,21 @@ function City(){
     }
 
     const makeLod = () => {
-        navigate('/owner');
+        navigate('/owner', {state:{
+                cityContents: cityContents
+            }});
     }
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (true) {
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/getCity`);
+                setcityContents(res.data);
+                console.log("✅ 도시 응답:", res.data);
+            }
+        };
+        fetchData();
+    }, []);
 
 
 
@@ -146,13 +145,6 @@ function City(){
     return(
         <div style={citydiv_default}>
 
-            <DataFetcher
-                fetchCity={1}
-                fetchLod={0}
-                setCityContents={setcityContents}
-                setLodContents={setlodContents}
-            />
-
             <div style={{
                 display: "flex",
                 justifyContent: "center",
@@ -214,7 +206,8 @@ function City(){
                         <p style={{ fontSize: '15px' }}>{content.cityDetail}</p>
                     </div>
 
-                    <img src={content.cityImag} style={backImg} />
+                    <img src={content.cityImageUrl} alt={`${content.cityName} 이미지`} style={backImg} />
+                    <p>{content.cityImag}</p>
 
                     <div style={btn_content}>
                         <button
@@ -252,3 +245,21 @@ function City(){
 
 
 export default City;
+
+
+
+// // PUT 요청을 보내는 함수
+// console.log('Clicked item index:', cityName);
+//
+// const update = async (cityName) => {
+//     try {
+//         const response = await axios.patch(
+//             `http://localhost:8080/updateCity/${cityName}`
+//         );
+//         console.log('Response:', response.data);
+//     } catch (error) {
+//         console.error('There was an error updating the city!', error);
+//     }
+// };
+//
+// update(cityName);
