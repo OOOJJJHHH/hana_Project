@@ -31,6 +31,8 @@ public class UserContent {
     // ✅ 프로필 이미지 필드 추가
     private String profileImage;
 
+    private String kakaoid;
+
     public long getId() {
         return id;
     }
@@ -87,11 +89,19 @@ public class UserContent {
         this.uPassword = uPassword;
     }
 
+    // ✅ 프로필 이미지 Getter/Setter
     public String getProfileImage() {
         return profileImage;
     }
 
     public void setProfileImage(String imageUrl) {
         this.profileImage = imageUrl;
+    }
+
+    public String getKakaoId() {
+        return kakaoid;
+    }
+
+    public void setKakaoId(String actualKakaoId) {
     }
 }
