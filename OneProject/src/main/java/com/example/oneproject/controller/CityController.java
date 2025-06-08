@@ -164,6 +164,10 @@ public class CityController {
     // 유저 정보 저장
     @PostMapping("/saveUser")
     public void saveUser(@RequestBody UserContent userContent) {
+        if(userContent.getProfileImage() == null || userContent.getProfileImage().isEmpty()) {
+
+            userContent.setProfileImage("default_thing/user_default.png");
+        }
         userService.saveUser(userContent);
     }
 
