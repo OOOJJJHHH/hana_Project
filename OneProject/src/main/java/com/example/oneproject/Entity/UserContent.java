@@ -31,7 +31,7 @@ public class UserContent {
     // ✅ 프로필 이미지 필드 추가
     private String profileImage;
 
-    private String kakaoid;
+    private String kakaoId;
 
     public long getId() {
         return id;
@@ -99,9 +99,10 @@ public class UserContent {
     }
 
     public String getKakaoId() {
-        return kakaoid;
+        return kakaoId;
     }
 
-    public void setKakaoId(String actualKakaoId) {
+    public void setKakaoId(String kakaoId) {
+        this.kakaoId = kakaoId;
     }
 }
