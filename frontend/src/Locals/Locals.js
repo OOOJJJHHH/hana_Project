@@ -5,6 +5,8 @@ import "./Locals.css";
 import LocalsImage from "../image/Locals.jpg";
 import { FaUserCircle } from "react-icons/fa";
 
+
+/*
 // 호텔 이미지 import
 import Hotel1Image from "../image/Hotel1.jpg";
 import Hotel2Image from "../image/Hotel2.jpg";
@@ -43,6 +45,8 @@ export const contents = {
     { name: "어진", image: "https://randomuser.me/api/portraits/women/19.jpg" },
   ],
 };
+*/
+
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -169,7 +173,7 @@ const Locals = () => {
 
             <div
                 className="recommender-container"
-                style={{ display: "flex", gap: "10px", overflow: "hidden", flexGrow: 1 }}
+                style={{ display: "flex", gap: "10px", overflow: "hidden", flexGrow: 1, justifyContent: "center" }}
             >
               {currentLocalSlice.map((recommender, index) => {
                 const recommenderName = recommender.name || recommender.uFirstName;

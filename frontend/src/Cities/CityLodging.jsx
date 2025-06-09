@@ -1,24 +1,26 @@
-import React, {useRef, useEffect, useState} from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import SelectBox from "./Custom/SelectBox";
 import DataFetcher from "../dbLogic/DataFetcher";
 import MapPopupContent from "./PopUp/MapPopupContent";
-import {useLocation, useNavigate} from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import {contents} from "../Locals/Locals";
+import { contents } from "../Locals/Locals";
 
 const CityLodging = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    // state로 전달된 값 받기
     const cityFromNameState = location.state?.cityName;
     const cityFromContentState = location.state?.cityContents;
 
     const [cityContents, setcityContents] = useState(cityFromContentState || []);
     const [lodContents, setlodContents] = useState([]);
     const [nowTitle, setNowTitle] = useState(cityFromNameState || '');
+    const [isOpen, setIsOpen] = useState(false);
 
-    // 전달된 값 없으면 되돌리기
+    const openPopup = () => setIsOpen(true);
+    const closePopup = () => setIsOpen(false);
+
     useEffect(() => {
         if (!cityFromNameState) {
             alert('잘못된 접근입니다.');
@@ -27,29 +29,17 @@ const CityLodging = () => {
     }, [cityFromNameState, navigate]);
 
     useEffect(() => {
-        console.log("시도");
-        console.log({nowTitle});
         const now = encodeURIComponent(nowTitle);
-        console.log({now});
         const fetchData = async () => {
-                try {
-                    const reslod = await axios.get(`${process.env.REACT_APP_API_URL}/getLodsByCity/${now}`);
-                    setlodContents(reslod.data);
-                    console.log(reslod.data);
-                    console.log(reslod);
-
-                } catch (error) {
-                    console.error("❌ 숙소 불러오기 실패:", error);
-                }
+            try {
+                const reslod = await axios.get(`${process.env.REACT_APP_API_URL}/getLodsByCity/${now}`);
+                setlodContents(reslod.data);
+            } catch (error) {
+                console.error("❌ 숙소 불러오기 실패:", error);
+            }
         };
         fetchData();
     }, [nowTitle]);
-
-
-
-    const [isOpen, setIsOpen] = useState(false);
-    const openPopup = () => setIsOpen(true);
-    const closePopup = () => setIsOpen(false);
 
     const popupOverlayStyle = {
         position: 'fixed',
@@ -61,26 +51,74 @@ const CityLodging = () => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        zIndex: "1"
+        zIndex: 1
     };
 
-    const nonContent = {
+    const noneContent = {
         width: "100%",
         height: "300px",
         display: 'flex',
         justifyContent: 'center',
         alignItems: "center"
-    }
+    };
 
-    const mapContainerRef = useRef(null);
+    const [hoveredIndex, setHoveredIndex] = useState(null);
+
+    const cardBaseStyle = {
+        display: "flex",
+        position: "relative",
+        width: "16rem",
+        height: "26rem",
+        border: "0.5px solid #D8E1C47F",
+        borderRadius: "15px",
+        marginLeft: "auto",
+        marginRight: "auto",
+        cursor: "pointer",
+        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    };
+
+    const overlayStyle = {
+        borderRadius: "15px",
+        position: "absolute",
+        width: "100%",
+        top: "-2px",
+        left: "-10px",
+        right: "-20px",
+        bottom: "-2px",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        zIndex: -1,
+    };
+
+    const textContainerStyle = {
+        display: "flex",
+        flexDirection: "column",
+        position: "absolute",
+        left: "5%",
+        bottom: "3%",
+        color: "white",
+    };
+
+    const imageStyle = {
+        borderRadius: "15px",
+        position: "absolute",
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        zIndex: -2,
+    };
+
+    const noneContentStyle = {
+        width: "100%",
+        minHeight: "700px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+    };
 
     return (
         <div style={{ padding: '10px', display: "flex", flexDirection: "row", width: "75rem" }}>
-
-
             <div style={{ width: "15rem", marginRight: "1rem", display: "flex", flexDirection: "column" }}>
                 <div
-                    ref={mapContainerRef}
                     style={{
                         width: "200px",
                         height: "150px",
@@ -109,93 +147,61 @@ const CityLodging = () => {
                     </button>
                     {isOpen && (
                         <div style={popupOverlayStyle}>
-                            <MapPopupContent onClose={closePopup} />
+                            <MapPopupContent onClose={closePopup} lodContents={lodContents} />
                         </div>
                     )}
                 </div>
-
-                {/* 여기만 수정했습니다 */}
                 <div>
                     <SelectBox cityList={cityContents} onCityChange={setNowTitle} />
                 </div>
             </div>
 
             <div style={{ width: "80%" }}>
-                <div style={{ fontSize: "30px", border: "1px solid black" }}>
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                        <p>"<strong>{nowTitle}</strong>" 지역의 검색결과</p>
-                    </div>
+                <div style={{ fontSize: "30px", border: "1px solid black", textAlign: 'center' }}>
+                    <p>"<strong>{nowTitle}</strong>" 지역의 검색결과</p>
                 </div>
 
                 <div style={{
                     display: "flex",
                     flexDirection: "row",
                     marginTop: "5%",
-                    // minWidth: lodContents ? '700px' : undefined,
                     minHeight: lodContents ? '700px' : undefined,
                     flexWrap: 'wrap',
                     gap: '30px',
                 }}>
-                    {lodContents.length == 0 ? (
-                            <div style={nonContent}>
-                                <p>현재 추가되어있는 숙소가 없습니다</p>
-                            </div>
-                        ):
-                        (lodContents.map((lContent, index) => (
-                        lContent.lodCity === nowTitle ? (
-                            <div
-                                key={index}
-                                style={{
-                                    display: "flex",
-                                    position: 'relative',
-                                    width: "16rem",
-                                    height: "26rem",
-                                    border: "0.5px solid #D8E1C47F",
-                                    borderRadius: "15px",
-                                    marginLeft: "auto",
-                                    marginRight: "auto",
-                                    cursor: 'pointer',
-                                    transition: 'all 0.5s ease',
-                                    transform: (index === null ? 1 : 1), // 호버 효과 등 필요시 추가
-                                    boxShadow: 'none'
-                                }}
-                            >
-                                <div style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    position: "absolute",
-                                    left: "5%",
-                                    bottom: "3%",
-                                    color: "white"
-                                }}>
-                                    <div style={{
-                                        borderRadius: "15px",
-                                        position: "absolute",
-                                        width: "100%",
-                                        top: "-2px",
-                                        left: "-10px",
-                                        right: "-20px",
-                                        bottom: "-2px",
-                                        backgroundColor: "rgba(0, 0, 0, 0.5)",
-                                        zIndex: -1,
-                                    }}></div>
-                                    <p>숙소 이름 : {lContent.lodName}</p>
-                                    <p>숙소 위치 : {lContent.lodLocation}</p>
+                    {lodContents.length === 0 ? (
+                        <div style={noneContentStyle}>
+                            <p>현재 추가되어있는 숙소가 없습니다</p>
+                        </div>
+                    ) : (
+                        lodContents.map((lContent, index) =>
+                            lContent.lodCity === nowTitle ? (
+                                <div
+                                    key={index}
+                                    onMouseEnter={() => setHoveredIndex(index)}
+                                    onMouseLeave={() => setHoveredIndex(null)}
+                                    onClick={() => navigate(`/lodDetail/${lContent.lodId}`)} // 클릭 시 상세페이지로 이동
+                                    style={{
+                                        ...cardBaseStyle,
+                                        transform: hoveredIndex === index ? "scale(1.15)" : "scale(1)",
+                                        boxShadow:
+                                            hoveredIndex === index
+                                                ? "0px 4px 20px rgba(0, 0, 0, 0.2)"
+                                                : "none",
+                                    }}
+                                >
+                                    <div style={textContainerStyle}>
+                                        <div style={overlayStyle}></div>
+                                        <p>숙소 이름 : {lContent.lodName}</p>
+                                        <p>숙소 위치 : {lContent.lodLocation}</p>
+                                    </div>
+                                    <img src={lContent.lodImag} alt={lContent.lodName} style={imageStyle} />
                                 </div>
-                                <img src={lContent.lodImag} style={{
-                                    borderRadius: "15px",
-                                    position: "absolute",
-                                    width: "100%",
-                                    height: "100%",
-                                    objectFit: "cover",
-                                    zIndex: "-2"
-                                }} />
-                            </div>
-                        ) : null
-                    )))}
+                            ) : null
+                        )
+                    )}
                 </div>
             </div>
-
         </div>
     );
 };
