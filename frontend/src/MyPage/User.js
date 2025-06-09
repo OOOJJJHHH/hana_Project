@@ -24,7 +24,7 @@ const User = () => {
     }, [userInfo]);
 
     const uploadImageToServer = async (file) => {
-        if (!userInfo?.id) {
+        if (!userInfo?.uId) {
             alert("로그인 정보가 없습니다. 다시 로그인해주세요.");
             return null;
         }
