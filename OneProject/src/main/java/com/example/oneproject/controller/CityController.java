@@ -65,7 +65,7 @@ public class CityController {
 
     @GetMapping("/getLandlord")
     public List<UserContent> getLandlordList() {
-        return userRepository.findAll();
+        return userRepository.findByUUser("landlord");
     }
     // 도시 정보 저장
     @PostMapping("/saveCity")
