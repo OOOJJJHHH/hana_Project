@@ -62,6 +62,59 @@ const CityLodging = () => {
         alignItems: "center"
     };
 
+    const [hoveredIndex, setHoveredIndex] = useState(null);
+
+    const cardBaseStyle = {
+        display: "flex",
+        position: "relative",
+        width: "16rem",
+        height: "26rem",
+        border: "0.5px solid #D8E1C47F",
+        borderRadius: "15px",
+        marginLeft: "auto",
+        marginRight: "auto",
+        cursor: "pointer",
+        transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    };
+
+    const overlayStyle = {
+        borderRadius: "15px",
+        position: "absolute",
+        width: "100%",
+        top: "-2px",
+        left: "-10px",
+        right: "-20px",
+        bottom: "-2px",
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        zIndex: -1,
+    };
+
+    const textContainerStyle = {
+        display: "flex",
+        flexDirection: "column",
+        position: "absolute",
+        left: "5%",
+        bottom: "3%",
+        color: "white",
+    };
+
+    const imageStyle = {
+        borderRadius: "15px",
+        position: "absolute",
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        zIndex: -2,
+    };
+
+    const noneContent = {
+        width: "100%",
+        minHeight: "700px",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+    };
+
     return (
         <div style={{ padding: '10px', display: "flex", flexDirection: "row", width: "75rem" }}>
             <div style={{ width: "15rem", marginRight: "1rem", display: "flex", flexDirection: "column" }}>
@@ -117,57 +170,34 @@ const CityLodging = () => {
                     gap: '30px',
                 }}>
                     {lodContents.length === 0 ? (
-                        <div style={nonContent}>
+                        <div style={noneContent}>
                             <p>현재 추가되어있는 숙소가 없습니다</p>
                         </div>
                     ) : (
-                        lodContents.map((lContent, index) => (
-                            lContent.lodCity === nowTitle && (
+                        lodContents.map((lContent, index) =>
+                            lContent.lodCity === nowTitle ? (
                                 <div
                                     key={index}
+                                    onMouseEnter={() => setHoveredIndex(index)}
+                                    onMouseLeave={() => setHoveredIndex(null)}
                                     style={{
-                                        display: "flex",
-                                        position: 'relative',
-                                        width: "16rem",
-                                        height: "26rem",
-                                        border: "0.5px solid #D8E1C47F",
-                                        borderRadius: "15px",
-                                        marginLeft: "auto",
-                                        marginRight: "auto",
-                                        cursor: 'pointer'
+                                        ...cardBaseStyle,
+                                        transform: hoveredIndex === index ? "scale(1.15)" : "scale(1)",
+                                        boxShadow:
+                                            hoveredIndex === index
+                                                ? "0px 4px 20px rgba(0, 0, 0, 0.2)"
+                                                : "none",
                                     }}
                                 >
-                                    <div style={{
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        position: "absolute",
-                                        left: "5%",
-                                        bottom: "3%",
-                                        color: "white"
-                                    }}>
-                                        <div style={{
-                                            borderRadius: "15px",
-                                            position: "absolute",
-                                            width: "100%",
-                                            top: "-2px",
-                                            left: "-10px",
-                                            backgroundColor: "rgba(0, 0, 0, 0.5)",
-                                            zIndex: -1,
-                                        }}></div>
+                                    <div style={textContainerStyle}>
+                                        <div style={overlayStyle}></div>
                                         <p>숙소 이름 : {lContent.lodName}</p>
                                         <p>숙소 위치 : {lContent.lodLocation}</p>
                                     </div>
-                                    <img src={lContent.lodImag} style={{
-                                        borderRadius: "15px",
-                                        position: "absolute",
-                                        width: "100%",
-                                        height: "100%",
-                                        objectFit: "cover",
-                                        zIndex: "-2"
-                                    }} />
+                                    <img src={lContent.lodImag} style={imageStyle} />
                                 </div>
-                            )
-                        ))
+                            ) : null
+                        )
                     )}
                 </div>
             </div>

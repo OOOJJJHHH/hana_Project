@@ -115,9 +115,10 @@ html, body {
   text-align: center;
 }
 
+
 .recommendation-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* 최소 300px 크기의 카드로 자동 배치 */
+  grid-template-columns: repeat(4, 1fr); /* 4개 열 고정 */
   gap: 25px;
   margin-top: 30px;
 }
@@ -128,6 +129,9 @@ html, body {
   border-radius: 10px;
   text-align: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+  flex: 0 0 23%;  /* 약간 여유 두고 25%보다 조금 작게 */
+  box-sizing: border-box;
 }
 
 .card-image {
