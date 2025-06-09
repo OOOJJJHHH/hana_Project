@@ -164,6 +164,10 @@ public class CityController {
     // 유저 정보 저장
     @PostMapping("/saveUser")
     public void saveUser(@RequestBody UserContent userContent) {
+        if(userContent.getProfileImage() == null || userContent.getProfileImage().isEmpty()) {
+
+            userContent.setProfileImage("default_thing/user_default.png");
+        }
         userService.saveUser(userContent);
     }
 
@@ -236,42 +240,48 @@ public class CityController {
                                                      @RequestParam("userId") String userId) {
         try {
             String dir = "profileImages";
+
+            // 사용자 조회
+            UserContent user = userRepository.findByUId(userId)
+                    .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
+
+            // 기존 프로필 이미지가 있으면 삭제
+            String oldImageUrl = user.getProfileImage();
+            if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
+                String oldKey = oldImageUrl.substring(oldImageUrl.indexOf(dir)); // "profileImages/~~~.png"
+                s3Uploader.deleteFile(oldKey);
+            }
+
+            // 새 이미지 업로드
             String key = s3Uploader.uploadFile(dir, file);
             String imageUrl = "https://hana-leeej-bucket.s3.ap-northeast-3.amazonaws.com/" + key;
 
-            UserContent user = userRepository.findByUId(userId)
-                    .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
+            // DB 갱신
             user.setProfileImage(imageUrl);
             userRepository.save(user);
 
             return ResponseEntity.ok(imageUrl);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("업로드 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("업로드 실패: " + e.getMessage());
         }
     }
 
+
     @DeleteMapping("/deleteProfileImage")
-    public ResponseEntity<String> deleteProfileImage(@RequestParam String userId) {
-        try {
-            UserContent user = userRepository.findByUId(userId)
-                    .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
-            String imageUrl = user.getProfileImage();
+    public ResponseEntity<?> deleteProfileImage(@RequestParam String userId) {
+        Optional<UserContent> optionalUser = userRepository.findByUId(userId);
+        if (optionalUser.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
 
-            if (imageUrl == null || imageUrl.isEmpty()) {
-                return ResponseEntity.badRequest().body("삭제할 이미지가 없습니다.");
-            }
-
-            String prefix = "https://hana-leeej-bucket.s3.ap-northeast-3.amazonaws.com/";
-            String key = imageUrl.replace(prefix, "");
-
-            s3Uploader.deleteFile(key);
+        UserContent user = optionalUser.get();
+        if (user.getProfileImage() != null && !user.getProfileImage().isEmpty()) {
+            String key = user.getProfileImage().substring(user.getProfileImage().indexOf("profileImages"));
+            s3Uploader.deleteFile(key);  // 기존에 만든 deleteFile 메서드
             user.setProfileImage(null);
             userRepository.save(user);
-
-            return ResponseEntity.ok("프로필 이미지가 삭제되었습니다.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("삭제 실패: " + e.getMessage());
         }
+
+        return ResponseEntity.ok("삭제 완료");
     }
 
     // 카카오 로그인 API 추가

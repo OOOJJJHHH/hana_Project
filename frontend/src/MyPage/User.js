@@ -63,13 +63,14 @@ const User = () => {
 
     const handleDeleteImage = async () => {
         try {
-            await axios.delete(`http://localhost:8080/deleteProfileImage?userId=${userInfo.id}`);
+            await axios.delete(`http://localhost:8080/deleteProfileImage?userId=${userInfo.uId}`);
             setSelectedImage(null);
         } catch (error) {
             alert("이미지 삭제 실패");
             console.error(error);
         }
     };
+
 
     const handleClickChangeImage = () => {
         fileInputRef.current.click();
