@@ -239,33 +239,36 @@ public class CityController {
     public ResponseEntity<String> uploadProfileImage(@RequestParam("file") MultipartFile file,
                                                      @RequestParam("userId") String userId) {
         try {
-            String dir = "profileImages";
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body("파일이 비어 있습니다.");
+            }
 
-            // 사용자 조회
+            System.out.println("파일 이름: " + file.getOriginalFilename());
+            System.out.println("파일 크기: " + file.getSize());
+
+            String dir = "profileImages";
             UserContent user = userRepository.findByUId(userId)
                     .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
 
-            // 기존 프로필 이미지가 있으면 삭제
             String oldImageUrl = user.getProfileImage();
-            if (oldImageUrl != null && !oldImageUrl.isEmpty()) {
-                String oldKey = oldImageUrl.substring(oldImageUrl.indexOf(dir)); // "profileImages/~~~.png"
+
+            if (oldImageUrl != null && !oldImageUrl.isEmpty() && oldImageUrl.contains(dir)) {
+                String oldKey = oldImageUrl.substring(oldImageUrl.indexOf(dir));  // 안전
                 s3Uploader.deleteFile(oldKey);
             }
 
-            // 새 이미지 업로드
             String key = s3Uploader.uploadFile(dir, file);
-            String imageUrl = "https://hana-leeej-bucket.s3.ap-northeast-3.amazonaws.com/" + key;
-
-            // DB 갱신
-            user.setProfileImage(imageUrl);
+            user.setProfileImage(key);
             userRepository.save(user);
 
-            return ResponseEntity.ok(imageUrl);
+            return ResponseEntity.ok(key);
         } catch (Exception e) {
+            e.printStackTrace(); // 실제 콘솔 로그 확인
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("업로드 실패: " + e.getMessage());
         }
     }
+
 
 
     @DeleteMapping("/deleteProfileImage")
@@ -315,4 +318,18 @@ public class CityController {
         session.setAttribute("loginUser", userToReturn); // UserContent 저장
         return ResponseEntity.ok(userToReturn);
     }
+
+    @PostMapping("/user/profile/upload")
+    public ResponseEntity<?> uploadProfileImage(
+            @RequestParam("userId") String userId,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            userService.updateProfileImage(userId, file);
+            return ResponseEntity.ok("업로드 성공");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("업로드 실패: " + e.getMessage());
+        }
+    }
+
 }

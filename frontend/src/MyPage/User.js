@@ -30,8 +30,14 @@ const User = () => {
         }
 
         const formData = new FormData();
+        formData.append('userId', userInfo.uId);
         formData.append('file', file);
-        formData.append('userId', userInfo.uId); // ✅ 문자열 "jun"
+
+        await axios.post(`${process.env.REACT_APP_API_URL}/user/profile/upload`, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data"
+            }
+        });
 
 
         try {

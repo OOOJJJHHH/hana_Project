@@ -6,7 +6,9 @@ import com.example.oneproject.Repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +17,12 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private S3Uploader s3Uploader;
+
+    @Autowired
+    private S3Service s3Service;
 
     // user 데이터 저장 (저장 후 저장된 엔티티 반환)
     public UserContent saveUser(UserContent userContent) {
@@ -70,4 +78,31 @@ public class UserService {
     public UserContent saveKakaoUser(UserContent userContent) {
         return userRepository.save(userContent);
     }
+
+    // 프로필 이미지 업로드 및 저장
+    public void updateProfileImage(String userId, MultipartFile image) throws IOException, IOException {
+        UserContent user = userRepository.findByUId(userId)
+                .orElseThrow(() -> new RuntimeException("해당 유저를 찾을 수 없습니다."));
+
+        // 이미지 업로드
+        String key = s3Uploader.uploadFile("userUploads", image);
+        user.setProfileImage(key);
+
+        userRepository.save(user);
+    }
+
+    // 유저 정보 조회 (프리사인드 URL 포함)
+    public UserContent getUserWithImage(String userId) {
+        UserContent user = userRepository.findByUId(userId)
+                .orElseThrow(() -> new RuntimeException("해당 유저를 찾을 수 없습니다."));
+
+        // S3 이미지 URL 변환
+        if (user.getProfileImage() != null) {
+            String imageUrl = s3Service.generatePresignedUrl(user.getProfileImage());
+            user.setProfileImage(imageUrl);
+        }
+
+        return user;
+    }
+
 }
