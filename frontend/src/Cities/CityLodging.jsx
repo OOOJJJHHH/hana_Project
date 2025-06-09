@@ -175,4 +175,5 @@ const CityLodging = () => {
     );
 };
 
+
 export default CityLodging;

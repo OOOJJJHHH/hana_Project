@@ -110,6 +110,7 @@ const popupContentStyle = {
     textAlign: 'center',
 };
 
+
 // 닫기 버튼 스타일 정의
 const closeButtonStyle = {
     marginTop: "10px",
