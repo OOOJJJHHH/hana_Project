@@ -80,7 +80,7 @@ public class UserService {
     }
 
     // 프로필 이미지 업로드 및 저장
-    public void updateProfileImage(String userId, MultipartFile image) throws IOException, IOException {
+    public void updateProfileImage(String userId, MultipartFile image) throws IOException {
         UserContent user = userRepository.findByUId(userId)
                 .orElseThrow(() -> new RuntimeException("해당 유저를 찾을 수 없습니다."));
 
