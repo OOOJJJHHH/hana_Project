@@ -54,7 +54,7 @@ const CityLodging = () => {
         zIndex: 1
     };
 
-    const nonContent = {
+    const noneContent = {
         width: "100%",
         height: "300px",
         display: 'flex',
@@ -107,7 +107,7 @@ const CityLodging = () => {
         zIndex: -2,
     };
 
-    const noneContent = {
+    const noneContentStyle = {
         width: "100%",
         minHeight: "700px",
         display: "flex",
@@ -170,7 +170,7 @@ const CityLodging = () => {
                     gap: '30px',
                 }}>
                     {lodContents.length === 0 ? (
-                        <div style={noneContent}>
+                        <div style={noneContentStyle}>
                             <p>현재 추가되어있는 숙소가 없습니다</p>
                         </div>
                     ) : (
@@ -180,6 +180,7 @@ const CityLodging = () => {
                                     key={index}
                                     onMouseEnter={() => setHoveredIndex(index)}
                                     onMouseLeave={() => setHoveredIndex(null)}
+                                    onClick={() => navigate(`/lodDetail/${lContent.lodId}`)} // 클릭 시 상세페이지로 이동
                                     style={{
                                         ...cardBaseStyle,
                                         transform: hoveredIndex === index ? "scale(1.15)" : "scale(1)",
@@ -194,7 +195,7 @@ const CityLodging = () => {
                                         <p>숙소 이름 : {lContent.lodName}</p>
                                         <p>숙소 위치 : {lContent.lodLocation}</p>
                                     </div>
-                                    <img src={lContent.lodImag} style={imageStyle} />
+                                    <img src={lContent.lodImag} alt={lContent.lodName} style={imageStyle} />
                                 </div>
                             ) : null
                         )
@@ -204,6 +205,5 @@ const CityLodging = () => {
         </div>
     );
 };
-
 
 export default CityLodging;
