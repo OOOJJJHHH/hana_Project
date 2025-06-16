@@ -69,6 +69,26 @@ public class LodService {
 
 
 
+    public List<LodDTO> getLodsByUFirstName(String uFirstName) {
+        List<ClodContent> contents = lodRepository.findByLodOwner(uFirstName);
+
+        return contents.stream().map(content -> {
+            String lodImageUrl = null;
+            if (content.getLodImag() != null && !content.getLodImag().isEmpty()) {
+                lodImageUrl = s3Service.generatePresignedUrl(content.getLodImag());
+            }
+
+            return new LodDTO(
+                    content.getId(),
+                    content.getLodName(),
+                    content.getLodCity(),
+                    lodImageUrl,
+                    content.getLodLocation(),
+                    content.getLodOwner(),
+                    content.getLodCallNum()
+            );
+        }).collect(Collectors.toList());
+    }
 
     // 모든 숙소 가져오기
     // 도시의 이름으로 숙소 가져오기

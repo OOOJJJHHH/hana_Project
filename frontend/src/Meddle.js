@@ -11,10 +11,17 @@ import arrowRight from './image/arrow-right.png';
 import spring from './image/spring.png';
 import fan2_1 from './image/2-1.jpg';
 import fan2_2 from './image/2-2.jpg';
-import {contents} from "./Locals/Locals";
 import { useNavigate } from "react-router-dom";
 import { hotelDetails, topRatedHotels } from './Pages/HotelDetail';
 
+const contents = {
+  hotels: [
+    { name: "호텔A", image: fan1, recommendedBy: "오오오" },
+    { name: "호텔B", image: fan2, recommendedBy: "승범" },
+    { name: "호텔C", image: fan3, recommendedBy: "오오오" },
+    { name: "호텔D", image: fan1, recommendedBy: "승범" },
+  ]
+};
 
 const Meddle = () => {
   const [startIndex, setStartIndex] = useState(0);

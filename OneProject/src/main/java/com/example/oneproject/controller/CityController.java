@@ -63,10 +63,6 @@ public class CityController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/getLandlord")
-    public List<UserContent> getLandlordList() {
-        return userRepository.findByUUser("landlord");
-    }
     // 도시 정보 저장
     @PostMapping("/saveCity")
     public ResponseEntity<String> saveCity(
@@ -101,14 +97,20 @@ public class CityController {
         return ResponseEntity.ok(cityService.getAllCityContents());
     }
 
-    
-    
-    // 숙소
+    // 숙소==============================================================================
     // 도시 이름으로 숙소 전체 조회
     @GetMapping("/getLodsByCity/{cityName}")
     public ResponseEntity<List<LodDTO>> getLodsByCity(@PathVariable String cityName) {
         String decodedCity = URLDecoder.decode(cityName, StandardCharsets.UTF_8);
         List<LodDTO> lods = lodService.getLodsByCityName(decodedCity);
+        return ResponseEntity.ok(lods);
+    }
+
+    // 사용자 이름으로 숙소 조회
+    @GetMapping("/getlodbyName/{uFirstName}")
+    public ResponseEntity<List<LodDTO>> getlodbyName(@PathVariable String uFirstName) {
+        String decodedCity = URLDecoder.decode(uFirstName, StandardCharsets.UTF_8);
+        List<LodDTO> lods = lodService.getLodsByUFirstName(decodedCity);
         return ResponseEntity.ok(lods);
     }
 
@@ -157,8 +159,9 @@ public class CityController {
         }
     }
 
-    
-    
+
+
+    // 유저==============================================================================
     // 유저 정보 저장
     @PostMapping("/saveUser")
     public void saveUser(@RequestBody UserContent userContent) {
@@ -182,7 +185,13 @@ public class CityController {
         return userService.getOneUsers(uId);
     }
 
-    // 로그인
+    @GetMapping("/getLandlord")
+    public List<UserContent> getLandlordList() {
+        return userRepository.findByUUser("landlord");
+    }
+
+
+    // 로그인=============================================================================
     @PostMapping("/api/login")
     public ResponseEntity<?> login(@RequestBody UserContent userContent, HttpSession session) {
         String uId = userContent.getuId();
