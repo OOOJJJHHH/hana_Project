@@ -91,10 +91,14 @@ public class CityController {
         }
     }
 
-    // 도시 정보 가져오기
+    // 도시 정보 가져오기 두개 같은 기능임
     @GetMapping("/getCity")
     public List<CityContentDTO> getCity() {
         return cityService.getAllCityContents();
+    }
+    @GetMapping("/getLod")
+    public ResponseEntity<List<CityContentDTO>> getAllCities() {
+        return ResponseEntity.ok(cityService.getAllCityContents());
     }
 
     
@@ -151,12 +155,6 @@ public class CityController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("저장 실패: " + e.getMessage());
         }
-    }
-
-    // 숙소 정보 조회
-    @GetMapping("/getLod")
-    public ResponseEntity<List<CityContentDTO>> getAllCities() {
-        return ResponseEntity.ok(cityService.getAllCityContents());
     }
 
     

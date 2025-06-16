@@ -6,7 +6,7 @@ import LocalsImage from "../image/Locals.jpg";
 import { FaUserCircle } from "react-icons/fa";
 
 
-/*
+
 // 호텔 이미지 import
 import Hotel1Image from "../image/Hotel1.jpg";
 import Hotel2Image from "../image/Hotel2.jpg";
@@ -45,7 +45,7 @@ export const contents = {
     { name: "어진", image: "https://randomuser.me/api/portraits/women/19.jpg" },
   ],
 };
-*/
+
 
 
 function useQuery() {

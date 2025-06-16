@@ -71,7 +71,7 @@ const getRandomReviews = () => {
 };
 
 // 📦 호텔 상세 정보
-const hotelDetails = {
+export const hotelDetails = {
   "Hotel Artemide": {
     name: "Hotel Artemide",
     location: "Rome, Italy",

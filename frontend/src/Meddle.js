@@ -13,7 +13,7 @@ import fan2_1 from './image/2-1.jpg';
 import fan2_2 from './image/2-2.jpg';
 import {contents} from "./Locals/Locals";
 import { useNavigate } from "react-router-dom";
-import { topRatedHotels } from './Pages/HotelDetail';
+import { hotelDetails, topRatedHotels } from './Pages/HotelDetail';
 
 
 const Meddle = () => {
@@ -21,15 +21,41 @@ const Meddle = () => {
   const [startCity, setStartCity] = useState(0);
   const [startCity1, setStartCity1] = useState(0);
   const [activeButton, setActiveButton] = useState("left");
-  const boxes = Array(9).fill("사진");
   const navigate = useNavigate();
   const [hotelList, setHotelList] = useState([]);
 
   useEffect(() => {
-    setHotelList(topRatedHotels);  // 기존 데이터 대신 평점 상위 6개 호텔로 덮어쓰기
+    setHotelList(topRatedHotels);
   }, []);
 
-  // 예시 데이터 (DB에서 받아올 예정)
+  // ⭐ 수정: 가장 저렴한 호텔 데이터 준비 및 부족한 부분 채우기
+  const allHotels = Object.values(hotelDetails);
+
+  const lowestPricedHotels = allHotels
+      .map(hotel => ({
+        name: hotel.name,
+        image: hotel.thumbnail,
+        price: hotel.rooms.Standard || Math.min(...Object.values(hotel.rooms))
+      }))
+      .sort((a, b) => a.price - b.price);
+
+  // 총 9개의 박스를 채우기 위한 로직
+  const desiredBoxCount = 9;
+  const initialBoxesContent = lowestPricedHotels.slice(0, desiredBoxCount);
+
+  // 데이터가 부족할 경우 "아직 호텔이 없습니다" 메시지로 채우기
+  while (initialBoxesContent.length < desiredBoxCount) {
+    initialBoxesContent.push({
+      name: "아직 호텔이 없습니다",
+      image: null, // 이미지가 없을 경우를 대비하여 null 또는 기본 이미지 경로
+      price: null,
+      isEmpty: true // 이 항목이 비어있음을 나타내는 플래그
+    });
+  }
+
+  const boxesContent = initialBoxesContent;
+
+
   const [cities, setCities] = useState([
     { id: 1, name: "서울", imageUrl: fan2_1 },
     { id: 2, name: "부산", imageUrl: fan2_2 },
@@ -56,7 +82,7 @@ const Meddle = () => {
     if (nextStartCity <= cities1.length - 4) {
       setStartCity1(nextStartCity);
     } else if (nextStartCity <= cities1.length) {
-      setStartCity1(cities1.length - 4); // 마지막 그룹이 4개 미만일 경우
+      setStartCity1(cities1.length - 4);
     }
   };
   const handlePrev_3 = () => {
@@ -73,7 +99,7 @@ const Meddle = () => {
     if (nextStartCity <= cities.length - 4) {
       setStartCity(nextStartCity);
     } else if (nextStartCity <= cities.length) {
-      setStartCity(cities.length - 4); // 마지막 그룹이 4개 미만일 경우
+      setStartCity(cities.length - 4);
     }
   };
   const handlePrev_2 = () => {
@@ -101,7 +127,8 @@ const Meddle = () => {
   };
 
   const handleNext = () => {
-    if (startIndex + 3 < boxes.length) {
+    // boxesContent의 총 길이를 기준으로 슬라이드 이동
+    if (startIndex + 3 < boxesContent.length) {
       setStartIndex(startIndex + 3);
     }
   };
@@ -117,7 +144,6 @@ const Meddle = () => {
         <ImageSlider />
 
         <ResponsiveContainer>
-          {/* 여가 최저가 보장 텍스트가 왼쪽에 배치 */}
           <FanfareContainer>
             <FanfareImage src={fanfare} alt="fanfare" />
             <FanfareText>여가 최저가 보장!</FanfareText>
@@ -128,8 +154,22 @@ const Meddle = () => {
             <ArrowButton onClick={handlePrev}>&lt;</ArrowButton>
             <BoxWrapper>
               <BoxSlider style={{ transform: `translateX(-${startIndex * (100 / 3)}%)` }}>
-                {boxes.map((text, index) => (
-                    <ResponsiveBox key={index}>{text}</ResponsiveBox>
+                {boxesContent.map((hotel, index) => (
+                    <ResponsiveBox
+                        key={index}
+                        // 비어있는 박스에는 클릭 이벤트 없음
+                        onClick={hotel.isEmpty ? null : () => navigate(`/hotel-detail?name=${encodeURIComponent(hotel.name)}`)}
+                        isEmpty={hotel.isEmpty} // isEmpty prop 전달
+                    >
+                      {hotel.isEmpty ? (
+                          <span style={{ color: 'gray' }}>{hotel.name}</span>
+                      ) : (
+                          <>
+                            <img src={hotel.image} alt={hotel.name} style={{ width: '100%', height: '80%', objectFit: 'cover', borderRadius: '5px' }} />
+                            <span style={{ fontSize: '1em', fontWeight: 'bold', marginTop: '5px' }}>{hotel.name}</span>
+                          </>
+                      )}
+                    </ResponsiveBox>
                 ))}
               </BoxSlider>
             </BoxWrapper>
@@ -137,7 +177,6 @@ const Meddle = () => {
           </ResponsiveContainer_1>
         </ResponsiveContainer>
 
-        {/* ✅ 새로 추가된 컴포넌트 */}
         <ToggleRectangles />
 
         <ClickableImage
@@ -146,7 +185,6 @@ const Meddle = () => {
             onClick={() => navigate('/about')}
         />
         <span style={{ fontSize: "24px", fontWeight: "bold", display: "block", width: "100%", maxWidth: "1180px" }}>평점순</span>
-        {/* ✅ 둥근 사각형 리스트 */}
         <RoundedRectangleContainer>
 
           <div style={{ display: 'flex', gap: '20px', flexWrap: 'nowrap', marginTop: '20px' }}>
@@ -203,7 +241,7 @@ const Meddle = () => {
             transform: `translateX(-${startCity1 * 290}px)`,
             width: '1220px'
           }}>
-            {cities1.map((city) => ( // <- slice 적용
+            {cities1.map((city) => (
                 <NewSquareStyleCity key={city.id} onClick={() => handleClickcity(city.name)}>
                   <NewCityImage src={city.imageUrl} alt={city.name} />
                   <NewCityName>{city.name}</NewCityName>
@@ -247,21 +285,18 @@ const ImageSlider = () => {
 
   return (
       <SliderContainer>
-        {/* 왼쪽 화살표 */}
         <SliderArrowLeft
             src={arrowLeft}
             alt="Previous"
             onClick={handlePrevClick}
         />
 
-        {/* 이미지 리스트 */}
         <ImageContainer style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}>
           {images.map((image, index) => (
               <Image key={index} src={image} alt={`Image ${index + 1}`} />
           ))}
         </ImageContainer>
 
-        {/* 오른쪽 화살표 */}
         <SliderArrowRight
             src={arrowRight}
             alt="Next"
@@ -271,7 +306,6 @@ const ImageSlider = () => {
   );
 };
 
-// ✅ 새로 추가된 컴포넌트
 const ToggleRectangles = () => {
   const [activeButton, setActiveButton] = useState("left");
   const navigate = useNavigate();
@@ -312,8 +346,6 @@ const ToggleRectangles = () => {
       </>
   );
 };
-
-// ✅ 스타일 코드
 
 
 const MeddleContainer = styled.div`
@@ -388,13 +420,18 @@ const ResponsiveBox = styled.div`
   min-width: 200px;
   height: 250px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: 16px;
   font-weight: bold;
   border: 1px solid gray;
   border-radius: 5px;
-  cursor: pointer;
+  cursor: ${props => props.isEmpty ? 'default' : 'pointer'}; /* 비어있는 박스는 커서 변경 안 함 */
+  padding: 10px;
+  box-sizing: border-box;
+  background-color: ${props => props.isEmpty ? '#f0f0f0' : 'white'}; /* 비어있는 박스는 배경색 변경 */
+  color: ${props => props.isEmpty ? 'gray' : 'inherit'}; /* 비어있는 박스 텍스트 색상 변경 */
 `;
 
 const SliderContainer = styled.div`
@@ -404,7 +441,7 @@ const SliderContainer = styled.div`
   height: 350px;
   overflow: hidden;
   margin: 0 auto;
-  top: 0; /* 추가 */
+  top: 0;
 `;
 
 const SliderArrowLeft = styled.img`
@@ -484,12 +521,12 @@ const RoundedRectangleContainer = styled.div`
 
 const RoundedRectangle = styled.div`
   width: 180px;
-  height: 180px; /* 높이를 약간 늘려서 평점 표시 공간 추가 */
+  height: 180px;
 
   border-radius: 20px;
   overflow: hidden;
   display: flex;
-  flex-direction: column; /* 이미지와 평점을 세로로 배치 */
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 10px;
@@ -503,39 +540,34 @@ const RoundedRectangle = styled.div`
 
 const ContainerCity = styled.div`
   display: flex;
-  justify-content: flex-start; /* 변경 */
+  justify-content: flex-start;
   gap: 20px;
   padding: 20px;
-  transition: transform 0.3s ease-in-out; /* 추가 */
+  transition: transform 0.3s ease-in-out;
 `;
 
-// 자식 요소
 const SquareStyleCity = styled.div`
-
   height: 280px;
   width: 280px;
   background-color: white;
   z-index : 1;
   border: 1px solid black;
-  cursor: pointer;  /* 마우스를 대면 클릭 가능하도록 설정 */
-  transition: transform 0.3s ease-in-out;  /* 마우스 오버 시 애니메이션 효과 추가 */
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out;
 
-  /* 화면 크기 768px 이하일 때 크기 조정 */
   @media (max-width: 768px) {
     height: 200px;
     width: 200px;
   }
 
-  /* 화면 크기 480px 이하일 때 크기 조정 */
   @media (max-width: 480px) {
     height: 150px;
     width: 150px;
   }
 
-  /* hover 시 변환 효과 추가 */
   &:hover {
-    transform: scale(1.05);  /* 마우스를 대면 크기 확장 */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);  /* 테두리 아래에 그림자 추가 */
+    transform: scale(1.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   }
 `;
 const CityImage = styled.img`
@@ -544,7 +576,6 @@ const CityImage = styled.img`
   object-fit: cover;
 `;
 
-// CityName 스타일링
 const CityName = styled.div`
   text-align: center;
   padding: 10px 0;
@@ -552,7 +583,6 @@ const CityName = styled.div`
   font-weight: bold;
 `;
 
-// 화살표 이미지 스타일링
 const ArrowImage = styled.img`
   position: absolute;
   width: 50px;
@@ -574,8 +604,8 @@ const NewSquareStyleCity = styled.div`
   background-color: white;
   z-index : 1;
   border: 1px solid black;
-  cursor: pointer;  /* 마우스를 대면 클릭 가능하도록 설정 */
-  transition: transform 0.3s ease-in-out;  /* 마우스 오버 시 애니메이션 효과 추가 */
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out;
 
   @media (max-width: 768px) {
     height: 200px;
