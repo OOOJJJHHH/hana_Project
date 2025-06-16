@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useContext, useEffect } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
@@ -18,10 +17,13 @@ const User = () => {
     const [uploading, setUploading] = useState(false);
     const [uploadSuccess, setUploadSuccess] = useState(false);
 
-
     useEffect(() => {
         console.log("🧾 userInfo:", userInfo);
     }, [userInfo]);
+
+    function setUserInfo(data) {
+        // 사용자 정보 갱신 함수
+    }
 
     const uploadImageToServer = async (file) => {
         if (!userInfo?.uId) {
@@ -33,24 +35,31 @@ const User = () => {
         formData.append('userId', userInfo.uId);
         formData.append('file', file);
 
-        await axios.post(`${process.env.REACT_APP_API_URL}/user/profile/upload`, formData, {
-            headers: {
-                "Content-Type": "multipart/form-data"
-            }
-        });
-
-
         try {
             setUploading(true);
-            const response = await axios.post('http://localhost:8080/uploadProfileImage', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
+
+            const response = await axios.post(
+                `${process.env.REACT_APP_API_URL}/user/profile/upload`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+            const updatedUser = await axios.get(`${process.env.REACT_APP_API_URL}/user/${userInfo.uId}`);
+            setUserInfo(updatedUser.data);
+
+            console.log("✅ 업로드 성공:", response.data);
+
             setUploading(false);
             setUploadSuccess(true);
             setTimeout(() => setUploadSuccess(false), 2000);
+
             return response.data;
+
         } catch (error) {
-            console.error('이미지 업로드 실패:', error);
+            console.error("❌ 이미지 업로드 실패:", error);
             setUploading(false);
             alert("이미지 업로드에 실패했습니다.");
             return null;
@@ -76,7 +85,6 @@ const User = () => {
             console.error(error);
         }
     };
-
 
     const handleClickChangeImage = () => {
         fileInputRef.current.click();
@@ -113,7 +121,36 @@ const User = () => {
         return <div>사용자 정보를 불러올 수 없습니다. 다시 로그인 해주세요.</div>;
     }
 
-    return (
+    const renderSidebarButtons = (buttons) => (
+        <div style={{
+            border: '1px solid gray',
+            padding: '20px',
+            textAlign: 'center',
+            height: '580px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+        }}>
+            {buttons.map(({ key, label }) => (
+                <button
+                    key={key}
+                    style={{
+                        fontSize: '20px',
+                        fontWeight: 'bold',
+                        padding: '10px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        backgroundColor: selectedMenu === key ? '#f0f0f0' : 'white',
+                    }}
+                    onClick={() => handleMenuClick(key)}
+                >
+                    {label}
+                </button>
+            ))}
+        </div>
+    );
+
+    const renderUserPage = (buttons) => (
         <div>
             <span style={{ marginTop: '100px', display: 'block', fontSize: '35px' }}>
                 마이페이지
@@ -139,41 +176,19 @@ const User = () => {
                                 borderRadius: '50%',
                                 overflow: 'hidden',
                                 cursor: 'pointer',
-                                position: 'relative'
                             }}
                             onClick={handleClickChangeImage}
                         >
-                            {uploading ? (
-                                <div style={{ textAlign: 'center', paddingTop: '60px' }}>업로드 중...</div>
-                            ) : selectedImage ? (
-                                <>
-                                    <img
-                                        src={selectedImage}
-                                        alt="Profile"
-                                        style={{
-                                            width: '100%',
-                                            height: '100%',
-                                            objectFit: 'cover',
-                                        }}
-                                    />
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleDeleteImage(); }}
-                                        style={{
-                                            position: 'absolute',
-                                            top: '5px',
-                                            right: '5px',
-                                            backgroundColor: 'rgba(0,0,0,0.5)',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '5px',
-                                            padding: '2px 6px',
-                                            cursor: 'pointer',
-                                            fontSize: '12px'
-                                        }}
-                                    >
-                                        삭제
-                                    </button>
-                                </>
+                            {selectedImage ? (
+                                <img
+                                    src={selectedImage}
+                                    alt="Profile"
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: 'cover',
+                                    }}
+                                />
                             ) : (
                                 <div style={{ marginTop: '100px' }}>이미지가 없습니다.</div>
                             )}
@@ -185,28 +200,8 @@ const User = () => {
                             style={{ display: 'none' }}
                             ref={fileInputRef}
                         />
-                        {uploadSuccess && (
-                            <p style={{ color: 'green', fontSize: '14px', marginTop: '10px' }}>
-                                ✅ 업로드 성공!
-                            </p>
-                        )}
                     </div>
-
-                    <div style={{
-                        border: '1px solid gray',
-                        padding: '20px',
-                        textAlign: 'center',
-                        height: '580px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '10px',
-                    }}>
-                        <button onClick={() => handleMenuClick('info')}>계정</button>
-                        <button onClick={() => handleMenuClick('Accommodation')}>숙박 확인</button>
-                        <button onClick={() => handleMenuClick('Reservation')}>예약 확인</button>
-                        <button onClick={() => handleMenuClick('wishlist')}>위시리스트</button>
-                        <button onClick={() => handleMenuClick('recently')}>최근 본</button>
-                    </div>
+                    {renderSidebarButtons(buttons)}
                 </div>
 
                 <div style={{
@@ -220,6 +215,25 @@ const User = () => {
             </div>
         </div>
     );
+
+    if (userInfo.uUser === 'tenant') {
+        return renderUserPage([
+            { key: 'info', label: '계정' },
+            { key: 'image', label: '예약 내역' },
+            { key: 'wishlist', label: '위시리스트' },
+            { key: 'recently', label: '최근 본' }
+        ]);
+    }
+
+    if (userInfo.uUser === 'landlord') {
+        return renderUserPage([
+            { key: 'info', label: '계정' },
+            { key: 'Accommodation', label: '숙소 관리' },
+            { key: 'Reservation', label: '예약 확인' }
+        ]);
+    }
+
+    return null;
 };
 
 export default User;
