@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -42,6 +43,22 @@ public class UserService {
     // landlord인 사용자의 데이터 get
     public List<UserContent> getLandlord(){
         return userRepository.findByUUser("landlord");
+    }
+
+
+    public List<UserContent> getLandlordList() {
+        List<UserContent> landlords = userRepository.findByUUser("landlord");
+
+        // 엔티티 내부 profileImage 키 -> 프리사인드 URL로 교체
+        for (UserContent user : landlords) {
+            String key = user.getProfileImage();
+            if (key != null && !key.isEmpty()) {
+                String presignedUrl = s3Service.generatePresignedUrl(key);
+                user.setProfileImage(presignedUrl);
+            }
+        }
+
+        return landlords;
     }
 
     // 로그인

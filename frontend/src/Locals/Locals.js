@@ -62,6 +62,7 @@ const Locals = () => {
 
       const responseLod = await axios.get(`${process.env.REACT_APP_API_URL}/getlodbyName/${encodeURIComponent(name)}`);
       const lods = responseLod.data || [];
+      console.log(`하하 ${JSON.stringify(lods)}`)
       setHotels(lods);
       setShowMore(false);
     } catch (error) {

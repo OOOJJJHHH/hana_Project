@@ -187,7 +187,7 @@ public class CityController {
 
     @GetMapping("/getLandlord")
     public List<UserContent> getLandlordList() {
-        return userRepository.findByUUser("landlord");
+        return userService.getLandlordList();
     }
 
 

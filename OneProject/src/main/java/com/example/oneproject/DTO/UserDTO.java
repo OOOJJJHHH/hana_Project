@@ -24,6 +24,8 @@ public class UserDTO {
         this.uFirstName = uFirstName;
     }
 
+
+
     public String getuUser() {
         return uUser;
     }
