@@ -72,12 +72,20 @@ const Locals = () => {
     }
   };
 
-  // 전체보기 버튼 클릭 시 전체 숙소 초기 4개 보여주고 필터 해제
-  const handleShowAll = () => {
-    setSelectedRecommender(null);
-    setHotels([]);
-    setShowMore(false);
-    navigate(`/locals`);
+  // 전체보기 버튼 클릭 시 전체 숙소 API 호출하고 필터 해제
+  const handleShowAll = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/getAllLodgings`);
+      setHotels(response.data || []);
+      setSelectedRecommender(null);
+      setShowMore(false);
+      navigate(`/locals`);
+    } catch (error) {
+      console.error("전체 숙소 조회 실패:", error);
+      setHotels([]);
+      setSelectedRecommender(null);
+      setShowMore(false);
+    }
   };
 
   // 숙소 카드 클릭 시 상세 페이지로 이동
@@ -226,21 +234,27 @@ const Locals = () => {
           </div>
         </section>
 
-        {contents.owners.length > 0 ? (
-            <ul>
-              {contents.owners.map((owner, index) => (
-                  <li key={owner.id || index}>
-                    ID: {owner.id || "N/A"}, 이름: {owner.uFirstName} {owner.uLastName}, Email: {owner.uIdEmail || "N/A"}, Uid: {owner.uId || "N/A"}, Profile: {owner.profileImage || "N/A"}
-                  </li>
-              ))}
-            </ul>
-        ) : (
-            <p>No owner data available.</p>
-        )}
-
-        <h3>--- Hotels Data (Raw) ---</h3>
       </div>
   );
 };
 
 export default Locals;
+
+
+
+
+
+//
+// {contents.owners.length > 0 ? (
+//     <ul>
+//       {contents.owners.map((owner, index) => (
+//           <li key={owner.id || index}>
+//             ID: {owner.id || "N/A"}, 이름: {owner.uFirstName} {owner.uLastName}, Email: {owner.uIdEmail || "N/A"}, Uid: {owner.uId || "N/A"}, Profile: {owner.profileImage || "N/A"}
+//           </li>
+//       ))}
+//     </ul>
+// ) : (
+//     <p>No owner data available.</p>
+// )}
+//
+// <h3>--- Hotels Data (Raw) ---</h3>

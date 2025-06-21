@@ -113,7 +113,7 @@ function Local() {
 
 
   const handleMoreClick = (user) => {
-    navigate(`/locals?name=${user.name}`);
+    navigate(`/locals?name=${user.uFirstName}`);
   };
 
 
