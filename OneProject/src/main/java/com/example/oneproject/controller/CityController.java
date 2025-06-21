@@ -59,8 +59,10 @@ public class CityController {
 
     @Autowired
     private CityService cityService;
+
     @Autowired
     private LodService lodService;
+
     @Autowired
     private UserService userService;
 
@@ -99,6 +101,12 @@ public class CityController {
     }
 
     // 숙소==============================================================================
+    //진짜 전부 숙소 정보 가져옴
+    @GetMapping("/getAllLodgings")
+    public List<LodDTO> getAllLodgings() {
+        return lodService.getAllLod();
+    }
+
     // 도시 이름으로 숙소 전체 조회
     @GetMapping("/getLodsByCity/{cityName}")
     public ResponseEntity<List<LodDTO>> getLodsByCity(@PathVariable String cityName) {

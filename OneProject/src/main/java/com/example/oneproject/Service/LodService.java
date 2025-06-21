@@ -91,6 +91,31 @@ public class LodService {
     }
 
     // 모든 숙소 가져오기
+    //진짜 전부 다 가져옴
+    public List<LodDTO> getAllLod() {
+        List<ClodContent> allLodCont = lodRepository.findAll();
+
+        return allLodCont.stream()
+                .map(lodging -> {
+                    // S3 Presigned URL 생성
+                    String presignedImageUrl = null;
+                    if (lodging.getLodImag() != null && !lodging.getLodImag().isEmpty()) {
+                        presignedImageUrl = s3Service.generatePresignedUrl(lodging.getLodImag());
+                    }
+
+                    return new LodDTO(
+                            lodging.getId(),
+                            lodging.getLodName(),
+                            lodging.getLodCity(),
+                            presignedImageUrl,
+                            lodging.getLodLocation(),
+                            lodging.getLodOwner(),
+                            lodging.getLodCallNum()
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
     // 도시의 이름으로 숙소 가져오기
     public List<LodDTO> getLodsByCityName(String cityName) {
         List<ClodContent> contents = lodRepository.findAllByLodCity(cityName);

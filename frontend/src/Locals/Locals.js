@@ -105,7 +105,7 @@ const Locals = () => {
   const currentLocalSlice = contents.owners.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
 
   return (
-      <div className="locals-container">
+      <div className="local-container">
         <header className="locals-header">
           <div className="header-text">
             <h1>{contents.header.title}</h1>
@@ -132,7 +132,7 @@ const Locals = () => {
 
             <div
                 className="recommender-container"
-                style={{ display: "flex", gap: "10px", overflow: "hidden", flexGrow: 1, justifyContent: "center" }}
+                style={{ width: "500px",display: "flex", gap: "10px", overflow: "hidden", flexGrow: 1, justifyContent: "center" }}
             >
               {currentLocalSlice.length > 0 ? (
                   currentLocalSlice.map((owner, index) => {
