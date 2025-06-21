@@ -14,7 +14,7 @@ const Header = () => {
     const Logout = async () => {
         try {
             console.log("로그아웃 시도 중...");
-            const res = await axios.post("http://localhost:8080/api/logout", {}, {
+            const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/logout`, {}, {
                 withCredentials: true,
             });
             console.log("로그아웃 성공:", res.data);

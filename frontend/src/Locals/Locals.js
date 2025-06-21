@@ -34,7 +34,7 @@ const Locals = () => {
   useEffect(() => {
     const fetchOwners = async () => {
       try {
-        const responseOwner = await axios.get("http://localhost:8080/getLandlord");
+        const responseOwner = await axios.get(`${process.env.REACT_APP_API_URL}/getLandlord`);
         setContents((prev) => ({
           ...prev,
           owners: responseOwner.data || []
@@ -60,7 +60,7 @@ const Locals = () => {
       setSelectedRecommender(name);
       navigate(`?name=${encodeURIComponent(name)}`);
 
-      const responseLod = await axios.get(`http://localhost:8080/getlodbyName/${encodeURIComponent(name)}`);
+      const responseLod = await axios.get(`${process.env.REACT_APP_API_URL}/getlodbyName/${encodeURIComponent(name)}`);
       const lods = responseLod.data || [];
       setHotels(lods);
       setShowMore(false);

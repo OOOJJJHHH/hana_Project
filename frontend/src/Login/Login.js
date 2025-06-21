@@ -23,11 +23,12 @@ export default function Login() {
         uUser: "tenant",
       };
 
-      const res = await axios.post("http://localhost:8080/api/googleLogin", userInfoToSend, {
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/googleLogin`, userInfoToSend, {
         withCredentials: true,
       });
 
       if (res.data) {
+        console.log("Google 로그인 성공 응답 데이터:", res.data);
         setUserInfo(res.data);
         setUserType(res.data.userType);
         localStorage.setItem("loginUser", JSON.stringify(res.data));
@@ -44,12 +45,13 @@ export default function Login() {
 
     try {
       const response = await axios.post(
-          "http://localhost:8080/api/login",
+          `${process.env.REACT_APP_API_URL}/api/login`,
           { uId: id, uPassword: password },
           { withCredentials: true }
       );
 
       if (response.data) {
+        console.log("일반 로그인 성공 응답 데이터:", response.data);
         setUserInfo(response.data);
         setUserType(response.data.userType);
         localStorage.setItem("loginUser", JSON.stringify(response.data));

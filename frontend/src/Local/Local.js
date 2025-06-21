@@ -99,7 +99,7 @@ function Local() {
     const fetchData = async () => {
       try {
         console.log("시도");
-        const response = await axios.get("http://localhost:8080/getLandlord");
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/getLandlord`);
         console.log(response.data);
         setLocalData(response.data);
         console.log("성공");

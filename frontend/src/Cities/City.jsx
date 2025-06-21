@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
-import CitySearch from "./CitySerch"; // CitySearch 컴포넌트 import
+import CitySearch from "./CitySerch";
 
 function City() {
     const navigate = useNavigate();
 
     const [cityContents, setcityContents] = useState([]);
-    const [searchTerm, setSearchTerm] = useState(''); // 검색어 상태 추가
+    const [searchTerm, setSearchTerm] = useState('');
+    const [userType, setUserType] = useState(null);
 
-    // 버튼 클릭 시 해당 content를 state로 전달하며 페이지 이동
     const handleClick = (cityName) => {
         navigate('/cityLodging', {
             state: {
@@ -35,7 +35,18 @@ function City() {
         });
     };
 
-    // CitySearch 컴포넌트에서 검색어를 받을 함수
+    // 로그인 정보 확인
+    useEffect(() => {
+        const loginUser = JSON.parse(localStorage.getItem("loginUser"));
+        if (loginUser?.uUser) {
+            console.log("현재 로그인한 사용자 userType:", loginUser.uUser);  // 여기에 출력
+            setUserType(loginUser.uUser);
+        } else {
+            console.log("로그인 정보 없음 또는 userType이 없습니다.");
+        }
+    }, []);
+
+    // 검색어 전달 함수
     const handleSearch = (term) => {
         setSearchTerm(term.toLowerCase());
     };
@@ -139,71 +150,49 @@ function City() {
         width: hoveredButtonIndex !== null ? "100%" : "0",
     };
 
+    const buttonCommonStyle = {
+        color: "white",
+        backgroundColor: "gray",
+        borderRadius: "10px",
+        fontSize: "30px",
+        width: "200px",
+        height: "50px"
+    };
+
     return (
         <div style={citydiv_default}>
-            <div style={{
-                display: "flex",
-                justifyContent: "center",
-                gap: "60px",
-                marginBottom: "20px"
-            }}>
-                <button
-                    style={{
-                        color: "white",
-                        backgroundColor: "gray",
-                        borderRadius: "10px",
-                        fontSize: "30px",
-                        width: "200px",
-                        height: "50px"
-                    }}
-                    onClick={makeCity}
-                >
-                    도시 추가
-                </button>
-                <button
-                    style={{
-                        color: "white",
-                        backgroundColor: "gray",
-                        borderRadius: "10px",
-                        fontSize: "30px",
-                        width: "200px",
-                        height: "50px"
-                    }}
-                    onClick={makeLod}
-                >
-                    숙소 추가
-                </button>
-                <button
-                    style={{
-                        color: "white",
-                        backgroundColor: "gray",
-                        borderRadius: "10px",
-                        fontSize: "30px",
-                        width: "200px",
-                        height: "50px"
-                    }}
-                    onClick={serchCity}
-                >
-                    도시 검색
-                </button>
-                <button
-                    style={{
-                        color: "white",
-                        backgroundColor: "gray",
-                        borderRadius: "10px",
-                        fontSize: "30px",
-                        width: "200px",
-                        height: "50px"
-                    }}
-                    onClick={makeLod}
-                >
-                    숙소 삭제
-                </button>
+            {/* 버튼 영역 */}
+            <div style={{ display: "flex", justifyContent: "center", gap: "60px", marginBottom: "20px" }}>
+                {userType === "admin" && (
+                    <>
+                        <button style={buttonCommonStyle} onClick={makeCity}>
+                            도시 추가
+                        </button>
+                        <button style={buttonCommonStyle} onClick={makeLod}>
+                            숙소 추가
+                        </button>
+                        <button style={buttonCommonStyle} onClick={makeLod}>
+                            숙소 삭제
+                        </button>
+                    </>
+                )}
+
+                {userType === "landlord" && (
+                    <>
+                        <button style={buttonCommonStyle} onClick={makeLod}>
+                            숙소 추가
+                        </button>
+                        <button style={buttonCommonStyle} onClick={makeLod}>
+                            숙소 삭제
+                        </button>
+                    </>
+                )}
             </div>
 
-            {/* CitySearch 컴포넌트에 검색어 전달 함수 props로 넘김 */}
+            {/* 검색창 */}
             <CitySearch onSearch={handleSearch} />
 
+            {/* 도시 리스트 */}
             {cityContents.length === 0 ? (
                 <div>
                     <p>현재 추가되어있는 도시 없음</p>
@@ -233,18 +222,14 @@ function City() {
                                     onClick={() => handleClick(content.cityName)}
                                 >
                                     숙소 보러가기
-                                    <span
-                                        style={{
-                                            ...beforeStyle,
-                                            width: hoveredButtonIndex === index ? '100%' : '0',
-                                        }}
-                                    ></span>
-                                    <span
-                                        style={{
-                                            ...afterStyle,
-                                            width: hoveredButtonIndex === index ? '100%' : '0',
-                                        }}
-                                    ></span>
+                                    <span style={{
+                                        ...beforeStyle,
+                                        width: hoveredButtonIndex === index ? '100%' : '0',
+                                    }}></span>
+                                    <span style={{
+                                        ...afterStyle,
+                                        width: hoveredButtonIndex === index ? '100%' : '0',
+                                    }}></span>
                                 </button>
                             </div>
                         </div>
@@ -252,6 +237,6 @@ function City() {
             )}
         </div>
     );
-};
+}
 
 export default City;

@@ -2,6 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import {useLocation, useNavigate} from "react-router-dom";
 
+const loginUser = JSON.parse(localStorage.getItem("loginUser"));
+
 const Owner = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -9,7 +11,7 @@ const Owner = () => {
     const cityFromContentState = location.state?.cityContents;
 
     const [formData, setFormData] = useState({
-        lodOwner: "",
+        lodOwner: loginUser?.uFirstName || "",
         lodCity: "",
         lodName: "",
         lodLocation: "",
@@ -134,6 +136,10 @@ const Owner = () => {
                 }
             });
 
+            for (let pair of form.entries()) {
+                console.log(pair[0] + ':', pair[1]);
+            }
+
             await axios.post(`${process.env.REACT_APP_API_URL}/addRoom`, form, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
@@ -236,7 +242,9 @@ const Owner = () => {
         <div style={styles.form}>
             <h2 style={styles.title}>숙소 정보</h2>
             <form onSubmit={handleSubmit}>
-                <input type="text" name="lodOwner" value={formData.lodOwner} onChange={handleChange} style={styles.input} placeholder="숙소 올린 사람" required />
+                <div style={{ marginBottom: "12px", fontSize: "16px" }}>
+                    <strong>숙소 올리는 사람:</strong> {formData.lodOwner}
+                </div>
                 <input type="text" name="lodName" value={formData.lodName} onChange={handleChange} style={styles.input} placeholder="숙소명" required />
                 <select
                     name="lodCity"
