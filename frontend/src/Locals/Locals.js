@@ -12,8 +12,8 @@ const Locals = () => {
   // contents 초기값: owners만 빈 배열, header 기본값 설정
   const [contents, setContents] = useState({
     header: {
-      title: "현지인 추천 소도시 여행",
-      subtitle: "진정한 로컬 경험을 만나보세요!",
+      title: "",
+      subtitle: "",
     },
     owners: [],
   });
