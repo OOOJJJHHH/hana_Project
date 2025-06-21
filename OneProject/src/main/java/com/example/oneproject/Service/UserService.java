@@ -83,19 +83,18 @@ public class UserService {
         }
     }
 
-    // kakaoId로 사용자 찾기
-    public Optional<UserContent> findByKakaoId(String kakaoId) {
+    // googleId로 사용자 찾기
+    public Optional<UserContent> findByGoogleId(String googleId) {
         return userRepository.findAll()
                 .stream()
-                .filter(user -> kakaoId.equals(user.getKakaoId()))
+                .filter(user -> googleId.equals(user.getGoogleId()))
                 .findFirst();
     }
 
-    // 카카오 사용자 저장용 (최초 로그인 시 자동 회원가입)
-    public UserContent saveKakaoUser(UserContent userContent) {
+    // 구글 사용자 저장용 (최초 로그인 시 자동 회원가입)
+    public UserContent saveGoogleUser(UserContent userContent) {
         return userRepository.save(userContent);
     }
-
     // 프로필 이미지 업로드 및 저장
     public void updateProfileImage(String userId, MultipartFile image) throws IOException {
         UserContent user = userRepository.findByUId(userId)

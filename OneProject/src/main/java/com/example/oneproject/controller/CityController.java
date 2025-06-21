@@ -47,6 +47,7 @@ import java.util.Optional;
 
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 public class CityController {
 
 
@@ -294,37 +295,45 @@ public class CityController {
         return ResponseEntity.ok("삭제 완료");
     }
 
-    // 카카오 로그인 API 추가
-    @PostMapping("/api/kakaoLogin")
-    public ResponseEntity<?> kakaoLogin(@RequestBody UserDTO kakaoLoginRequest, HttpSession session) {
-        String actualKakaoId = kakaoLoginRequest.getuId().replace("kakao_", "");
-        Optional<UserContent> existingUserOptional = userService.findByKakaoId(actualKakaoId);
+
+    @PostMapping("/api/googleLogin")
+    public ResponseEntity<?> googleLogin(@RequestBody UserDTO googleLoginRequest, HttpSession session) {
+        // "google_" 접두사 제거
+        String actualGoogleId = googleLoginRequest.getuId().replace("google_", "");
+
+        // DB에서 기존 사용자 조회 (구글 ID 기준)
+        Optional<UserContent> existingUserOptional = userService.findByGoogleId(actualGoogleId);
 
         UserContent userToReturn;
 
         if (existingUserOptional.isPresent()) {
+            // ✅ 기존 사용자 → 이름/이메일 업데이트
             userToReturn = existingUserOptional.get();
-            userToReturn.setuFirstName(kakaoLoginRequest.getuFirstName());
-            if (kakaoLoginRequest.getUIdEmail() != null && !kakaoLoginRequest.getUIdEmail().isEmpty()) {
-                userToReturn.setuIdEmail(kakaoLoginRequest.getUIdEmail());
+            userToReturn.setuFirstName(googleLoginRequest.getuFirstName());
+            if (googleLoginRequest.getUIdEmail() != null && !googleLoginRequest.getUIdEmail().isEmpty()) {
+                userToReturn.setuIdEmail(googleLoginRequest.getUIdEmail());
             }
             userService.saveUser(userToReturn);
         } else {
+            // ✅ 신규 사용자 등록
             UserContent newUser = new UserContent();
-            newUser.setuId(kakaoLoginRequest.getuId());
-            newUser.setuIdEmail(kakaoLoginRequest.getUIdEmail());
-            newUser.setuFirstName(kakaoLoginRequest.getuFirstName());
-            newUser.setuLastName(kakaoLoginRequest.getULastName());
-            newUser.setuUser(kakaoLoginRequest.getuUser());
-            newUser.setKakaoId(actualKakaoId);
-            newUser.setuPassword(""); // 비밀번호는 카카오 로그인 시 사용 안 함
+            newUser.setuId(googleLoginRequest.getuId()); // ex) google_123456
+            newUser.setuIdEmail(googleLoginRequest.getUIdEmail());
+            newUser.setuFirstName(googleLoginRequest.getuFirstName());
+            newUser.setuLastName(googleLoginRequest.getULastName());
+            newUser.setuUser(googleLoginRequest.getuUser());
+            newUser.setGoogleId(actualGoogleId); // ✅ 구글 ID 저장 (접두사 없는 값)
+            newUser.setuPassword(""); // 비밀번호 없음
 
             userToReturn = userService.saveUser(newUser);
         }
 
-        session.setAttribute("loginUser", userToReturn); // UserContent 저장
+        // 세션에 사용자 저장
+        session.setAttribute("loginUser", userToReturn);
+
         return ResponseEntity.ok(userToReturn);
     }
+
 
     @PostMapping("/user/profile/upload")
     public ResponseEntity<?> uploadProfileImage(
@@ -338,5 +347,6 @@ public class CityController {
                     .body("업로드 실패: " + e.getMessage());
         }
     }
+
 
 }

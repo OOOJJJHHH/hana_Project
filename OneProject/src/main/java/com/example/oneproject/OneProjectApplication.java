@@ -2,8 +2,7 @@ package com.example.oneproject;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.example.oneproject")
 public class OneProjectApplication {
 
     public static void main(String[] args) {

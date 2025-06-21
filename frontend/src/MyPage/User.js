@@ -60,6 +60,9 @@ const User = () => {
 
         } catch (error) {
             console.error("❌ 이미지 업로드 실패:", error);
+            console.error("message:", error.message);
+            console.error("response:", error.response);  // 서버에서 응답을 받은 경우 (404, 500 등)
+            console.error("request:", error.request);    // 요청은 갔지만 응답이 없을 때
             setUploading(false);
             alert("이미지 업로드에 실패했습니다.");
             return null;

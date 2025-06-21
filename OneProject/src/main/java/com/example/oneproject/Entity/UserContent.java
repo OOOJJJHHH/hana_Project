@@ -33,6 +33,9 @@ public class UserContent {
 
     private String kakaoId;
 
+    @Column(name = "google_id")
+    private String googleId;
+
     public long getId() {
         return id;
     }
@@ -104,5 +107,13 @@ public class UserContent {
 
     public void setKakaoId(String kakaoId) {
         this.kakaoId = kakaoId;
+    }
+
+    public String getGoogleId() {
+        return googleId;
+    }
+
+    public void setGoogleId(String googleId) {
+        this.googleId = googleId;
     }
 }

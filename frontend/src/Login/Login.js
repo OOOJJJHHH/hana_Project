@@ -12,6 +12,7 @@ export default function Login() {
 
   const handleGoogleCallback = async (credentialResponse) => {
     try {
+
       const decoded = jwtDecode(credentialResponse.credential);
       console.log("Google User:", decoded);
 
@@ -22,6 +23,7 @@ export default function Login() {
         uLastName: decoded.family_name || "",
         uUser: "tenant",
       };
+
 
       const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/googleLogin`, userInfoToSend, {
         withCredentials: true,
@@ -66,6 +68,7 @@ export default function Login() {
   const handleFindClick = () => {
     window.open("/popup/find", "FindPopup", "width=400,height=600,left=200,top=100");
   };
+
 
   const containerStyle = {
     minHeight: "100vh",
