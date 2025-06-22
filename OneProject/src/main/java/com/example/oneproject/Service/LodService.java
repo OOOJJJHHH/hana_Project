@@ -143,7 +143,7 @@ public class LodService {
      * 숙소 및 객실 이미지 URL은 S3 프리사인드 URL로 변환
      */
     public LodAddPre getLodDtoByName(String lodName) {
-        ClodContent content = lodRepository.findByLodName(lodName)
+        ClodContent content = lodRepository.findByLodNameWithRooms(lodName)
                 .orElseThrow(() -> new RuntimeException("숙소 없음"));
 
         // 숙소 이미지 프리사인드 URL 변환

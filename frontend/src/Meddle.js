@@ -12,7 +12,82 @@ import spring from './image/spring.png';
 import fan2_1 from './image/2-1.jpg';
 import fan2_2 from './image/2-2.jpg';
 import { useNavigate } from "react-router-dom";
-import { hotelDetails, topRatedHotels } from './Pages/HotelDetail';
+
+const topRatedHotels = [
+  {
+    name: "호텔X",
+    thumbnail: fan1,
+    rating: 4.5,
+  },
+  {
+    name: "호텔Y",
+    thumbnail: fan2,
+    rating: 4.7,
+  },
+  {
+    name: "호텔Z",
+    thumbnail: fan3,
+    rating: 4.9,
+  },
+  {
+    name: "호텔W",
+    thumbnail: fan4,
+    rating: 4.3,
+  },
+  {
+    name: "호텔V",
+    thumbnail: fan5,
+    rating: 4.2,
+  },
+];
+
+const hotelDetails = {
+  hotel1: {
+    name: "호텔1",
+    thumbnail: fan1,
+    rooms: {
+      Standard: 100,
+      Deluxe: 150,
+      Suite: 200,
+    },
+  },
+  hotel2: {
+    name: "호텔2",
+    thumbnail: fan2,
+    rooms: {
+      Standard: 80,
+      Deluxe: 130,
+      Suite: 180,
+    },
+  },
+  hotel3: {
+    name: "호텔3",
+    thumbnail: fan3,
+    rooms: {
+      Standard: 90,
+      Deluxe: 140,
+      Suite: 190,
+    },
+  },
+  hotel4: {
+    name: "호텔4",
+    thumbnail: fan4,
+    rooms: {
+      Standard: 120,
+      Deluxe: 170,
+      Suite: 220,
+    },
+  },
+  hotel5: {
+    name: "호텔5",
+    thumbnail: fan5,
+    rooms: {
+      Standard: 110,
+      Deluxe: 160,
+      Suite: 210,
+    },
+  },
+};
 
 const contents = {
   hotels: [
