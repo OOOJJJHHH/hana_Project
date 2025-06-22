@@ -183,10 +183,6 @@ const User = () => {
                                         height: '100%',
                                         objectFit: 'cover',
                                     }}
-                                    onError={(e) => {
-                                        e.target.onerror = null; // 무한 루프 방지
-                                        e.target.src = `${process.env.REACT_APP_S3_URL}/default_thing/user_default.png`;
-                                    }}
                                 />
                             ) : (
                                 <div style={{ marginTop: '100px' }}>이미지가 없습니다.</div>
