@@ -95,31 +95,31 @@ public class UserService {
         return userRepository.save(userContent);
     }
     // 프로필 이미지 업로드 및 저장
+// 사용자 프로필 이미지를 업로드할 때 사용
     public String updateProfileImage(String userId, MultipartFile image) throws IOException {
+        // 1. DB에서 uId로 사용자 찾기
         UserContent user = userRepository.findByUId(userId)
                 .orElseThrow(() -> new RuntimeException("해당 유저를 찾을 수 없습니다."));
 
-        // 이미지 업로드
-        String key = s3Uploader.uploadFile("userUploads", image);
-        user.setProfileImage(key);
+        // 2. 이미지 S3 업로드
+        String imageUrl = s3Uploader.uploadFile("userUploads", image);
 
+        // 3. 이미지 URL을 해당 사용자 정보에 저장
+        user.setProfileImage(imageUrl);
         userRepository.save(user);
-        return key;
+
+        // 4. URL 반환
+        return imageUrl;
     }
 
-    // 유저 정보 조회 (프리사인드 URL 포함)
+
+
+    // ✅ 유저 정보 조회 시 presigned 변환 제거
     public UserContent getUserWithImage(String userId) {
-        UserContent user = userRepository.findByUId(userId)
+        return userRepository.findByUId(userId)
                 .orElseThrow(() -> new RuntimeException("해당 유저를 찾을 수 없습니다."));
-
-        // S3 이미지 URL 변환
-        if (user.getProfileImage() != null) {
-            String imageUrl = s3Service.generatePresignedUrl(user.getProfileImage());
-            user.setProfileImage(imageUrl);
-        }
-
-        return user;
     }
+
 
 
 }

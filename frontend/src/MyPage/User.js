@@ -17,13 +17,36 @@ const User = () => {
     const [uploading, setUploading] = useState(false);
     const [uploadSuccess, setUploadSuccess] = useState(false);
 
-    useEffect(() => {
-        console.log("🧾 userInfo:", userInfo);
-    }, [userInfo]);
+    const [userDetails, setUserDetails] = useState(null);
 
-    function setUserInfo(data) {
-        // 사용자 정보 갱신 함수
-    }
+    const getImageUrl = (profileImage) => {
+        console.log("🧪 getImageUrl() 입력값:", profileImage);
+        if (!profileImage) return null;
+
+        const isFullUrl = typeof profileImage === "string" && profileImage.startsWith("http");
+        console.log("🔍 isFullUrl:", isFullUrl);
+
+        return isFullUrl
+            ? profileImage
+            : `https://hana-leeej-bucket.s3.ap-northeast-2.amazonaws.com/${profileImage}`;
+    };
+
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            if (!userInfo?.uId) return;
+            try {
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/user/${userInfo.uId}`);
+                console.log("📥 받아온 유저 데이터:", res.data);
+                setUserDetails(res.data);
+                setSelectedImage(getImageUrl(res.data.profileImage));
+                console.log("✅ 최종 이미지 URL:", getImageUrl(userDetails?.profileImage));
+            } catch (err) {
+                console.error("유저 정보 로딩 실패:", err);
+            }
+        };
+        fetchUserInfo();
+    }, [userInfo?.uId]);
+
 
     const uploadImageToServer = async (file) => {
         if (!userInfo?.uId) {
@@ -34,10 +57,10 @@ const User = () => {
         const formData = new FormData();
         formData.append('userId', userInfo.uId);
         formData.append('file', file);
+        console.log("📤 formData userId:", formData.get("userId"));
 
         try {
             setUploading(true);
-
             const response = await axios.post(
                 `${process.env.REACT_APP_API_URL}/user/profile/upload`,
                 formData,
@@ -47,65 +70,31 @@ const User = () => {
                     },
                 }
             );
+            console.log("🪄 response.data (업로드 URL):", response.data);
             const updatedUser = await axios.get(`${process.env.REACT_APP_API_URL}/user/${userInfo.uId}`);
-            setUserInfo(updatedUser.data);
-
-            console.log("✅ 업로드 성공:", response.data);
-
+            console.log("🔁 updatedUser.data:", updatedUser.data); // ✅ 여기!
+            setUserDetails(updatedUser.data);
+            setSelectedImage(getImageUrl(updatedUser.data.profileImage));
             setUploading(false);
             setUploadSuccess(true);
             setTimeout(() => setUploadSuccess(false), 2000);
-
-            return response.data;
-
         } catch (error) {
-            console.log("📦 업로드 주소:", `${process.env.REACT_APP_API_URL}/user/profile/upload`);
-            console.error("❌ 이미지 업로드 실패:", error);
-            console.error("message:", error.message);
-            console.error("response:", error.response);  // 서버에서 응답을 받은 경우 (404, 500 등)
-            console.error("request:", error.request);    // 요청은 갔지만 응답이 없을 때
+            console.error("이미지 업로드 실패:", error);
             setUploading(false);
             alert("이미지 업로드에 실패했습니다.");
-            return null;
         }
     };
 
     const handleImageChange = async (event) => {
         const file = event.target.files[0];
         if (file) {
-            const uploadedUrl = await uploadImageToServer(file);
-            if (uploadedUrl) {
-                setSelectedImage(uploadedUrl);
-            }
-        }
-    };
-
-    const handleDeleteImage = async () => {
-        try {
-            await axios.delete(`http://localhost:8080/deleteProfileImage?userId=${userInfo.uId}`);
-            setSelectedImage(null);
-        } catch (error) {
-            alert("이미지 삭제 실패");
-            console.error(error);
+            await uploadImageToServer(file);
         }
     };
 
     const handleClickChangeImage = () => {
         fileInputRef.current.click();
     };
-
-    useEffect(() => {
-        const fetchProfileImage = async () => {
-            try {
-                const res = await axios.get(`http://localhost:8080/getProfileImage?userId=${userInfo.id}`);
-                setSelectedImage(res.data);
-            } catch (err) {
-                console.error('프로필 이미지 불러오기 실패', err);
-            }
-        };
-
-        if (userInfo?.id) fetchProfileImage();
-    }, [userInfo]);
 
     const handleMenuClick = (menu) => setSelectedMenu(menu);
 
@@ -183,20 +172,25 @@ const User = () => {
                             }}
                             onClick={handleClickChangeImage}
                         >
-                            {selectedImage ? (
+                            {userDetails?.profileImage ? (
                                 <img
-                                    src={selectedImage}
+                                    key={getImageUrl(userDetails.profileImage)+ Date.now()}
+                                    src={getImageUrl(userDetails.profileImage)}
                                     alt="Profile"
                                     style={{
                                         width: '100%',
                                         height: '100%',
                                         objectFit: 'cover',
                                     }}
+                                    onError={(e) => {
+                                        e.target.src = "/default_profile.png";
+                                    }}
                                 />
                             ) : (
                                 <div style={{ marginTop: '100px' }}>이미지가 없습니다.</div>
                             )}
                         </div>
+                        {uploadSuccess && <div style={{ marginTop: '10px', color: 'green' }}>✅ 프로필 이미지가 변경되었습니다!</div>}
                         <input
                             type="file"
                             accept="image/*"

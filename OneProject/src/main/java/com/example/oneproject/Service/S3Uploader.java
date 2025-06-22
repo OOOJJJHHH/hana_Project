@@ -25,14 +25,16 @@ public class S3Uploader {
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
+                .acl("public-read")
                 .contentType(file.getContentType())
                 .build();
 
         s3Client.putObject(request, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
-        String fileUrl = "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/" + key;
-        return fileUrl;
+        // ✅ 전체 URL 반환 (DB에 저장되는 값)
+        return "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/" + key;
     }
+
     public void deleteFile(String key) {
         s3Client.deleteObject(builder -> builder
                 .bucket(bucket)

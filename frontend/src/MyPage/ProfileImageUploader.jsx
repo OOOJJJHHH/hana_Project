@@ -25,7 +25,7 @@ const ProfileImageUploader = ({ userId }) => {
         formData.append("userId", userId); // 문자열로 전달해야 함
 
         try {
-            const res = await axios.post(`${process.env.REACT_APP_API_URL}/uploadProfileImage`, formData, {
+            const res = await axios.post(`${process.env.REACT_APP_API_URL}/user/profile/upload`, formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
