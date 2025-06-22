@@ -22,7 +22,7 @@ public class UserContent {
     @Column(length = 100, nullable = false)
     private String uIdEmail;
 
-    @Column(length = 100, nullable = false)
+    @Column(length = 100, nullable = false, unique = true)
     private String uId;
 
     @Column(length = 100, nullable = false)

@@ -184,7 +184,7 @@ public class CityController {
     // 찜 추가 API
     @PostMapping("/wishlist/add")
     public ResponseEntity<String> addWishlist(
-            @RequestParam Long userId,
+            @RequestParam String userId,
             @RequestParam String lodName,
             @RequestParam String roomName
     ) {

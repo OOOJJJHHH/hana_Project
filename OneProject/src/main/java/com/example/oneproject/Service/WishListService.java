@@ -22,10 +22,10 @@ public class WishListService {
     private final RoomRepository roomRepository;
 
     @Transactional
-    public String addWishList(Long userId, String lodName, String roomName) {
+    public String addWishList(String userId, String lodName, String roomName) {
 
         // 1. 사용자 조회
-        UserContent user = userContentRepository.findById(userId)
+        UserContent user = userContentRepository.findByUId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
         // 2. 숙소 조회 (이름으로)
