@@ -25,7 +25,6 @@ public class S3Uploader {
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(bucket)
                 .key(key)
-                .acl("public-read")
                 .contentType(file.getContentType())
                 .build();
 
