@@ -5,7 +5,7 @@ import com.example.oneproject.DTO.CityContentDTO;
 import com.example.oneproject.DTO.LodAddPre;
 import com.example.oneproject.DTO.LodDTO;
 import com.example.oneproject.Repository.UserRepository;
-import com.example.oneproject.Service.S3Uploader;
+import com.example.oneproject.Service.*;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -22,9 +22,6 @@ import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.CityContent;
 import com.example.oneproject.Entity.UserContent;
 import com.example.oneproject.Entity.Room;
-import com.example.oneproject.Service.CityService;
-import com.example.oneproject.Service.LodService;
-import com.example.oneproject.Service.UserService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpSession;
@@ -59,6 +56,9 @@ public class CityController {
 
     @Autowired
     private CityService cityService;
+
+    @Autowired
+    private  WishListService wishListService;
 
     @Autowired
     private LodService lodService;
@@ -180,6 +180,23 @@ public class CityController {
         }
         userService.saveUser(userContent);
     }
+
+    // 찜 추가 API
+    @PostMapping("/wishlist/add")
+    public ResponseEntity<String> addWishlist(
+            @RequestParam Long userId,
+            @RequestParam String lodName,
+            @RequestParam String roomName
+    ) {
+        try {
+            String result = wishListService.addWishList(userId, lodName, roomName);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
 
     @GetMapping("/getUser")
     public List<UserContent> getUser() {

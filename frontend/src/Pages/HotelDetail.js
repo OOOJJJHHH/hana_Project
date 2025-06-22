@@ -15,6 +15,7 @@ const HotelDetail = () => {
   const [selectedRoom, setSelectedRoom] = useState("");
   const [roomPrice, setRoomPrice] = useState(0);
   const [roomImages, setRoomImages] = useState([]);
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const userInfo = useContext(UserContext);
 
   useEffect(() => {
@@ -26,11 +27,9 @@ const HotelDetail = () => {
             `${process.env.REACT_APP_API_URL}/getlodUseN/${encodeURIComponent(hotelName)}`
         );
         const data = response.data;
-        console.log(data);
 
         setHotelInfo(data);
 
-        // rooms가 존재하고 비어있지 않으면 초기 방 설정
         if (data.rooms && data.rooms.length > 0) {
           const initialRoom = data.rooms[0];
           setSelectedRoom(initialRoom.roomName);
@@ -63,7 +62,7 @@ const HotelDetail = () => {
     const selected = hotelInfo.rooms.find((room) => room.roomName === roomType);
     setRoomPrice(selected?.price || 0);
     setRoomImages(selected?.images || []);
-    setCurrentIndex(0); // 이미지 초기화
+    setCurrentIndex(0);
   };
 
   const handleNext = () => {
@@ -90,31 +89,70 @@ const HotelDetail = () => {
     return stars.join("");
   };
 
+  // 찜하기 버튼 클릭 핸들러 개선 버전
+  const handleWishlistClick = async () => {
+    if (!userInfo) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+    if (!hotelInfo || !selectedRoom) {
+      alert("숙소 정보가 올바르지 않습니다.");
+      return;
+    }
+
+    const selectedRoomObj = hotelInfo.rooms.find(room => room.roomName === selectedRoom);
+    if (!selectedRoomObj) {
+      alert("선택된 방을 찾을 수 없습니다.");
+      return;
+    }
+
+    setIsWishlistLoading(true);
+
+    try {
+      // POST 요청의 body에 데이터 담아 보냄
+      const response = await axios.post(
+          `${process.env.REACT_APP_API_URL}/wishlist/add`,
+          {
+            lodName: hotelInfo.lodName,           // 숙소 이름
+            roomName: selectedRoomObj.roomName,   // 방 이름
+            userId: userInfo.id,                   // 로그인한 사용자 고유 ID (필수)
+          }
+      );
+
+      if(response.data.success){
+        alert("찜목록에 추가되었습니다.");
+      } else {
+        alert(response.data.message || "이미 찜한 항목입니다.");
+      }
+
+    } catch (error) {
+      console.error("찜 추가 실패:", error);
+      alert("찜 추가에 실패했습니다.");
+    } finally {
+      setIsWishlistLoading(false);
+    }
+  };
+
   if (!hotelInfo) return <div>Loading...</div>;
 
   return (
       <div className="hotel-detail-container">
         <div className="image-slider">
-          {hotelInfo.rooms && hotelInfo.rooms.length > 0 && (
-              (() => {
-                const selectedRoomData = hotelInfo.rooms.find(
-                    (room) => room.roomName === selectedRoom
-                );
-                return selectedRoomData ? (
-                    <>
-                      <img
-                          src={selectedRoomData.roomImag}
-                          alt={`room-${selectedRoomData.roomName}`}
-                          className="main-image"
-                      />
-                    </>
-                ) : (
-                    <p>선택된 방의 이미지가 없습니다.</p>
-                );
-              })()
-          )}
+          {hotelInfo.rooms && hotelInfo.rooms.length > 0 && (() => {
+            const selectedRoomData = hotelInfo.rooms.find(room => room.roomName === selectedRoom);
+            return selectedRoomData ? (
+                <>
+                  <img
+                      src={selectedRoomData.roomImag}
+                      alt={`room-${selectedRoomData.roomName}`}
+                      className="main-image"
+                  />
+                </>
+            ) : (
+                <p>선택된 방의 이미지가 없습니다.</p>
+            );
+          })()}
         </div>
-
 
         <div className="hotel-info">
           <h1>{hotelInfo.lodName}</h1>
@@ -125,7 +163,7 @@ const HotelDetail = () => {
           <div className="room-selector">
             <label htmlFor="room-select">방 종류:</label>
             <select id="room-select" value={selectedRoom} onChange={handleRoomChange}>
-              {hotelInfo.rooms && hotelInfo.rooms.map((room) => (
+              {hotelInfo.rooms && hotelInfo.rooms.map(room => (
                   <option key={room.id} value={room.roomName}>
                     {room.roomName} - {room.price.toLocaleString()}원
                   </option>
@@ -142,7 +180,13 @@ const HotelDetail = () => {
             <button className="reserve-button" onClick={handleReservationClick}>
               예약하기
             </button>
-            <button className="wishlist-button">찜하기</button>
+            <button
+                className="wishlist-button"
+                onClick={handleWishlistClick}
+                disabled={isWishlistLoading}
+            >
+              {isWishlistLoading ? "처리중..." : "찜하기"}
+            </button>
           </div>
         </div>
 
@@ -151,7 +195,9 @@ const HotelDetail = () => {
           {hotelInfo.reviews && hotelInfo.reviews.length > 0 ? (
               hotelInfo.reviews.map((review, idx) => (
                   <div key={idx} className="review-card">
-                    <p><strong>{review.user}</strong> {renderStars(review.rating)} ({review.rating})</p>
+                    <p>
+                      <strong>{review.user}</strong> {renderStars(review.rating)} ({review.rating})
+                    </p>
                     <p>{review.comment}</p>
                   </div>
               ))
@@ -179,12 +225,8 @@ const HotelDetail = () => {
               ))}
             </div>
         )}
-
-
       </div>
   );
-
-
 };
 
 export default HotelDetail;
