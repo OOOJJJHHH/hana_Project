@@ -36,11 +36,7 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.UUID;
-import java.util.Optional;
-
-
+import java.util.*;
 
 
 @RestController
@@ -183,16 +179,24 @@ public class CityController {
 
     // 찜 추가 API
     @PostMapping("/wishlist/add")
-    public ResponseEntity<String> addWishlist(
+    public ResponseEntity<Map<String, Object>> addWishlist(
             @RequestParam String userId,
             @RequestParam String lodName,
             @RequestParam String roomName
     ) {
+        Map<String, Object> response = new HashMap<>();
         try {
             String result = wishListService.addWishList(userId, lodName, roomName);
-            return ResponseEntity.ok(result);
+
+            boolean isDuplicate = result.equals("이미 찜한 항목입니다.");
+            response.put("success", !isDuplicate);
+            response.put("message", result);
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
     }
 
