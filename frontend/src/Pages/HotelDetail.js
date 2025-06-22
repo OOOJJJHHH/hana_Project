@@ -12,23 +12,33 @@ const HotelDetail = () => {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [hotelInfo, setHotelInfo] = useState(null);
-  const [selectedRoom, setSelectedRoom] = useState("Standard");
+  const [selectedRoom, setSelectedRoom] = useState("");
   const [roomPrice, setRoomPrice] = useState(0);
+  const [roomImages, setRoomImages] = useState([]);
   const userInfo = useContext(UserContext);
 
-  // ⭐ 서버에서 호텔 데이터 가져오기
   useEffect(() => {
     const fetchHotelInfo = async () => {
       if (!hotelName) return;
 
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/hotel?name=${encodeURIComponent(hotelName)}`);
+        const response = await axios.get(
+            `${process.env.REACT_APP_API_URL}/getlodUseN/${encodeURIComponent(hotelName)}`
+        );
         const data = response.data;
+        console.log(data);
 
         setHotelInfo(data);
+
+        // rooms가 존재하고 비어있지 않으면 초기 방 설정
+        if (data.rooms && data.rooms.length > 0) {
+          const initialRoom = data.rooms[0];
+          setSelectedRoom(initialRoom.roomName);
+          setRoomPrice(initialRoom.price);
+          setRoomImages(initialRoom.images || []);
+        }
+
         setCurrentIndex(0);
-        setSelectedRoom("Standard");
-        setRoomPrice(data.rooms?.["Standard"] || 0);
       } catch (error) {
         console.error("호텔 정보 가져오기 실패:", error);
         alert("호텔 정보를 불러오는데 실패했습니다.");
@@ -49,18 +59,22 @@ const HotelDetail = () => {
   const handleRoomChange = (event) => {
     const roomType = event.target.value;
     setSelectedRoom(roomType);
-    setRoomPrice(hotelInfo?.rooms?.[roomType] || 0);
+
+    const selected = hotelInfo.rooms.find((room) => room.roomName === roomType);
+    setRoomPrice(selected?.price || 0);
+    setRoomImages(selected?.images || []);
+    setCurrentIndex(0); // 이미지 초기화
   };
 
   const handleNext = () => {
-    if (hotelInfo?.images) {
-      setCurrentIndex((prev) => (prev + 1) % hotelInfo.images.length);
+    if (roomImages.length > 0) {
+      setCurrentIndex((prev) => (prev + 1) % roomImages.length);
     }
   };
 
   const handlePrev = () => {
-    if (hotelInfo?.images) {
-      setCurrentIndex((prev) => (prev - 1 + hotelInfo.images.length) % hotelInfo.images.length);
+    if (roomImages.length > 0) {
+      setCurrentIndex((prev) => (prev - 1 + roomImages.length) % roomImages.length);
     }
   };
 
@@ -81,26 +95,39 @@ const HotelDetail = () => {
   return (
       <div className="hotel-detail-container">
         <div className="image-slider">
-          <img
-              src={hotelInfo.images[currentIndex]}
-              alt={`${hotelInfo.name} ${currentIndex + 1}`}
-              className="main-image"
-          />
-          <button className="nav-button left" onClick={handlePrev}>〈</button>
-          <button className="nav-button right" onClick={handleNext}>〉</button>
+          {hotelInfo.rooms && hotelInfo.rooms.length > 0 && (
+              (() => {
+                const selectedRoomData = hotelInfo.rooms.find(
+                    (room) => room.roomName === selectedRoom
+                );
+                return selectedRoomData ? (
+                    <>
+                      <img
+                          src={selectedRoomData.roomImag}
+                          alt={`room-${selectedRoomData.roomName}`}
+                          className="main-image"
+                      />
+                    </>
+                ) : (
+                    <p>선택된 방의 이미지가 없습니다.</p>
+                );
+              })()
+          )}
         </div>
 
+
         <div className="hotel-info">
-          <h1>{hotelInfo.name}</h1>
-          <p>{hotelInfo.location}</p>
-          <p>{hotelInfo.description}</p>
+          <h1>{hotelInfo.lodName}</h1>
+          <p>{hotelInfo.lodLocation}</p>
+          <p>소유자: {hotelInfo.lodOwner}</p>
+          <p>연락처: {hotelInfo.lodCallNum}</p>
 
           <div className="room-selector">
             <label htmlFor="room-select">방 종류:</label>
             <select id="room-select" value={selectedRoom} onChange={handleRoomChange}>
-              {hotelInfo.rooms && Object.keys(hotelInfo.rooms).map((roomType) => (
-                  <option key={roomType} value={roomType}>
-                    {roomType} - {hotelInfo.rooms[roomType].toLocaleString()}원
+              {hotelInfo.rooms && hotelInfo.rooms.map((room) => (
+                  <option key={room.id} value={room.roomName}>
+                    {room.roomName} - {room.price.toLocaleString()}원
                   </option>
               ))}
             </select>
@@ -119,25 +146,6 @@ const HotelDetail = () => {
           </div>
         </div>
 
-        {/* 추천 호텔 섹션 (추후 기능 구현 가능) */}
-        {/* <div className="similar-hotels-section">
-        <h2>같은 지역 호텔</h2>
-        <div className="similar-hotel-list">
-          {filteredSimilar.map((hotel, idx) => (
-            <div
-              key={idx}
-              className="similar-hotel-card"
-              onClick={() => navigate(`/hotel-detail?name=${encodeURIComponent(hotel.name)}`)}
-              style={{ cursor: "pointer" }}
-            >
-              <img src={hotel.image} alt={hotel.name} />
-              <h3>{hotel.name}</h3>
-              <p>{renderStars(hotel.rating)} ({hotel.rating})</p>
-            </div>
-          ))}
-        </div>
-      </div> */}
-
         <div className="hotel-review-section">
           <h2>리뷰</h2>
           {hotelInfo.reviews && hotelInfo.reviews.length > 0 ? (
@@ -151,8 +159,32 @@ const HotelDetail = () => {
               <p>아직 리뷰가 없습니다.</p>
           )}
         </div>
+
+        {hotelInfo.rooms && hotelInfo.rooms.length > 0 && (
+            <div className="debug-room-info">
+              <h3>✅ 방 정보 전체 디버깅 출력:</h3>
+              {hotelInfo.rooms.map((room, index) => (
+                  <div key={room.id}>
+                    <p>🛏 Room {index + 1}</p>
+                    <p>방 이름: {room.roomName}</p>
+                    <p>가격: {room.price}</p>
+                    <p>이미지 URL: {room.roomImag}</p>
+                    <img
+                        src={room.roomImag}
+                        alt={`room-${room.roomName}`}
+                        style={{ width: "200px", height: "auto", marginBottom: "1rem" }}
+                    />
+                    <hr />
+                  </div>
+              ))}
+            </div>
+        )}
+
+
       </div>
   );
+
+
 };
 
 export default HotelDetail;
