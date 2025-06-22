@@ -180,7 +180,7 @@ const CityLodging = () => {
                                     key={index}
                                     onMouseEnter={() => setHoveredIndex(index)}
                                     onMouseLeave={() => setHoveredIndex(null)}
-                                    onClick={() => navigate(`/lodDetail/${lContent.lodId}`)} // 클릭 시 상세페이지로 이동
+                                    onClick={() => navigate(`/hotel-detail?name=${encodeURIComponent(lContent.lodName)}`)} // 클릭 시 상세페이지로 이동
                                     style={{
                                         ...cardBaseStyle,
                                         transform: hoveredIndex === index ? "scale(1.15)" : "scale(1)",
