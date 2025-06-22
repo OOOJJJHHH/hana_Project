@@ -1,11 +1,15 @@
 package com.example.oneproject.controller;
 
 
+import com.amazonaws.services.ec2.model.Reservation;
 import com.example.oneproject.DTO.CityContentDTO;
 import com.example.oneproject.DTO.LodAddPre;
 import com.example.oneproject.DTO.LodDTO;
+import com.example.oneproject.Entity.*;
 import com.example.oneproject.Repository.UserRepository;
+import com.example.oneproject.Repository.WishListRepository;
 import com.example.oneproject.Service.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -18,10 +22,6 @@ import java.nio.file.Paths;
 
 
 import com.example.oneproject.DTO.UserDTO;
-import com.example.oneproject.Entity.ClodContent;
-import com.example.oneproject.Entity.CityContent;
-import com.example.oneproject.Entity.UserContent;
-import com.example.oneproject.Entity.Room;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpSession;
@@ -37,10 +37,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
+@RequiredArgsConstructor
 public class CityController {
 
 
@@ -61,6 +63,9 @@ public class CityController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private WishListRepository wishListRepository;
 
     // 도시 정보 저장
     @PostMapping("/saveCity")
@@ -185,13 +190,13 @@ public class CityController {
     // 찜 추가 API
     @PostMapping("/wishlist/add")
     public ResponseEntity<Map<String, Object>> addWishlist(
-            @RequestParam String userId,
+            @RequestParam Long userId,
             @RequestParam String lodName,
             @RequestParam String roomName
     ) {
         Map<String, Object> response = new HashMap<>();
         try {
-            String result = wishListService.addWishList(userId, lodName, roomName);
+            String result = wishListService.addWishListByUserId(userId, lodName, roomName); // 서비스도 변경 필요
 
             boolean isDuplicate = result.equals("이미 찜한 항목입니다.");
             response.put("success", !isDuplicate);
@@ -203,6 +208,66 @@ public class CityController {
             response.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    // 찜 삭제
+    @DeleteMapping("/wishlist/delete")
+    public ResponseEntity<Map<String, Object>> deleteWishlist(
+            @RequestParam Long userId,
+            @RequestParam String lodName,
+            @RequestParam String roomName
+    ) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            wishListService.removeWishlistByUserId(userId, lodName, roomName); // 서비스도 변경 필요
+            response.put("success", true);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    // 찜 목록 조회
+    @GetMapping("/wishlist/{id}")
+    public ResponseEntity<List<Map<String, Object>>> getUserWishlist(@PathVariable Long userId) {
+        List<WishList> wishList = wishListRepository.findByUser_Id(userId); // 기존에 findByUser_UId였다면 메서드도 수정
+
+        List<Map<String, Object>> result = wishList.stream().map(w -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("lodName", w.getClodContent().getLodName());
+            map.put("lodLocation", w.getClodContent().getLodLocation());
+            map.put("roomName", w.getRoom().getRoomName());
+            map.put("roomPrice", w.getRoom().getPrice());
+            map.put("roomImage", w.getRoom().getRoomImag());
+            return map;
+        }).toList();
+
+        return ResponseEntity.ok(result);
+    }
+
+
+    @GetMapping("/wishlist/{userPkId}") // userId → userPkId 로 헷갈리지 않게 명확히
+    public ResponseEntity<List<Map<String, Object>>> getUserWishlistById(@PathVariable Long userPkId) {
+        Optional<UserContent> optionalUser = userRepository.findById(userPkId);
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        List<WishList> wishList = wishListRepository.findByUser(optionalUser.get());
+
+        List<Map<String, Object>> result = wishList.stream().map(w -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("lodName", w.getClodContent().getLodName());
+            map.put("lodLocation", w.getClodContent().getLodLocation());
+            map.put("roomName", w.getRoom().getRoomName());
+            map.put("roomPrice", w.getRoom().getPrice());
+            map.put("roomImage", w.getRoom().getRoomImag());
+            return map;
+        }).toList();
+
+        return ResponseEntity.ok(result);
     }
 
 
@@ -231,6 +296,7 @@ public class CityController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+
 
 
 

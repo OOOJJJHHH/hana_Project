@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
+@Table(name = "wish_list")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

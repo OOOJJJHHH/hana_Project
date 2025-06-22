@@ -22,26 +22,27 @@ public class WishListService {
     private final RoomRepository roomRepository;
 
     @Transactional
-    public String addWishList(String userId, String lodName, String roomName) {
-
+    public String addWishListByUserId(Long userId, String lodName, String roomName) {
         // 1. 사용자 조회
-        UserContent user = userContentRepository.findByUId(userId)
+        UserContent user = userContentRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        // 2. 숙소 조회 (이름으로)
+        // 2. 숙소 조회
         ClodContent lod = clodContentRepository.findByLodName(lodName)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 숙소입니다."));
 
-        // 3. 방 조회 (숙소 내에서 방 이름으로)
-        Room room = roomRepository.findByRoomNameAndClodContent(roomName, lod)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 방입니다."));
+        // 3. 방 찾기 (숙소 안에서 roomName 일치하는 Room)
+        Room room = lod.getRooms().stream()
+                .filter(r -> r.getRoomName().equals(roomName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 숙소에 해당 이름의 방이 없습니다."));
 
-        // 4. 중복 찜 확인
-        if(wishListRepository.findByUserAndClodContentAndRoom(user, lod, room).isPresent()) {
+        // 4. 중복 체크
+        if (wishListRepository.findByUserAndClodContentAndRoom(user, lod, room).isPresent()) {
             return "이미 찜한 항목입니다.";
         }
 
-        // 5. 찜 저장
+        // 5. 저장
         WishList wish = WishList.builder()
                 .user(user)
                 .clodContent(lod)
@@ -49,7 +50,44 @@ public class WishListService {
                 .build();
 
         wishListRepository.save(wish);
-
         return "찜목록에 추가되었습니다.";
+    }
+
+    @Transactional
+    public void removeWishlist(String userId, String lodName, String roomName) {
+        UserContent user = userContentRepository.findByUId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        ClodContent lod = clodContentRepository.findByLodName(lodName)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 숙소입니다."));
+
+        Room room = lod.getRooms().stream()
+                .filter(r -> r.getRoomName().equals(roomName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("숙소 '" + lodName + "' 안에 '" + roomName + "' 방이 없습니다."));
+
+        WishList wish = wishListRepository.findByUserAndClodContentAndRoom(user, lod, room)
+                .orElseThrow(() -> new IllegalArgumentException("찜 내역이 없습니다."));
+
+        wishListRepository.delete(wish);
+    }
+
+    @Transactional
+    public void removeWishlistByUserId(Long userId, String lodName, String roomName) {
+        UserContent user = userContentRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        ClodContent lod = clodContentRepository.findByLodName(lodName)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 숙소입니다."));
+
+        Room room = lod.getRooms().stream()
+                .filter(r -> r.getRoomName().equals(roomName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("숙소 '" + lodName + "' 안에 '" + roomName + "' 방이 없습니다."));
+
+        WishList wish = wishListRepository.findByUserAndClodContentAndRoom(user, lod, room)
+                .orElseThrow(() -> new IllegalArgumentException("찜 내역이 없습니다."));
+
+        wishListRepository.delete(wish);
     }
 }

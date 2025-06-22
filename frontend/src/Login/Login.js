@@ -28,6 +28,7 @@ export default function Login() {
       const res = await axios.post(`${process.env.REACT_APP_API_URL}/api/googleLogin`, userInfoToSend, {
         withCredentials: true,
       });
+      setUserInfo(res.data);
 
       if (res.data) {
         console.log("Google 로그인 성공 응답 데이터:", res.data);
