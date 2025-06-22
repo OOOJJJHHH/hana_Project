@@ -12,6 +12,7 @@ import spring from './image/spring.png';
 import fan2_1 from './image/2-1.jpg';
 import fan2_2 from './image/2-2.jpg';
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const topRatedHotels = [
   {
@@ -41,54 +42,6 @@ const topRatedHotels = [
   },
 ];
 
-const hotelDetails = {
-  hotel1: {
-    name: "호텔1",
-    thumbnail: fan1,
-    rooms: {
-      Standard: 100,
-      Deluxe: 150,
-      Suite: 200,
-    },
-  },
-  hotel2: {
-    name: "호텔2",
-    thumbnail: fan2,
-    rooms: {
-      Standard: 80,
-      Deluxe: 130,
-      Suite: 180,
-    },
-  },
-  hotel3: {
-    name: "호텔3",
-    thumbnail: fan3,
-    rooms: {
-      Standard: 90,
-      Deluxe: 140,
-      Suite: 190,
-    },
-  },
-  hotel4: {
-    name: "호텔4",
-    thumbnail: fan4,
-    rooms: {
-      Standard: 120,
-      Deluxe: 170,
-      Suite: 220,
-    },
-  },
-  hotel5: {
-    name: "호텔5",
-    thumbnail: fan5,
-    rooms: {
-      Standard: 110,
-      Deluxe: 160,
-      Suite: 210,
-    },
-  },
-};
-
 const contents = {
   hotels: [
     { name: "호텔A", image: fan1, recommendedBy: "오오오" },
@@ -110,16 +63,46 @@ const Meddle = () => {
     setHotelList(topRatedHotels);
   }, []);
 
+  const [hotelDetails, setHotelDetails] = useState({});
+
+  useEffect(() => {
+    axios.get(`${process.env.REACT_APP_API_URL}/getAllLodgings`) // ⬅️ 스프링의 실제 API 주소
+        .then(response => {
+          // 배열 -> 객체 형태로 변환 (key는 hotel.id처럼 고유값)
+          console.log(response.data);
+          const hotelObject = {};
+          response.data.forEach(hotel => {
+            hotelObject[hotel.id] = {
+              name: hotel.lodName,
+              thumbnail: hotel.lodImag,
+              rooms: hotel.rooms
+            };
+          });
+          setHotelDetails(hotelObject);
+        })
+        .catch(error => {
+          console.error("숙소 정보를 불러오는 중 오류 발생:", error);
+        });
+  }, []);
+
   // ⭐ 수정: 가장 저렴한 호텔 데이터 준비 및 부족한 부분 채우기
   const allHotels = Object.values(hotelDetails);
 
   const lowestPricedHotels = allHotels
-      .map(hotel => ({
-        name: hotel.name,
-        image: hotel.thumbnail,
-        price: hotel.rooms.Standard || Math.min(...Object.values(hotel.rooms))
-      }))
+      .filter(hotel => hotel.rooms && typeof hotel.rooms === 'object') // rooms가 존재할 때만
+      .map(hotel => {
+        const roomPrices = Object.values(hotel.rooms);
+        const standardPrice = hotel.rooms.Standard;
+        const minPrice = roomPrices.length > 0 ? Math.min(...roomPrices) : null;
+
+        return {
+          name: hotel.name,
+          image: hotel.thumbnail,
+          price: standardPrice ?? minPrice ?? 0, // price가 없으면 0 처리
+        };
+      })
       .sort((a, b) => a.price - b.price);
+
 
   // 총 9개의 박스를 채우기 위한 로직
   const desiredBoxCount = 9;
@@ -257,6 +240,7 @@ const Meddle = () => {
             </BoxWrapper>
             <ArrowButton onClick={handleNext}>&gt;</ArrowButton>
           </ResponsiveContainer_1>
+
         </ResponsiveContainer>
 
         <ToggleRectangles />

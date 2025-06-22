@@ -100,7 +100,9 @@ function City() {
     const backImg = {
         borderRadius: "15px",
         width: "100%",
-        height: "100%",
+        height: "auto",         // ✅ 자동 높이로 설정
+        objectFit: "cover",     // ✅ 꽉 채우되 비율 유지 (혹은 contain)
+        border: "1px solid #ccc"
     };
 
     const [hoveredButtonIndex, setHoveredButtonIndex] = useState(null);
