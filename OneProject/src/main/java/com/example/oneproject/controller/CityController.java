@@ -348,11 +348,11 @@ public class CityController {
             @RequestParam("userId") String userId,
             @RequestParam("file") MultipartFile file) {
         try {
-            // ✅ 이미지 업로드 후 URL 받기
-            String imageUrl = userService.updateProfileImage(userId, file);
+            // ✅ 이미지 업로드 후 key 받기
+            String key = userService.updateProfileImage(userId, file);
 
-            // ✅ 프론트에 이미지 URL 리턴
-            return ResponseEntity.ok(imageUrl);
+            // ✅ key만 리턴
+            return ResponseEntity.ok(key);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("업로드 실패: " + e.getMessage());
