@@ -64,26 +64,46 @@ const Meddle = () => {
   }, []);
 
   const [hotelDetails, setHotelDetails] = useState({});
+  const [randomOwners, setRandomOwners] = useState([]);
+
+  const getRandomOwners = (owners, count = 2) => {
+    const uniqueOwners = [...new Set(owners)]; // 중복 제거
+    const shuffled = uniqueOwners.sort(() => 0.5 - Math.random()); // 셔플
+    return shuffled.slice(0, count);
+  };
 
   useEffect(() => {
-    axios.get(`${process.env.REACT_APP_API_URL}/getAllLodgings`) // ⬅️ 스프링의 실제 API 주소
+    axios.get(`${process.env.REACT_APP_API_URL}/getAllLodRoom`)
         .then(response => {
-          // 배열 -> 객체 형태로 변환 (key는 hotel.id처럼 고유값)
-          console.log(response.data);
+          console.log("response.data 전체:", response.data);
+          response.data.forEach((hotel, idx) => {
+            console.log(`hotel[${idx}] 내용:`, hotel);
+          });
+
           const hotelObject = {};
           response.data.forEach(hotel => {
             hotelObject[hotel.id] = {
               name: hotel.lodName,
               thumbnail: hotel.lodImag,
-              rooms: hotel.rooms
+              rooms: hotel.rooms,
+              lodOwner: hotel.lodOwner
             };
           });
+
+          console.log("hotelObject 전체:", hotelObject);
+          console.table(Object.values(hotelObject));
+
+          const owners = response.data.map(hotel => hotel.lodOwner);
+          const selectedOwners = getRandomOwners(owners);
+          setRandomOwners(selectedOwners);
+
           setHotelDetails(hotelObject);
         })
         .catch(error => {
           console.error("숙소 정보를 불러오는 중 오류 발생:", error);
         });
   }, []);
+
 
   // ⭐ 수정: 가장 저렴한 호텔 데이터 준비 및 부족한 부분 채우기
   const allHotels = Object.values(hotelDetails);
@@ -243,7 +263,10 @@ const Meddle = () => {
 
         </ResponsiveContainer>
 
-        <ToggleRectangles />
+        <ToggleRectangles
+            randomOwners={randomOwners}
+            hotelDetails={hotelDetails}
+        />
 
         <ClickableImage
             src={spring}
@@ -372,17 +395,38 @@ const ImageSlider = () => {
   );
 };
 
-const ToggleRectangles = () => {
+const ToggleRectangles = ({ randomOwners, hotelDetails }) => {
   const [activeButton, setActiveButton] = useState("left");
   const navigate = useNavigate();
 
   const avaHotels = contents.hotels.filter(hotel => hotel.recommendedBy === "오오오");
   const sofiaHotels = contents.hotels.filter(hotel => hotel.recommendedBy === "승범");
 
+
+  const selectedOwner = randomOwners[activeButton === "left" ? 0 : 1];
+
+  // 1. 해당 오너의 호텔만 필터링
+  const hotelsByOwner = Object.values(hotelDetails).filter(
+      (hotel) => hotel.lodOwner === selectedOwner
+  );
+
+  // 2. 각 호텔의 모든 rooms를 합쳐서 하나의 배열로 만들고, price 기준 오름차순 정렬
+  const roomsToDisplay = hotelsByOwner
+      .flatMap((hotel) =>
+          hotel.rooms.map((room) => ({
+            hotelName: hotel.name,
+            roomName: room.roomName,
+            price: room.price,
+            image: room.roomImag, // 혹시 썸네일 대신 방 이미지를 쓰고 싶으면 이렇게
+          }))
+      )
+      .sort((a, b) => a.price - b.price);
+
+
   const selectedHotels = activeButton === "left" ? avaHotels : sofiaHotels;
 
-  const handleCardClick = (hotel) => {
-    navigate(`/hotel-detail?name=${encodeURIComponent(hotel.name)}`);
+  const handleCardClick = (room) => {
+    navigate(`/hotel-detail?name=${encodeURIComponent(room.hotelName)}`);
   };
 
   return (
@@ -392,23 +436,38 @@ const ToggleRectangles = () => {
               isActive={activeButton === "left"}
               onClick={() => setActiveButton("left")}
           >
-            오오오 님의 최저가 상품
+            {randomOwners[0] ? `${randomOwners[0]} 님의 최저가 상품` : "로딩 중..."}
           </ToggleButton>
           <ToggleButton
               isActive={activeButton === "right"}
               onClick={() => setActiveButton("right")}
           >
-            승범 님의 최저가 상품
+            {randomOwners[1] ? `${randomOwners[1]} 님의 최저가 상품` : "로딩 중..."}
           </ToggleButton>
         </ButtonContainer>
 
+
         <RectangleContainer>
-          {selectedHotels.map((hotel, index) => (
-              <Rectangle key={index} onClick={() => handleCardClick(hotel)} style={{cursor: "pointer"}}>
-                <img src={hotel.image} alt={`호텔 ${index + 1}`} />
-              </Rectangle>
-          ))}
+          {roomsToDisplay.length === 0 ? (
+              <p style={{ padding: "20px" }}>해당 판매자의 상품이 없습니다.</p>
+          ) : (
+              roomsToDisplay.map((room, index) => (
+                  <Rectangle
+                      key={index}
+                      onClick={() => handleCardClick(room)}
+                      style={{ cursor: "pointer" }}
+                  >
+                    <img src={room.image} alt={room.hotelName} />
+                    <div style={{ padding: "5px" }}>
+                      <strong>{room.roomName}</strong>
+                      <br />
+                      {room.price.toLocaleString()}원
+                    </div>
+                  </Rectangle>
+              ))
+          )}
         </RectangleContainer>
+
       </>
   );
 };
@@ -565,6 +624,7 @@ const RectangleContainer = styled.div`
   display: flex;
   gap: 20px;
   margin-top: 20px;
+  margin-bottom: 50px;
 `;
 
 const Rectangle = styled.div`
