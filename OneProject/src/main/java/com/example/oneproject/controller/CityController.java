@@ -97,6 +97,11 @@ public class CityController {
     }
 
     // 숙소==============================================================================
+    //
+    @GetMapping("/getAllLodRoom")
+    public List<LodAddPre> getAllLodRoom() {
+        return lodService.getAllLodARoom();
+    }
     //진짜 전부 숙소 정보 가져옴
     @GetMapping("/getAllLodgings")
     public List<LodDTO> getAllLodgings() {

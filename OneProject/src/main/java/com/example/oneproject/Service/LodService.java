@@ -91,7 +91,49 @@ public class LodService {
     }
 
     // 모든 숙소 가져오기
-    //진짜 전부 다 가져옴
+    //방, 숙소 ㄹㅇ 다 가져옴
+    public List<LodAddPre> getAllLodARoom() {
+        List<ClodContent> allLodCont = lodRepository.findAll();
+
+        return allLodCont.stream()
+                .map(lodging -> {
+                    // 숙소 이미지 Presigned URL
+                    String presignedLodImageUrl = null;
+                    if (lodging.getLodImag() != null && !lodging.getLodImag().isEmpty()) {
+                        presignedLodImageUrl = s3Service.generatePresignedUrl(lodging.getLodImag());
+                    }
+
+                    // 방 정보 매핑
+                    List<RoomAddPre> roomDTOs = lodging.getRooms().stream()
+                            .map(room -> {
+                                String roomImgUrl = null;
+                                if (room.getRoomImag() != null && !room.getRoomImag().isEmpty()) {
+                                    roomImgUrl = s3Service.generatePresignedUrl(room.getRoomImag());
+                                }
+                                return new RoomAddPre(
+                                        room.getId(),
+                                        room.getRoomName(),
+                                        roomImgUrl,
+                                        room.getPrice()
+                                );
+                            })
+                            .toList();
+
+                    return new LodAddPre(
+                            lodging.getId(),
+                            lodging.getLodName(),
+                            lodging.getLodCity(),
+                            presignedLodImageUrl,
+                            lodging.getLodLocation(),
+                            lodging.getLodOwner(),
+                            lodging.getLodCallNum(),
+                            roomDTOs
+                    );
+                })
+                .toList();
+    }
+
+    //숙소만 진짜 전부 다 가져옴
     public List<LodDTO> getAllLod() {
         List<ClodContent> allLodCont = lodRepository.findAll();
 
