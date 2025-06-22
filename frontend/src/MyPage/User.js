@@ -59,6 +59,7 @@ const User = () => {
             return response.data;
 
         } catch (error) {
+            console.log("📦 업로드 주소:", `${process.env.REACT_APP_API_URL}/user/profile/upload`);
             console.error("❌ 이미지 업로드 실패:", error);
             console.error("message:", error.message);
             console.error("response:", error.response);  // 서버에서 응답을 받은 경우 (404, 500 등)

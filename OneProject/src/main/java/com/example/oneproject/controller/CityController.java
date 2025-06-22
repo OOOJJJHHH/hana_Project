@@ -199,6 +199,14 @@ public class CityController {
         return userService.getLandlordList();
     }
 
+    @GetMapping("/user/{uId}")
+    public ResponseEntity<UserContent> getUserByUId(@PathVariable String uId) {
+        return userRepository.findByUId(uId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+
 
     // 로그인=============================================================================
     @PostMapping("/api/login")
@@ -248,40 +256,6 @@ public class CityController {
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @PostMapping("/uploadProfileImage")
-    public ResponseEntity<String> uploadProfileImage(@RequestParam("file") MultipartFile file,
-                                                     @RequestParam("userId") String userId) {
-        try {
-            if (file.isEmpty()) {
-                return ResponseEntity.badRequest().body("파일이 비어 있습니다.");
-            }
-
-            System.out.println("파일 이름: " + file.getOriginalFilename());
-            System.out.println("파일 크기: " + file.getSize());
-
-            String dir = "profileImages";
-            UserContent user = userRepository.findByUId(userId)
-                    .orElseThrow(() -> new RuntimeException("해당 사용자를 찾을 수 없습니다."));
-
-            String oldImageUrl = user.getProfileImage();
-
-            if (oldImageUrl != null && !oldImageUrl.isEmpty() && oldImageUrl.contains(dir)) {
-                String oldKey = oldImageUrl.substring(oldImageUrl.indexOf(dir));  // 안전
-                s3Uploader.deleteFile(oldKey);
-            }
-
-            String key = s3Uploader.uploadFile(dir, file);
-            user.setProfileImage(key);
-            userRepository.save(user);
-
-            return ResponseEntity.ok(key);
-        } catch (Exception e) {
-            e.printStackTrace(); // 실제 콘솔 로그 확인
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("업로드 실패: " + e.getMessage());
         }
     }
 
@@ -348,13 +322,17 @@ public class CityController {
             @RequestParam("userId") String userId,
             @RequestParam("file") MultipartFile file) {
         try {
-            userService.updateProfileImage(userId, file);
-            return ResponseEntity.ok("업로드 성공");
+            // ✅ 이미지 업로드 후 URL 받기
+            String imageUrl = userService.updateProfileImage(userId, file);
+
+            // ✅ 프론트에 이미지 URL 리턴
+            return ResponseEntity.ok(imageUrl);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("업로드 실패: " + e.getMessage());
         }
     }
+
 
 
 }

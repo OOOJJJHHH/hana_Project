@@ -11,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -96,7 +95,7 @@ public class UserService {
         return userRepository.save(userContent);
     }
     // 프로필 이미지 업로드 및 저장
-    public void updateProfileImage(String userId, MultipartFile image) throws IOException {
+    public String updateProfileImage(String userId, MultipartFile image) throws IOException {
         UserContent user = userRepository.findByUId(userId)
                 .orElseThrow(() -> new RuntimeException("해당 유저를 찾을 수 없습니다."));
 
@@ -105,6 +104,7 @@ public class UserService {
         user.setProfileImage(key);
 
         userRepository.save(user);
+        return key;
     }
 
     // 유저 정보 조회 (프리사인드 URL 포함)

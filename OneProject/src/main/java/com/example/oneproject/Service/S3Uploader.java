@@ -30,7 +30,8 @@ public class S3Uploader {
 
         s3Client.putObject(request, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
-        return key;
+        String fileUrl = "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/" + key;
+        return fileUrl;
     }
     public void deleteFile(String key) {
         s3Client.deleteObject(builder -> builder
