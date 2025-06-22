@@ -23,12 +23,11 @@ const User = () => {
         console.log("🧪 getImageUrl() 입력값:", profileImage);
         if (!profileImage) return null;
 
-        const isFullUrl = typeof profileImage === "string" && profileImage.startsWith("http");
-        console.log("🔍 isFullUrl:", isFullUrl);
+        if (profileImage.startsWith("http")) {
+            return profileImage;
+        }
 
-        return isFullUrl
-            ? profileImage
-            : `https://hana-leeej-bucket.s3.ap-northeast-2.amazonaws.com/${profileImage}`;
+        return `${process.env.REACT_APP_S3_URL}/${profileImage}`;
     };
 
     useEffect(() => {
@@ -74,7 +73,9 @@ const User = () => {
             const updatedUser = await axios.get(`${process.env.REACT_APP_API_URL}/user/${userInfo.uId}`);
             console.log("🔁 updatedUser.data:", updatedUser.data); // ✅ 여기!
             setUserDetails(updatedUser.data);
-            setSelectedImage(getImageUrl(updatedUser.data.profileImage));
+            const res = await axios.get(`${process.env.REACT_APP_API_URL}/user/${userInfo.uId}`);
+            setSelectedImage(getImageUrl(res.data.profileImage)); // ✅ 여기
+            console.log("✅ 최종 이미지 URL:", getImageUrl(res.data.profileImage));
             setUploading(false);
             setUploadSuccess(true);
             setTimeout(() => setUploadSuccess(false), 2000);
@@ -183,7 +184,8 @@ const User = () => {
                                         objectFit: 'cover',
                                     }}
                                     onError={(e) => {
-                                        e.target.src = "/default_profile.png";
+                                        e.target.onerror = null; // 무한 루프 방지
+                                        e.target.src = `${process.env.REACT_APP_S3_URL}/default_thing/user_default.png`;
                                     }}
                                 />
                             ) : (

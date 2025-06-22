@@ -31,7 +31,7 @@ public class S3Uploader {
         s3Client.putObject(request, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
         // ✅ 전체 URL 반환 (DB에 저장되는 값)
-        return "https://" + bucket + ".s3.ap-northeast-2.amazonaws.com/" + key;
+        return key;
     }
 
     public void deleteFile(String key) {
