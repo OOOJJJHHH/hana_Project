@@ -221,7 +221,6 @@ const HotelDetail = () => {
                     <p>🛏 Room {index + 1}</p>
                     <p>방 이름: {room.roomName}</p>
                     <p>가격: {room.price}</p>
-                    <p>이미지 URL: {room.roomImag}</p>
                     <img
                         src={room.roomImag}
                         alt={`room-${room.roomName}`}

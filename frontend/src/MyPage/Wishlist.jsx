@@ -33,11 +33,11 @@ const Wishlist = () => {
         if (!window.confirm(`'${lodName} - ${roomName}' 을(를) 찜 목록에서 삭제할까요?`)) return;
 
         try {
-            const res = await axios.delete(`${process.env.REACT_APP_API_URL}/wishlist/delete`, {
+            const res = await axios.post("http://localhost:8080/api/wishlist/add", null, {
                 params: {
-                    userId: userInfo.id,
-                    lodName,
-                    roomName
+                    userId: userInfo.uId,
+                    lodName: lodName,
+                    roomName: roomName
                 }
             });
 

@@ -178,16 +178,23 @@ const User = () => {
                                     key={getImageUrl(userDetails.profileImage)+ Date.now()}
                                     src={getImageUrl(userDetails.profileImage)}
                                     alt="Profile"
+                                    onError={(e) => {
+                                        e.target.onerror = null; // 무한 루프 방지
+                                        e.target.src = "/default-profile.png";
+                                    }}
                                     style={{
                                         width: '100%',
                                         height: '100%',
                                         objectFit: 'cover',
                                     }}
+
                                 />
                             ) : (
                                 <div style={{ marginTop: '100px' }}>이미지가 없습니다.</div>
                             )}
+
                         </div>
+
                         {uploadSuccess && <div style={{ marginTop: '10px', color: 'green' }}>✅ 프로필 이미지가 변경되었습니다!</div>}
                         <input
                             type="file"
