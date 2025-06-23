@@ -191,8 +191,6 @@ function City() {
                 )}
             </div>
 
-            {/* 검색창 */}
-            <CitySearch onSearch={handleSearch} />
 
             {/* 도시 리스트 */}
             {cityContents.length === 0 ? (
