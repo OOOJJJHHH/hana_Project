@@ -89,7 +89,7 @@ function Signup() {
     }
 
     try {
-      await axios.post("http://localhost:8080/saveUser", formData);
+      await axios.post(`${process.env.REACT_APP_API_URL}/saveUser`, formData);
 
       // ✅ 여기에 추가
       window.alert("회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.");
