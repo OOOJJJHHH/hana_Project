@@ -215,7 +215,7 @@ const HotelDetail = () => {
 
         {hotelInfo.rooms && hotelInfo.rooms.length > 0 && (
             <div className="debug-room-info">
-              <h3>✅ 방 정보 전체 디버깅 출력:</h3>
+              <h3>✅ 방 정보 ✅</h3>
               {hotelInfo.rooms.map((room, index) => (
                   <div key={room.id}>
                     <p>🛏 Room {index + 1}</p>
