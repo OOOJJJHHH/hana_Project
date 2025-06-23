@@ -446,7 +446,7 @@ const ToggleRectangles = ({ randomOwners, hotelDetails }) => {
           {roomsToDisplay.length === 0 ? (
               <p style={{ padding: "20px" }}>해당 판매자의 상품이 없습니다.</p>
           ) : (
-              roomsToDisplay.map((room, index) => (
+              roomsToDisplay.slice(0, 4).map((room, index) => (
                   <Rectangle
                       key={index}
                       onClick={() => handleCardClick(room)}
