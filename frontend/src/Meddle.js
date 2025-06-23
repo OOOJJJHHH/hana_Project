@@ -16,12 +16,12 @@ import axios from "axios";
 
 const topRatedHotels = [
   {
-    name: "호텔X",
+    name: "어진 카스텔",
     thumbnail: fan1,
     rating: 4.5,
   },
   {
-    name: "호텔Y",
+    name: "백볼리",
     thumbnail: fan2,
     rating: 4.7,
   },
@@ -31,12 +31,12 @@ const topRatedHotels = [
     rating: 4.9,
   },
   {
-    name: "호텔W",
+    name: "오준희르비에토",
     thumbnail: fan4,
     rating: 4.3,
   },
   {
-    name: "호텔V",
+    name: "석현치아노",
     thumbnail: fan5,
     rating: 4.2,
   },
@@ -44,10 +44,10 @@ const topRatedHotels = [
 
 const contents = {
   hotels: [
-    { name: "호텔A", image: fan1, recommendedBy: "오오오" },
-    { name: "호텔B", image: fan2, recommendedBy: "승범" },
-    { name: "호텔C", image: fan3, recommendedBy: "오오오" },
-    { name: "호텔D", image: fan1, recommendedBy: "승범" },
+    { name: "어진 카스텔", image: fan1, recommendedBy: "이어진" },
+    { name: "백볼리", image: fan2, recommendedBy: "백승범" },
+    { name: "오준희르비에토", image: fan3, recommendedBy: "오준희" },
+    { name: "석현치아노", image: fan1, recommendedBy: "한석현" },
   ]
 };
 
@@ -142,25 +142,20 @@ const Meddle = () => {
 
 
   const [cities, setCities] = useState([
-    { id: 1, name: "서울", imageUrl: fan2_1 },
-    { id: 2, name: "부산", imageUrl: fan2_2 },
-    { id: 3, name: "대구", imageUrl: fan2_1 },
-    { id: 4, name: "인천", imageUrl: fan2_2 },
-    { id: 5, name: "대전", imageUrl: fan2_1 },
-    { id: 6, name: "광주", imageUrl: fan2_2 },
-    { id: 7, name: "울산", imageUrl: fan2_1 },
-    { id: 8, name: "세종", imageUrl: fan2_2 },
+    { id: 1, name: "어진카르텔", imageUrl: fan2_1 },
+    { id: 2, name: " 어진 간달포", imageUrl: fan2_2 },
+    { id: 3, name: "백볼리 ", imageUrl: fan2_1 },
+    { id: 4, name: "준희비에토 ", imageUrl: fan2_2 },
+    { id: 5, name: "승범민박", imageUrl: fan2_1 },
   ]);
 
   const [cities1, setCities1] = useState([
-    { id: 1, name: "서울", imageUrl: fan2_1 },
-    { id: 2, name: "부산", imageUrl: fan2_2 },
-    { id: 3, name: "대구", imageUrl: fan2_1 },
-    { id: 4, name: "인천", imageUrl: fan2_2 },
-    { id: 5, name: "대전", imageUrl: fan2_1 },
-    { id: 6, name: "광주", imageUrl: fan2_2 },
-    { id: 7, name: "울산", imageUrl: fan2_1 },
-    { id: 8, name: "세종", imageUrl: fan2_2 },
+    { id: 1, name: "준희치아노", imageUrl: fan2_2 },
+    { id: 2, name: "준박", imageUrl: fan2_1 },
+    { id: 3, name: "석현숙박 ", imageUrl: fan2_2 },
+    { id: 4, name: "어진이다 ", imageUrl: fan2_1 },
+    { id: 5, name: "숙소노 ", imageUrl: fan2_2 },
+    { id: 6, name: "백박", imageUrl: fan2_1 },
   ]);
   const handleNext_3 = () => {
     const nextStartCity = startCity1 + 4;
@@ -290,7 +285,7 @@ const Meddle = () => {
             ))}
           </div>
         </RoundedRectangleContainer>
-        <span style={{ fontSize: "24px", fontWeight: "bold", display: "block", width: "100%", maxWidth: "1180px", marginTop: "40px" }}>도시이름</span>
+        <span style={{ fontSize: "24px", fontWeight: "bold", display: "block", width: "100%", maxWidth: "1180px", marginTop: "40px" }}>카스텔 간돌포</span>
         <div style={{
           position: 'relative',
           overflow : "hidden",
@@ -315,7 +310,7 @@ const Meddle = () => {
           <ArrowButton style={{ position: 'absolute', left: '0', top: '50%', transform: 'translateY(-50%)' }} onClick={handlePrev_2}>&lt;</ArrowButton>
           <ArrowButton style={{ position: 'absolute', right: '0', top: '50%', transform: 'translateY(-50%)' }} onClick={handleNext_2}>&gt;</ArrowButton>
         </div>
-        <span style={{ fontSize: "24px", fontWeight: "bold", display: "block", width: "100%", maxWidth: "1180px", marginTop: "40px"  }}>도시이름2</span>
+        <span style={{ fontSize: "24px", fontWeight: "bold", display: "block", width: "100%", maxWidth: "1180px", marginTop: "40px"  }}>브라치아노 </span>
         <div style={{
           position: 'relative',
           overflow : "hidden",
