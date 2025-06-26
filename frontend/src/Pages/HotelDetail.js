@@ -213,24 +213,6 @@ const HotelDetail = () => {
           )}
         </div>
 
-        {hotelInfo.rooms && hotelInfo.rooms.length > 0 && (
-            <div className="debug-room-info">
-              <h3>✅ 방 정보 ✅</h3>
-              {hotelInfo.rooms.map((room, index) => (
-                  <div key={room.id}>
-                    <p>🛏 Room {index + 1}</p>
-                    <p>방 이름: {room.roomName}</p>
-                    <p>가격: {room.price}</p>
-                    <img
-                        src={room.roomImag}
-                        alt={`room-${room.roomName}`}
-                        style={{ width: "200px", height: "auto", marginBottom: "1rem" }}
-                    />
-                    <hr />
-                  </div>
-              ))}
-            </div>
-        )}
       </div>
   );
 };

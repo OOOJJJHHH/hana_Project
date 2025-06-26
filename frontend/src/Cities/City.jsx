@@ -121,12 +121,14 @@ function City() {
         height: "40px",
         lineHeight: "42px",
         padding: "0",
-        border: "none",
-        background: "linear-gradient(90deg, rgba(255, 204, 0, 1) 0%, rgba(255, 255, 102, 1) 100%)",
-        color: "initial",
+        border: "1px solid #ccc",         // 구분되는 테두리
+        color: "#333",                     // 기본 글자색
         cursor: "pointer",
         borderRadius: '5px',
+        transition: "background-color 0.3s ease, color 0.3s ease",
+        backgroundColor: "#ffffff",       // ✅ 흰색 배경으로 명시
     };
+
 
     const beforeAfterStyle = {
         content: '""',
@@ -215,7 +217,8 @@ function City() {
                                 <button
                                     style={{
                                         ...buttonStyle,
-                                        backgroundColor: hoveredButtonIndex === index ? 'rgba(255,27,0,1)' : 'transparent',
+                                        backgroundColor: hoveredButtonIndex === index ? '#f0f0f0' : '#ffffff',
+                                        color: hoveredButtonIndex === index ? '#000' : '#333',
                                     }}
                                     onMouseEnter={() => handleMouseEnter(index)}
                                     onMouseLeave={handleMouseLeave}
@@ -231,6 +234,7 @@ function City() {
                                         width: hoveredButtonIndex === index ? '100%' : '0',
                                     }}></span>
                                 </button>
+
                             </div>
                         </div>
                     ))

@@ -144,28 +144,45 @@ public class CityController {
             @RequestParam("lodName") String lodName,
             @RequestParam("lodLocation") String lodLocation,
             @RequestParam("lodCallNum") String lodCallNum,
-            @RequestParam("lodImag") MultipartFile lodImag,
             @RequestParam("rooms") String roomsJson,
-            @RequestParam("roomImag0") MultipartFile roomImag0,
-            @RequestParam(value = "roomImag1", required = false) MultipartFile roomImag1,
-            @RequestParam(value = "roomImag2", required = false) MultipartFile roomImag2
+            @RequestParam Map<String, MultipartFile> allFiles
     ) {
         try {
+            // 숙소 이미지 수집
+            List<MultipartFile> lodImages = allFiles.entrySet().stream()
+                    .filter(entry -> entry.getKey().startsWith("lodImag"))
+                    .sorted(Map.Entry.comparingByKey())
+                    .map(Map.Entry::getValue)
+                    .toList();
+
+            // 객실 이미지 수집
+            Map<Integer, List<MultipartFile>> roomImageMap = new HashMap<>();
+            for (String key : allFiles.keySet()) {
+                if (key.startsWith("roomImag")) {
+                    String[] parts = key.replace("roomImag", "").split("_");
+                    if (parts.length == 2) {
+                        int roomIndex = Integer.parseInt(parts[0]);
+                        roomImageMap.computeIfAbsent(roomIndex, k -> new ArrayList<>()).add(allFiles.get(key));
+                    }
+                }
+            }
+
+            // 객실 메타 정보
             ObjectMapper mapper = new ObjectMapper();
             List<Room> roomList = mapper.readValue(roomsJson, new TypeReference<List<Room>>() {});
 
+            // 서비스 호출
             lodService.saveLodWithImages(
                     lodOwner,
                     lodCity,
                     lodName,
                     lodLocation,
                     lodCallNum,
-                    lodImag,
+                    lodImages,
                     roomList,
-                    roomImag0,
-                    roomImag1,
-                    roomImag2
+                    roomImageMap
             );
+
             return ResponseEntity.ok("저장 완료");
         } catch (Exception e) {
             e.printStackTrace();
@@ -173,6 +190,7 @@ public class CityController {
                     .body("저장 실패: " + e.getMessage());
         }
     }
+
 
 
 

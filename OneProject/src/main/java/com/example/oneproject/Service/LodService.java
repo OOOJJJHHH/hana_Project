@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,9 +36,9 @@ public class LodService {
             String lodName,
             String lodLocation,
             String lodCallNum,
-            MultipartFile lodImag,
+            List<MultipartFile> lodImages,
             List<Room> roomList,
-            MultipartFile... roomImgs
+            Map<Integer, List<MultipartFile>> roomImageMap
     ) throws IOException {
 
         ClodContent content = new ClodContent();
@@ -47,25 +48,28 @@ public class LodService {
         content.setLodLocation(lodLocation);
         content.setLodCallNum(lodCallNum);
 
-        // S3 업로드 (lodImag)
-        String lodImageKey = s3Uploader.uploadFile("lodUploads", lodImag);
-        content.setLodImag(lodImageKey);
+        // 숙소 이미지 (여러 개 → 하나의 대표 이미지만 저장하는 경우)
+        if (!lodImages.isEmpty()) {
+            String lodImageKey = s3Uploader.uploadFile("lodUploads", lodImages.get(0)); // 첫 번째 이미지만 저장
+            content.setLodImag(lodImageKey);
+        }
 
-        // 객실 이미지 업로드
+        // 객실 이미지 매핑
         for (int i = 0; i < roomList.size(); i++) {
             Room room = roomList.get(i);
-            if (i < roomImgs.length && roomImgs[i] != null && !roomImgs[i].isEmpty()) {
-                String roomImageKey = s3Uploader.uploadFile("roomUploads", roomImgs[i]);
+            room.setClodContent(content);
+
+            List<MultipartFile> images = roomImageMap.get(i);
+            if (images != null && !images.isEmpty()) {
+                String roomImageKey = s3Uploader.uploadFile("roomUploads", images.get(0)); // 첫 번째 이미지만 저장
                 room.setRoomImag(roomImageKey);
             }
-            room.setClodContent(content);
         }
 
         content.setRooms(roomList);
-
-        // DB 저장
         lodRepository.save(content);
     }
+
 
 
 
