@@ -5,13 +5,13 @@ import java.util.List;
 public class RoomAddPre {
     private Long id;
     private String roomName;
-    private String roomImag;  // 여러 개 이미지 URL
+    private List<String> roomImages;  // 여러 이미지 URL
     private int price;
 
-    public RoomAddPre(Long id, String roomName, String roomImag, int price) {
+    public RoomAddPre(Long id, String roomName, List<String> roomImages, int price) {
         this.id = id;
         this.roomName = roomName;
-        this.roomImag = roomImag;
+        this.roomImages = roomImages;
         this.price = price;
     }
 
@@ -31,12 +31,12 @@ public class RoomAddPre {
         this.roomName = roomName;
     }
 
-    public String getRoomImag() {
-        return roomImag;
+    public List<String> getRoomImages() {
+        return roomImages;
     }
 
-    public void setRoomImag(String roomImag) {
-        this.roomImag = roomImag;
+    public void setRoomImages(List<String> roomImages) {
+        this.roomImages = roomImages;
     }
 
     public int getPrice() {

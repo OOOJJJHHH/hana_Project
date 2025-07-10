@@ -5,6 +5,7 @@ import com.example.oneproject.DTO.LodDTO;
 import com.example.oneproject.DTO.RoomAddPre;
 import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.Room;
+import com.example.oneproject.Entity.RoomImages;
 import com.example.oneproject.Repository.CLodRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -61,8 +63,17 @@ public class LodService {
 
             List<MultipartFile> images = roomImageMap.get(i);
             if (images != null && !images.isEmpty()) {
-                String roomImageKey = s3Uploader.uploadFile("roomUploads", images.get(0)); // 첫 번째 이미지만 저장
-                room.setRoomImag(roomImageKey);
+                List<RoomImages> imageEntities = new ArrayList<>();
+                for (MultipartFile image : images) {
+                    String uploadedKey = s3Uploader.uploadFile("roomUploads", image);
+
+                    RoomImages roomImage = new RoomImages();
+                    roomImage.setImageKey(uploadedKey);
+                    roomImage.setRoom(room);
+
+                    imageEntities.add(roomImage);
+                }
+                room.setRoomImages(imageEntities);  // 연결!
             }
         }
 
@@ -110,14 +121,15 @@ public class LodService {
                     // 방 정보 매핑
                     List<RoomAddPre> roomDTOs = lodging.getRooms().stream()
                             .map(room -> {
-                                String roomImgUrl = null;
-                                if (room.getRoomImag() != null && !room.getRoomImag().isEmpty()) {
-                                    roomImgUrl = s3Service.generatePresignedUrl(room.getRoomImag());
-                                }
+                                // 여러 이미지 Presigned URL 생성
+                                List<String> roomImageUrls = room.getRoomImages().stream()
+                                        .map(image -> s3Service.generatePresignedUrl(image.getImageKey()))
+                                        .toList();
+
                                 return new RoomAddPre(
                                         room.getId(),
                                         room.getRoomName(),
-                                        roomImgUrl,
+                                        roomImageUrls,
                                         room.getPrice()
                                 );
                             })
@@ -192,17 +204,23 @@ public class LodService {
         ClodContent content = lodRepository.findByLodNameWithRooms(lodName)
                 .orElseThrow(() -> new RuntimeException("숙소 없음"));
 
-        // 숙소 이미지 프리사인드 URL 변환
+        // 숙소 대표 이미지 URL
         String lodImageUrl = s3Service.generatePresignedUrl(content.getLodImag());
 
-        // 객실 목록을 DTO로 변환 + 객실 이미지 프리사인드 URL 적용
+        // 객실 정보 + 여러 이미지 URL 변환
         List<RoomAddPre> roomDtos = content.getRooms().stream()
-                .map(room -> new RoomAddPre(
-                        room.getId(),
-                        room.getRoomName(),
-                        s3Service.generatePresignedUrl(room.getRoomImag()),
-                        room.getPrice()
-                ))
+                .map(room -> {
+                    List<String> imageUrls = room.getRoomImages().stream()
+                            .map(img -> s3Service.generatePresignedUrl(img.getImageKey()))
+                            .collect(Collectors.toList());
+
+                    return new RoomAddPre(
+                            room.getId(),
+                            room.getRoomName(),
+                            imageUrls,
+                            room.getPrice()
+                    );
+                })
                 .collect(Collectors.toList());
 
         return new LodAddPre(
