@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-@Table(name = "wish_list")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -36,6 +35,8 @@ public class WishList {
     // 찜한 시간
     private LocalDateTime createdAt;
 
+    //이 메서드는 DB에 insert되기 직전 자동 실행
+    //createdAt을 현재 시간으로 설정
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

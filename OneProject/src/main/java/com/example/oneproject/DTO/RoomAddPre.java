@@ -1,9 +1,11 @@
 package com.example.oneproject.DTO;
 
+import java.util.List;
+
 public class RoomAddPre {
     private Long id;
     private String roomName;
-    private String roomImag;  // 프리사인드 URL
+    private String roomImag;  // 여러 개 이미지 URL
     private int price;
 
     public RoomAddPre(Long id, String roomName, String roomImag, int price) {

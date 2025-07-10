@@ -111,17 +111,18 @@ const HotelDetail = () => {
     try {
       // POST 요청의 body에 데이터 담아 보냄
       const params = new URLSearchParams();
-      params.append('userId', userInfo.uId);
-      params.append('lodName', hotelInfo.lodName);
-      params.append('roomName', selectedRoomObj.roomName);
 
-      console.log("params.toString():", params.toString());
       const response = await axios.post(
-          `${process.env.REACT_APP_API_URL}/wishlist/add`,
-          params,
+          `http://localhost:8080/wishlist/add`,
+          // `${process.env.REACT_APP_API_URL}/wishlist/add`,
+          {
+            userName: userInfo.uId,
+            lodName: hotelName,
+            roomName: selectedRoom,
+          },
           {
             headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
+              'Content-Type': 'application/json',
             },
           }
       );
@@ -134,7 +135,11 @@ const HotelDetail = () => {
 
     } catch (error) {
       console.error("찜 추가 실패:", error);
-      alert("찜 추가에 실패했습니다.");
+      if (error.response && error.response.data && error.response.data.message) {
+        alert(error.response.data.message);  // 예: "이미 찜한 항목입니다."
+      } else {
+        alert("찜 추가에 실패했습니다.");
+      }
     } finally {
       setIsWishlistLoading(false);
     }

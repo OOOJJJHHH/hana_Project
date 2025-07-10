@@ -1,10 +1,14 @@
 package com.example.oneproject.Entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -25,6 +29,9 @@ public class Room {
     @JoinColumn(name = "clod_content_id")
     @JsonBackReference
     private ClodContent clodContent;
+
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RoomImages> roomImages = new ArrayList<>();
 
     // ✅ Getter / Setter
     public Long getId() {
@@ -66,4 +73,13 @@ public class Room {
     public void setClodContent(ClodContent clodContent) {
         this.clodContent = clodContent;
     }
+
+    public List<RoomImages> getRoomImages() {
+        return roomImages;
+    }
+
+    public void setRoomImages(List<RoomImages> roomImages) {
+        this.roomImages = roomImages;
+    }
+
 }
