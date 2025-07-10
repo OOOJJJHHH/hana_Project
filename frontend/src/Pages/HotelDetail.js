@@ -29,6 +29,7 @@ const HotelDetail = () => {
             `${process.env.REACT_APP_API_URL}/getlodUseN/${encodeURIComponent(hotelName)}`
         );
         const data = response.data;
+        console.log("📦 받아온 호텔 정보:", data);
 
         setHotelInfo(data);
 
@@ -178,20 +179,19 @@ const HotelDetail = () => {
   return (
       <div className="hotel-detail-container">
         <div className="image-slider">
-          {hotelInfo.rooms && hotelInfo.rooms.length > 0 && (() => {
-            const selectedRoomData = hotelInfo.rooms.find(room => room.roomName === selectedRoom);
-            return selectedRoomData ? (
-                <>
-                  <img
-                      src={selectedRoomData.roomImag}
-                      alt={`room-${selectedRoomData.roomName}`}
-                      className="main-image"
-                  />
-                </>
-            ) : (
-                <p>선택된 방의 이미지가 없습니다.</p>
-            );
-          })()}
+          {roomImages.length > 0 ? (
+              <>
+                <button className="slide-btn left" onClick={handlePrev}>⟨</button>
+                <img
+                    src={roomImages[currentIndex]}
+                    alt={`room-image-${currentIndex}`}
+                    className="main-image"
+                />
+                <button className="slide-btn right" onClick={handleNext}>⟩</button>
+              </>
+          ) : (
+              <p>이미지가 없습니다.</p>
+          )}
         </div>
 
         <div className="hotel-info">
@@ -246,6 +246,34 @@ const HotelDetail = () => {
               <p>아직 리뷰가 없습니다.</p>
           )}
         </div>
+
+        <div className="selected-room-info">
+          <h3>선택된 객실 정보:</h3>
+          {hotelInfo.rooms && hotelInfo.rooms.length > 0 ? (
+              hotelInfo.rooms
+                  .filter((room) => room.roomName === selectedRoom)
+                  .map((room, index) => (
+                      <div key={index}>
+                        <p>ID: {room.id}</p>
+                        <p>이름: {room.roomName}</p>
+                        <p>가격: {room.price}원</p>
+                        {room.images && room.images.length > 0 ? (
+                            <>
+                              <p>이미지 목록:</p>
+                              {room.images.map((imgUrl, idx) => (
+                                  <p key={idx}>{imgUrl}</p>
+                              ))}
+                            </>
+                        ) : (
+                            <p>이미지 없음</p>
+                        )}
+                      </div>
+                  ))
+          ) : (
+              <p>객실 정보가 없습니다.</p>
+          )}
+        </div>
+
 
       </div>
   );

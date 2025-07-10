@@ -52,7 +52,7 @@ public class LodService {
 
         // 숙소 이미지 (여러 개 → 하나의 대표 이미지만 저장하는 경우)
         if (!lodImages.isEmpty()) {
-            String lodImageKey = s3Uploader.uploadFile("lodUploads", lodImages.get(0)); // 첫 번째 이미지만 저장
+            String lodImageKey = s3Uploader.uploadFile("lodUploads", lodImages.get(0));
             content.setLodImag(lodImageKey);
         }
 
