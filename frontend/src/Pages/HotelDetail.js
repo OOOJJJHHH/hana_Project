@@ -16,6 +16,8 @@ const HotelDetail = () => {
   const [roomPrice, setRoomPrice] = useState(0);
   const [roomImages, setRoomImages] = useState([]);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
+  const [isWish, setIsWish] = useState(false);
+
   const userInfo = useContext(UserContext);
 
   useEffect(() => {
@@ -44,8 +46,28 @@ const HotelDetail = () => {
       }
     };
 
+    const fetchWishlistStatus = async () => {
+      if (!userInfo || !hotelName || !selectedRoom) return;
+
+      try {
+        const response = await axios.get("http://localhost:8080/wishlist/check", {
+          params: {
+            userName: userInfo.uId,
+            lodName: hotelName,
+            roomName: selectedRoom,
+          },
+        });
+        if (response.data.success) {
+          setIsWish(response.data.isWish);
+        }
+      } catch (error) {
+        console.error("찜 상태 확인 실패:", error);
+      }
+    };
+
     fetchHotelInfo();
-  }, [hotelName]);
+    fetchWishlistStatus();
+  }, [hotelName, selectedRoom, userInfo]);
 
   const handleReservationClick = () => {
     if (!userInfo) {
@@ -113,7 +135,7 @@ const HotelDetail = () => {
       const params = new URLSearchParams();
 
       const response = await axios.post(
-          `http://localhost:8080/wishlist/add`,
+          `http://localhost:8080/wishlist/toggle`,
           // `${process.env.REACT_APP_API_URL}/wishlist/add`,
           {
             userName: userInfo.uId,
@@ -128,7 +150,13 @@ const HotelDetail = () => {
       );
 
       if (response.data.success) {
-        alert("찜목록에 추가되었습니다.");
+        setIsWish(response.data.isWish);
+
+        if (response.data.isWish) {
+          alert("찜목록에 추가되었습니다.");
+        } else {
+          alert("찜목록에서 제거되었습니다.");
+        }
       } else {
         alert(response.data.message || "이미 찜한 항목입니다.");
       }
@@ -197,7 +225,8 @@ const HotelDetail = () => {
                 onClick={handleWishlistClick}
                 disabled={isWishlistLoading}
             >
-              {isWishlistLoading ? "처리중..." : "찜하기"}
+              {isWishlistLoading ? "처리중..." :
+                  isWish ? "💖 찜취소" : "🤍 찜하기"}
             </button>
           </div>
         </div>

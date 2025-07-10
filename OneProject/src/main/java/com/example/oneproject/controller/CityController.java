@@ -189,15 +189,26 @@ public class CityController {
 
 
     // 찜 ==============================================================================
+    // 찜 확인 API
+    @GetMapping("/wishlist/check")
+    public ResponseEntity<Map<String, Object>> checkWishlist(
+            @RequestParam String userName,
+            @RequestParam String lodName,
+            @RequestParam String roomName) {
+        boolean isWished = wishListService.isWished(userName, lodName, roomName);
+        return ResponseEntity.ok(Map.of("success", true, "isWish", isWished));
+    }
+
+
     // 찜 추가 API
-    @PostMapping("/wishlist/add")
+    @PostMapping("/wishlist/toggle")
     public ResponseEntity<Map<String, Object>> addWishlist(@RequestBody WishDTO dto) {
-        try {
-            wishListService.addWish(dto);
-            return ResponseEntity.ok(Map.of("success", true, "message", "찜목록에 추가되었습니다."));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
-        }
+        boolean isNowWished = wishListService.toggleWish(dto);
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "isWish", isNowWished,
+                "message", isNowWished ? "찜목록에 추가되었습니다." : "찜목록에서 제거되었습니다."
+        ));
     }
 
     // 유저==============================================================================
