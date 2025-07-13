@@ -128,7 +128,11 @@ public class CityController {
     // 숙소 이름으로 객실 조회
     @GetMapping("/getlodUseN/{lodName}")
     public ResponseEntity<LodAddPre> getLodAddPre(@PathVariable String lodName) {
+        System.out.println("요청 받은 lodUseNm: " + lodName);
         LodAddPre lodAddPre = lodService.getLodDtoByName(lodName);
+        if (lodAddPre == null) {
+            System.out.println("데이터가 없습니다.");
+        }
         return ResponseEntity.ok(lodAddPre);
     }
 
