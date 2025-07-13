@@ -8,6 +8,7 @@ import com.example.oneproject.Entity.Room;
 import com.example.oneproject.Entity.RoomImages;
 import com.example.oneproject.Repository.CLodRepository;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional
 public class LodService {
@@ -204,12 +206,18 @@ public class LodService {
         ClodContent content = lodRepository.findByLodNameWithRooms(lodName)
                 .orElseThrow(() -> new RuntimeException("숙소 없음"));
 
+        log.info("조회된 숙소 이름: {}", content.getLodName());
+        log.info("숙소에 연결된 객실 수: {}", content.getRooms().size());
+
         // 숙소 대표 이미지 URL
         String lodImageUrl = s3Service.generatePresignedUrl(content.getLodImag());
 
         // 객실 정보 + 여러 이미지 URL 변환
         List<RoomAddPre> roomDtos = content.getRooms().stream()
                 .map(room -> {
+                    log.info("객실 이름: {}", room.getRoomName());
+                    log.info("객실 이미지 수: {}", room.getRoomImages().size());
+
                     List<String> imageUrls = room.getRoomImages().stream()
                             .map(img -> s3Service.generatePresignedUrl(img.getImageKey()))
                             .collect(Collectors.toList());

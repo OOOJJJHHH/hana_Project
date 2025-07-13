@@ -13,8 +13,8 @@ public class RoomImages {
     private String imageKey;  // S3에 저장된 파일 경로
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id")
     @JsonBackReference
+    @JoinColumn(name = "room_id")
     private Room room;
 
     public Long getId() {

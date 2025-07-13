@@ -27,13 +27,13 @@ public class Room {
     private int price; // ✅ 숙박 가격 필드 추가
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "clod_content_id")
     @JsonBackReference
+    @JoinColumn(name = "clod_content_id")
     private ClodContent clodContent;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
-    @BatchSize(size = 10)
     @JsonManagedReference
+    @BatchSize(size = 10)
     private List<RoomImages> roomImages = new ArrayList<>();
 
     // ✅ Getter / Setter
