@@ -85,4 +85,8 @@ public class Room {
         this.roomImages = roomImages;
     }
 
+    public void updateRoomImages(List<RoomImages> newImages) {
+        this.roomImages.clear();
+        this.roomImages.addAll(newImages);
+    }
 }

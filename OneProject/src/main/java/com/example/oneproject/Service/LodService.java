@@ -255,7 +255,7 @@ public class LodService {
         content.getRooms().forEach(room -> {
             List<RoomImages> images = roomImagesMap.get(room.getId());
             if (images != null) {
-                room.setRoomImages(images);
+                room.updateRoomImages(images);
                 log.info("객실 {} 에 이미지 {}개 설정", room.getId(), images.size());
             } else {
                 room.setRoomImages(Collections.emptyList());
