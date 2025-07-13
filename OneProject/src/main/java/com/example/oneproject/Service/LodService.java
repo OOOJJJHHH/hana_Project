@@ -213,42 +213,74 @@ public class LodService {
         ClodContent content = lodRepository.findByLodNameWithRooms(lodName)
                 .orElseThrow(() -> new RuntimeException("숙소 없음"));
 
-        log.info("조회된 숙소 이름: {}", content.getLodName());
-        log.info("숙소에 연결된 객실 수: {}", content.getRooms().size());
+        log.info("==== 1단계: 숙소 조회 완료 ====");
+        log.info("숙소 이름: {}", content.getLodName());
+        log.info("숙소 ID: {}", content.getId());
+        log.info("숙소 위치: {}", content.getLodLocation());
+        log.info("숙소 전화번호: {}", content.getLodCallNum());
+        log.info("객실 수: {}", content.getRooms().size());
+
+        // 각 객실 상세 로그
+        content.getRooms().forEach(room -> {
+            log.info("객실 ID: {}, 이름: {}, 가격: {}", room.getId(), room.getRoomName(), room.getPrice());
+        });
 
         // 2. 객실 ID 리스트 추출
         List<Long> roomIds = content.getRooms().stream()
                 .map(Room::getId)
                 .collect(Collectors.toList());
 
+        log.info("==== 2단계: 객실 ID 리스트 추출 ====");
+        log.info("roomIds: {}", roomIds);
+
         // 3. 객실 이미지 별도 조회
         List<RoomImages> roomImages = roomRepository.findByRoomIds(roomIds);
+
+        log.info("==== 3단계: 객실 이미지 조회 ====");
+        log.info("전체 이미지 수: {}", roomImages.size());
+        roomImages.forEach(img ->
+                log.info("이미지 ID: {}, 이미지 키: {}, 소속 객실 ID: {}", img.getId(), img.getImageKey(), img.getRoom().getId())
+        );
 
         // 4. 객실 ID 기준으로 이미지 그룹핑
         Map<Long, List<RoomImages>> roomImagesMap = roomImages.stream()
                 .collect(Collectors.groupingBy(img -> img.getRoom().getId()));
+
+        log.info("==== 4단계: 이미지 그룹핑 완료 ====");
+        roomImagesMap.forEach((roomId, images) ->
+                log.info("객실 ID {} -> 이미지 수: {}", roomId, images.size())
+        );
 
         // 5. 각 객실에 이미지 리스트 세팅
         content.getRooms().forEach(room -> {
             List<RoomImages> images = roomImagesMap.get(room.getId());
             if (images != null) {
                 room.setRoomImages(images);
+                log.info("객실 {} 에 이미지 {}개 설정", room.getId(), images.size());
             } else {
                 room.setRoomImages(Collections.emptyList());
+                log.info("객실 {} 에 이미지 없음", room.getId());
             }
         });
 
         // 6. 숙소 대표 이미지 URL 생성
         String lodImageUrl = s3Service.generatePresignedUrl(content.getLodImag());
+        log.info("==== 6단계: 숙소 대표 이미지 presigned URL 생성 ====");
+        log.info("lodImage URL: {}", lodImageUrl);
 
         // 7. DTO 변환
         List<RoomAddPre> roomDtos = content.getRooms().stream()
                 .map(room -> {
-                    log.info("객실 이름: {}", room.getRoomName());
-                    log.info("객실 이미지 수: {}", room.getRoomImages().size());
+                    log.info("==== 객실 DTO 변환 중 ====");
+                    log.info("객실 ID: {}, 이름: {}", room.getId(), room.getRoomName());
+                    log.info("이미지 수: {}", room.getRoomImages().size());
 
                     List<String> imageUrls = room.getRoomImages().stream()
-                            .map(img -> s3Service.generatePresignedUrl(img.getImageKey()))
+                            .map(img -> {
+                                String url = s3Service.generatePresignedUrl(img.getImageKey());
+                                log.info("이미지 presigned URL 생성됨: {}", url);
+                                return url;
+                            })
                             .collect(Collectors.toList());
 
                     return new RoomAddPre(
@@ -259,6 +291,9 @@ public class LodService {
                     );
                 })
                 .collect(Collectors.toList());
+
+        log.info("==== 최종 단계: LodAddPre DTO 생성 완료 ====");
+        log.info("총 객실 DTO 수: {}", roomDtos.size());
 
         return new LodAddPre(
                 content.getId(),
@@ -271,6 +306,7 @@ public class LodService {
                 roomDtos
         );
     }
+
 
 
 }
