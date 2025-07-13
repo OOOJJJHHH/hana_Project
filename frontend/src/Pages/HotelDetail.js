@@ -37,7 +37,7 @@ const HotelDetail = () => {
           const initialRoom = data.rooms[0];
           setSelectedRoom(initialRoom.roomName);
           setRoomPrice(initialRoom.price);
-          setRoomImages(initialRoom.images || []);
+          setRoomImages(initialRoom.roomImages || []);
         }
 
         setCurrentIndex(0);
@@ -51,7 +51,7 @@ const HotelDetail = () => {
       if (!userInfo || !hotelName || !selectedRoom) return;
 
       try {
-        const response = await axios.get("http://localhost:8080/wishlist/check", {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/wishlist/check`, {
           params: {
             userName: userInfo.uId,
             lodName: hotelName,

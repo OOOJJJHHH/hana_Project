@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.List;
 
@@ -27,6 +28,7 @@ public class ClodContent {
 
     @OneToMany(mappedBy = "clodContent", cascade = CascadeType.ALL)
     @JsonManagedReference
+    @BatchSize(size = 10)
     private List<Room> rooms;
 
     // ✅ Getter / Setter
