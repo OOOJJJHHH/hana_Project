@@ -33,6 +33,7 @@ public class Room {
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     @BatchSize(size = 10)
+    @JsonManagedReference
     private List<RoomImages> roomImages = new ArrayList<>();
 
     // ✅ Getter / Setter
