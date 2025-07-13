@@ -7,6 +7,7 @@ import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.Room;
 import com.example.oneproject.Entity.RoomImages;
 import com.example.oneproject.Repository.CLodRepository;
+import com.example.oneproject.Repository.RoomRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,6 +29,10 @@ public class LodService {
 
     @Autowired
     private CLodRepository lodRepository; // ✅ CLodRepository로 정확하게 지정
+
+    @Autowired
+    private RoomRepository roomRepository;
+
     @Autowired
     private S3Service s3Service;
 
@@ -203,16 +209,39 @@ public class LodService {
      * 숙소 및 객실 이미지 URL은 S3 프리사인드 URL로 변환
      */
     public LodAddPre getLodDtoByName(String lodName) {
+        // 1. 숙소 + 객실 조회
         ClodContent content = lodRepository.findByLodNameWithRooms(lodName)
                 .orElseThrow(() -> new RuntimeException("숙소 없음"));
 
         log.info("조회된 숙소 이름: {}", content.getLodName());
         log.info("숙소에 연결된 객실 수: {}", content.getRooms().size());
 
-        // 숙소 대표 이미지 URL
+        // 2. 객실 ID 리스트 추출
+        List<Long> roomIds = content.getRooms().stream()
+                .map(Room::getId)
+                .collect(Collectors.toList());
+
+        // 3. 객실 이미지 별도 조회
+        List<RoomImages> roomImages = roomRepository.findByRoomIds(roomIds);
+
+        // 4. 객실 ID 기준으로 이미지 그룹핑
+        Map<Long, List<RoomImages>> roomImagesMap = roomImages.stream()
+                .collect(Collectors.groupingBy(img -> img.getRoom().getId()));
+
+        // 5. 각 객실에 이미지 리스트 세팅
+        content.getRooms().forEach(room -> {
+            List<RoomImages> images = roomImagesMap.get(room.getId());
+            if (images != null) {
+                room.setRoomImages(images);
+            } else {
+                room.setRoomImages(Collections.emptyList());
+            }
+        });
+
+        // 6. 숙소 대표 이미지 URL 생성
         String lodImageUrl = s3Service.generatePresignedUrl(content.getLodImag());
 
-        // 객실 정보 + 여러 이미지 URL 변환
+        // 7. DTO 변환
         List<RoomAddPre> roomDtos = content.getRooms().stream()
                 .map(room -> {
                     log.info("객실 이름: {}", room.getRoomName());
@@ -242,5 +271,6 @@ public class LodService {
                 roomDtos
         );
     }
+
 
 }
