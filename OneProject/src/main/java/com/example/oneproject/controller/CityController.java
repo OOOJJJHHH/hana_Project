@@ -1,7 +1,6 @@
 package com.example.oneproject.controller;
 
 
-import com.amazonaws.services.ec2.model.Reservation;
 import com.example.oneproject.DTO.*;
 import com.example.oneproject.Entity.*;
 import com.example.oneproject.Repository.UserRepository;
@@ -59,6 +58,9 @@ public class CityController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ReservationService reservationService;
 
     @Autowired
     private WishListRepository wishListRepository;
@@ -188,6 +190,17 @@ public class CityController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("저장 실패: " + e.getMessage());
+        }
+    }
+
+    // 예약 ===========================================================================
+    @PostMapping("/reservationAdd")
+    public ResponseEntity<?> createReservation(@RequestBody com.example.oneproject.dto.ReservationRequestDto dto) {
+        try {
+            Reservation reservation = reservationService.saveReservation(dto);
+            return ResponseEntity.ok("예약이 성공적으로 생성되었습니다. 예약번호: " + reservation.getReservationCode());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("예약 생성 실패: " + e.getMessage());
         }
     }
 

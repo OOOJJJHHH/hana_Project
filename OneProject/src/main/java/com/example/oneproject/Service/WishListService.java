@@ -25,7 +25,7 @@ public class WishListService {
     private final RoomRepository roomRepository;
 
     public boolean isWished(String userName, String lodName, String roomName) {
-        UserContent user = userRepository.findByUFirstName(userName)
+        UserContent user = userRepository.findByUId(userName)
                 .orElseThrow(() -> new IllegalArgumentException("사용자 정보가 없습니다."));
         ClodContent clod = clodRepository.findByLodName(lodName)
                 .orElseThrow(() -> new IllegalArgumentException("숙소 정보를 찾을 수 없습니다."));
