@@ -36,7 +36,7 @@ public class WishListService {
     }
 
     public boolean toggleWish(WishDTO dto) {
-        UserContent user = userRepository.findByUFirstName(dto.getUserName())
+        UserContent user = userRepository.findByUId(dto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("사용자 정보가 없습니다."));
         ClodContent clod = clodRepository.findByLodName(dto.getLodName())
                 .orElseThrow(() -> new IllegalArgumentException("숙소 정보를 찾을 수 없습니다."));

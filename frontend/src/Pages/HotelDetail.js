@@ -68,7 +68,7 @@ const HotelDetail = () => {
 
     fetchHotelInfo();
     fetchWishlistStatus();
-  }, [hotelName, selectedRoom, userInfo]);
+  }, [hotelName, userInfo]);
 
   const handleReservationClick = () => {
     if (!userInfo) {
@@ -83,8 +83,10 @@ const HotelDetail = () => {
     setSelectedRoom(roomType);
 
     const selected = hotelInfo.rooms.find((room) => room.roomName === roomType);
+    console.log("선택된 방 정보:", selected);
+    console.log("선택된 방 정보:", selected?.roomImages);
     setRoomPrice(selected?.price || 0);
-    setRoomImages(selected?.images || []);
+    setRoomImages(selected?.roomImages || []); // ✅ 올바른 키 사용
     setCurrentIndex(0);
   };
 
@@ -136,7 +138,7 @@ const HotelDetail = () => {
       const params = new URLSearchParams();
 
       const response = await axios.post(
-          `http://localhost:8080/wishlist/toggle`,
+          `${process.env.REACT_APP_API_URL}/wishlist/toggle`,
           // `${process.env.REACT_APP_API_URL}/wishlist/add`,
           {
             userName: userInfo.uId,
@@ -179,20 +181,27 @@ const HotelDetail = () => {
   return (
       <div className="hotel-detail-container">
         <div className="image-slider">
-          {roomImages.length > 0 ? (
+          {roomImages.length === 0 ? (
+              <p>이미지가 없습니다.</p>
+          ) : roomImages.length === 1 ? (
+              <img
+                  src={roomImages[0]}
+                  alt="room-image-single"
+                  className="main-image"
+              />
+          ) : (
               <>
-                <button className="slide-btn left" onClick={handlePrev}>⟨</button>
+                <button className="nav-button left" onClick={handlePrev}>⟨</button>
                 <img
                     src={roomImages[currentIndex]}
                     alt={`room-image-${currentIndex}`}
                     className="main-image"
                 />
-                <button className="slide-btn right" onClick={handleNext}>⟩</button>
+                <button className="nav-button right" onClick={handleNext}>⟩</button>
               </>
-          ) : (
-              <p>이미지가 없습니다.</p>
           )}
         </div>
+
 
         <div className="hotel-info">
           <h1>{hotelInfo.lodName}</h1>

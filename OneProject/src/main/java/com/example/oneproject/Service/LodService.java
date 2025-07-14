@@ -116,7 +116,7 @@ public class LodService {
     // 모든 숙소 가져오기
     //방, 숙소 ㄹㅇ 다 가져옴
     public List<LodAddPre> getAllLodARoom() {
-        List<ClodContent> allLodCont = lodRepository.findAll();
+        List<ClodContent> allLodCont = lodRepository.findAllWithRoomsAndImages();
 
         return allLodCont.stream()
                 .map(lodging -> {

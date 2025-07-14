@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class WishDTO {
-    private String userName;
+    private String userId;
     private String lodName;
     private String roomName;
 }

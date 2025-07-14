@@ -22,7 +22,6 @@ public class Room {
     private Long id;
 
     private String roomName;
-    private String roomImag;
 
     private int price; // ✅ 숙박 가격 필드 추가
 
@@ -51,14 +50,6 @@ public class Room {
 
     public void setRoomName(String roomName) {
         this.roomName = roomName;
-    }
-
-    public String getRoomImag() {
-        return roomImag;
-    }
-
-    public void setRoomImag(String roomImag) {
-        this.roomImag = roomImag;
     }
 
     public int getPrice() {
