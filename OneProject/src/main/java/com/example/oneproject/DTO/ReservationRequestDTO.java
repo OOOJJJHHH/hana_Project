@@ -1,41 +1,41 @@
-package com.example.oneproject.dto;
+package com.example.oneproject.DTO;
 
+import com.example.oneproject.Enum.ReservationStatus;
 import java.time.LocalDateTime;
 
-public class ReservationRequestDto {
+public class ReservationRequestDTO {
     private Long userId;
-    private Long lodgingId;
+    private Long clodContentId;
     private Long roomId;
-
     private LocalDateTime startDate;
     private LocalDateTime endDate;
-
     private int nights;
-
     private String memo;
     private boolean isPaid;
+    private ReservationStatus status;
 
-    // 기본 생성자
-    public ReservationRequestDto() {}
+    // Getter & Setter 생략 가능 (Lombok @Data 사용해도 됨)
 
-    // Getter / Setter
     public Long getUserId() {
         return userId;
     }
+
     public void setUserId(Long userId) {
         this.userId = userId;
     }
 
-    public Long getLodgingId() {
-        return lodgingId;
+    public Long getClodContentId() {
+        return clodContentId;
     }
-    public void setLodgingId(Long lodgingId) {
-        this.lodgingId = lodgingId;
+
+    public void setClodContentId(Long clodContentId) {
+        this.clodContentId = clodContentId;
     }
 
     public Long getRoomId() {
         return roomId;
     }
+
     public void setRoomId(Long roomId) {
         this.roomId = roomId;
     }
@@ -43,6 +43,7 @@ public class ReservationRequestDto {
     public LocalDateTime getStartDate() {
         return startDate;
     }
+
     public void setStartDate(LocalDateTime startDate) {
         this.startDate = startDate;
     }
@@ -50,6 +51,7 @@ public class ReservationRequestDto {
     public LocalDateTime getEndDate() {
         return endDate;
     }
+
     public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
     }
@@ -57,6 +59,7 @@ public class ReservationRequestDto {
     public int getNights() {
         return nights;
     }
+
     public void setNights(int nights) {
         this.nights = nights;
     }
@@ -64,6 +67,7 @@ public class ReservationRequestDto {
     public String getMemo() {
         return memo;
     }
+
     public void setMemo(String memo) {
         this.memo = memo;
     }
@@ -71,7 +75,16 @@ public class ReservationRequestDto {
     public boolean isPaid() {
         return isPaid;
     }
+
     public void setPaid(boolean paid) {
         isPaid = paid;
+    }
+
+    public ReservationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ReservationStatus status) {
+        this.status = status;
     }
 }

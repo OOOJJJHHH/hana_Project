@@ -6,7 +6,6 @@ import { UserContext } from "../Session/UserContext";
 const ReserPopup = ({
                         rooms = [],
                         selectedRoomName,
-                        onRoomChange,
                         roomInfo,
                         onClose,
                         onSubmitReservation,
@@ -22,12 +21,6 @@ const ReserPopup = ({
     const [startDate, endDate] = dateRange;
 
     const currentRoom = rooms.find((r) => r.roomName === currentRoomName) || {};
-
-    useEffect(() => {
-        if (onRoomChange) {
-            onRoomChange(currentRoomName, currentRoom.price, currentRoom.roomImages);
-        }
-    }, [currentRoomName, currentRoom.price, currentRoom.roomImages, onRoomChange]);
 
     const getNightCount = () => {
         if (!startDate || !endDate) return 0;
@@ -70,7 +63,7 @@ const ReserPopup = ({
 
         const reservationData = {
             userId: userInfo.uId,
-            clodContentId: roomInfo.id,   // 숙소 id
+            clodContentId: roomInfo.hotelId,   // 숙소 id
             roomId: currentRoom.id,       // 객실 id
             startDate: startDate.toISOString(),
             endDate: endDate.toISOString(),

@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "reservations")
 public class Reservation {
 
     @Id
@@ -75,7 +74,19 @@ public class Reservation {
         this.isPaid = isPaid;
         this.status = status;
         this.reservationCode = UUID.randomUUID().toString();
+    }
+
+    @PrePersist
+    protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+        if (this.reservationCode == null) {
+            this.reservationCode = UUID.randomUUID().toString();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 

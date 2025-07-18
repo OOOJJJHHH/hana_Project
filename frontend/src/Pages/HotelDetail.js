@@ -31,6 +31,7 @@ const HotelDetail = () => {
             `${process.env.REACT_APP_API_URL}/getlodUseN/${encodeURIComponent(hotelName)}`
         );
         const data = response.data;
+        console.log(response.data);
         setHotelInfo(data);
 
         if (data.rooms?.length > 0) {
@@ -247,13 +248,8 @@ const HotelDetail = () => {
             <ReserPopup
                 rooms={hotelInfo.rooms}        // 전체 방 리스트 전달
                 selectedRoomName={selectedRoom} // 현재 선택된 방 이름
-                onRoomChange={(roomName, price, images) => {
-                  // 팝업에서 방 선택 변경 시 부모 상태 업데이트
-                  setSelectedRoom(roomName);
-                  setRoomPrice(price);
-                  setRoomImages(images);
-                }}
                 roomInfo={{
+                  hotelId: hotelInfo.id,
                   hotelName: hotelInfo.lodName,
                   roomName: selectedRoom,
                   roomPrice: roomPrice,

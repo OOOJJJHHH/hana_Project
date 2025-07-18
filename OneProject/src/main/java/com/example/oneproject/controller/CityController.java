@@ -194,14 +194,10 @@ public class CityController {
     }
 
     // 예약 ===========================================================================
-    @PostMapping("/reservationAdd")
-    public ResponseEntity<?> createReservation(@RequestBody com.example.oneproject.dto.ReservationRequestDto dto) {
-        try {
-            Reservation reservation = reservationService.saveReservation(dto);
-            return ResponseEntity.ok("예약이 성공적으로 생성되었습니다. 예약번호: " + reservation.getReservationCode());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("예약 생성 실패: " + e.getMessage());
-        }
+    @PostMapping("/reservation")
+    public ResponseEntity<?> createReservation(@RequestBody ReservationRequestDTO dto) {
+        Reservation saved = reservationService.createReservation(dto);
+        return ResponseEntity.ok().body("예약이 성공적으로 등록되었습니다. ID: " + saved.getId());
     }
 
 
