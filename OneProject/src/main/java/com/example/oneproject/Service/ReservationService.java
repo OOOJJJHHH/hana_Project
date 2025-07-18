@@ -26,7 +26,7 @@ public class ReservationService {
     }
 
     public Reservation createReservation(ReservationRequestDTO dto) {
-        UserContent user = userRepository.findById(dto.getUserId())
+        UserContent user = userRepository.findByUId(dto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("유저가 존재하지 않습니다."));
         ClodContent lodging = clodRepository.findById(dto.getClodContentId())
                 .orElseThrow(() -> new IllegalArgumentException("숙소가 존재하지 않습니다."));

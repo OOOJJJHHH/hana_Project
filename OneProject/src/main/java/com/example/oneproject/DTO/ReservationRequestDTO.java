@@ -4,7 +4,7 @@ import com.example.oneproject.Enum.ReservationStatus;
 import java.time.LocalDateTime;
 
 public class ReservationRequestDTO {
-    private Long userId;
+    private String userId;
     private Long clodContentId;
     private Long roomId;
     private LocalDateTime startDate;
@@ -16,11 +16,11 @@ public class ReservationRequestDTO {
 
     // Getter & Setter 생략 가능 (Lombok @Data 사용해도 됨)
 
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 

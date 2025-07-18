@@ -19,6 +19,7 @@ export const UserProvider = ({ children }) => {
                 if (sessionData) {
                     setUserInfo(sessionData);  // 상태 업데이트
                     localStorage.setItem('loginUser', JSON.stringify(sessionData));  // 로컬스토리지에 저장
+                    console.log("로그인 정보 : " + sessionData);
                 }
             };
             fetchSessionInfo();
