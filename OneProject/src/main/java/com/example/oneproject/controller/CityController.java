@@ -197,7 +197,12 @@ public class CityController {
     @PostMapping("/reservation")
     public ResponseEntity<?> createReservation(@RequestBody ReservationRequestDTO dto) {
         Reservation saved = reservationService.createReservation(dto);
-        return ResponseEntity.ok().body("예약이 성공적으로 등록되었습니다. ID: " + saved.getId());
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "예약이 성공적으로 등록되었습니다.");
+        response.put("reservationId", saved.getId());
+
+        return ResponseEntity.ok(response);  // 🔄 JSON으로 응답
     }
 
 
