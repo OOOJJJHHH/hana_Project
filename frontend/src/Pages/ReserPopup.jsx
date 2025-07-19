@@ -122,12 +122,34 @@ const ReserPopup = ({
                         selectsRange
                         startDate={startDate}
                         endDate={endDate}
-                        onChange={(update) => setDateRange(update)}
+                        onChange={(update) => {
+                            // update는 [start, end] 배열
+                            if (update[0] && update[1]) {
+                                // 예약된 날짜 범위가 선택한 범위와 겹치는지 확인
+                                const selectedStart = update[0];
+                                const selectedEnd = update[1];
+
+                                // disabledRanges 중 하나라도 선택 범위와 겹치는지 체크
+                                const isOverlap = disabledRanges?.some(({ start, end }) => {
+                                    // 겹치는 조건: 시작일이 예약된 기간 끝보다 작거나 같고, 종료일이 예약된 기간 시작보다 크거나 같으면 겹침
+                                    return selectedStart <= end && selectedEnd >= start;
+                                });
+
+                                if (isOverlap) {
+                                    alert("선택한 기간에 예약이 이미 되어 있습니다. 다른 날짜를 선택해주세요.");
+                                    // 선택 초기화
+                                    setDateRange([null, null]);
+                                    return;
+                                }
+                            }
+                            setDateRange(update);
+                        }}
                         inline
                         minDate={new Date()}
-                        excludeDateIntervals={disabledRanges} // 🚫 예약불가일 추
+                        excludeDateIntervals={disabledRanges}
                         dateFormat="yyyy-MM-dd"
                     />
+
                 </div>
 
                 <div style={styles.infoWrapper}>

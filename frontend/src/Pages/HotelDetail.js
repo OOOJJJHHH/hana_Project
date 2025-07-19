@@ -4,6 +4,7 @@ import axios from "axios";
 import "./HotelDetail.css";
 import { UserContext } from "../Session/UserContext";
 import ReserPopup from "./ReserPopup";
+import HotelReviews from "./HotelReviews";
 
 const HotelDetail = () => {
   const location = useLocation();
@@ -227,21 +228,11 @@ const HotelDetail = () => {
           </div>
         </div>
 
-        <div className="hotel-review-section">
-          <h2>리뷰</h2>
-          {hotelInfo.reviews?.length > 0 ? (
-              hotelInfo.reviews.map((review, idx) => (
-                  <div key={idx} className="review-card">
-                    <p>
-                      <strong>{review.user}</strong> {renderStars(review.rating)} ({review.rating})
-                    </p>
-                    <p>{review.comment}</p>
-                  </div>
-              ))
-          ) : (
-              <p>아직 리뷰가 없습니다.</p>
-          )}
-        </div>
+        <HotelReviews
+            hotelId={hotelInfo.id}
+            roomId={hotelInfo.rooms.find(r => r.roomName === selectedRoom)?.id}
+            userId={userInfo?.uId}
+        />
 
         {/* 모달 표시 */}
         {isPopupOpen && (
