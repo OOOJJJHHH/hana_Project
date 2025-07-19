@@ -2,6 +2,7 @@ import React, {useState, useEffect, useContext} from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { UserContext } from "../Session/UserContext";
+import axios from "axios";
 
 const ReserPopup = ({
                         rooms = [],
@@ -16,9 +17,24 @@ const ReserPopup = ({
     const [specialRequest, setSpecialRequest] = useState("");
     const [isPaid, setIsPaid] = useState(false);
     const [showConfirmButton, setShowConfirmButton] = useState(false);
+    const [disabledRanges, setDisabledRanges] = useState();
     const userInfo = useContext(UserContext);
 
     const [startDate, endDate] = dateRange;
+
+    useEffect(() => {
+        if (!currentRoom.id) return;
+
+        axios.get(`${process.env.REACT_APP_API_URL}/reservation/reserved-dates/${currentRoom.id}`)
+            .then(res => {
+                const ranges = res.data.map(r => ({
+                    start: new Date(r.start),
+                    end: new Date(r.end),
+                }));
+                setDisabledRanges(ranges);
+                console.log(ranges);
+            });
+    }, [currentRoom.id]);
 
     const currentRoom = rooms.find((r) => r.roomName === currentRoomName) || {};
 
@@ -69,7 +85,7 @@ const ReserPopup = ({
             endDate: endDate.toISOString(),
             nights: getNightCount(),
             memo: specialRequest,
-            isPaid: isPaid,
+            paid: isPaid,
             status: "RESERVED"
         };
 
@@ -109,6 +125,7 @@ const ReserPopup = ({
                         onChange={(update) => setDateRange(update)}
                         inline
                         minDate={new Date()}
+                        excludeDateIntervals={disabledRanges} // 🚫 예약불가일 추
                         dateFormat="yyyy-MM-dd"
                     />
                 </div>

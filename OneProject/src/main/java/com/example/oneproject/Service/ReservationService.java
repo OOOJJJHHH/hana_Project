@@ -9,6 +9,7 @@ import com.example.oneproject.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class ReservationService {
@@ -25,6 +26,13 @@ public class ReservationService {
         this.reservationRepository = reservationRepository;
     }
 
+    // 예약 되어있는 날짜 확인 후 날짜 데이터 반환
+    // 예약 겹치게 하지 않기 위해서
+    public List<Reservation> getReservedDatesByRoom(Long roomId) {
+        return reservationRepository.findConfirmedByRoom(roomId);
+    }
+
+    //예약 등록
     public Reservation createReservation(ReservationRequestDTO dto) {
         UserContent user = userRepository.findByUId(dto.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("유저가 존재하지 않습니다."));

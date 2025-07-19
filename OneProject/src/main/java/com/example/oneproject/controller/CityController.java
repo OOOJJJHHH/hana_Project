@@ -194,9 +194,19 @@ public class CityController {
     }
 
     // 예약 ===========================================================================
+    // 예약되어있는 날짜 확인
+    @GetMapping("reservation/reserved-dates/{roomId}")
+    public ResponseEntity<List<DateRangeDTO>> getReservedDates(@PathVariable Long roomId) {
+        List<Reservation> list = reservationService.getReservedDatesByRoom(roomId);
+        List<DateRangeDTO> ranges = list.stream()
+                .map(r -> new DateRangeDTO(r.getStartDate().toLocalDate(), r.getEndDate().toLocalDate()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(ranges);
+    }
+
+    // 예약 등록
     @PostMapping("/reservation")
     public ResponseEntity<?> createReservation(@RequestBody ReservationRequestDTO dto) {
-        System.out.println("받은 예약 요청: " + dto.isPaid());
 
         Reservation saved = reservationService.createReservation(dto);
         Map<String, Object> response = new HashMap<>();
