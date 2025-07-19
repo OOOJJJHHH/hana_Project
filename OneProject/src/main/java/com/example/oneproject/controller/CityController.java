@@ -196,7 +196,7 @@ public class CityController {
     // 예약 ===========================================================================
     @PostMapping("/reservation")
     public ResponseEntity<?> createReservation(@RequestBody ReservationRequestDTO dto) {
-        System.out.println("받은 예약 요청: " + dto);
+        System.out.println("받은 예약 요청: " + dto.isPaid());
 
         Reservation saved = reservationService.createReservation(dto);
         Map<String, Object> response = new HashMap<>();

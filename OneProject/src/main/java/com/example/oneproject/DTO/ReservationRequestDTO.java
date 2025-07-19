@@ -11,7 +11,7 @@ public class ReservationRequestDTO {
     private LocalDateTime endDate;
     private int nights;
     private String memo;
-    private boolean isPaid;
+    private boolean paid;
     private ReservationStatus status;
 
     // Getter & Setter 생략 가능 (Lombok @Data 사용해도 됨)
@@ -73,11 +73,11 @@ public class ReservationRequestDTO {
     }
 
     public boolean isPaid() {
-        return isPaid;
+        return paid;
     }
 
     public void setPaid(boolean paid) {
-        isPaid = paid;
+        this.paid = paid;
     }
 
     public ReservationStatus getStatus() {
