@@ -199,10 +199,11 @@ public class CityController {
     public ResponseEntity<List<DateRangeDTO>> getReservedDates(@PathVariable Long roomId) {
         List<Reservation> list = reservationService.getReservedDatesByRoom(roomId);
         List<DateRangeDTO> ranges = list.stream()
-                .map(r -> new DateRangeDTO(r.getStartDate().toLocalDate(), r.getEndDate().toLocalDate()))
+                .map(r -> new DateRangeDTO(r.getStartDate(), r.getEndDate()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(ranges);
     }
+
 
     // 예약 등록
     @PostMapping("/reservation")

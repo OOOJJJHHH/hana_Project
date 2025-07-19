@@ -22,6 +22,8 @@ const ReserPopup = ({
 
     const [startDate, endDate] = dateRange;
 
+    const currentRoom = rooms.find((r) => r.roomName === currentRoomName) || {};
+
     useEffect(() => {
         if (!currentRoom.id) return;
 
@@ -35,8 +37,6 @@ const ReserPopup = ({
                 console.log(ranges);
             });
     }, [currentRoom.id]);
-
-    const currentRoom = rooms.find((r) => r.roomName === currentRoomName) || {};
 
     const getNightCount = () => {
         if (!startDate || !endDate) return 0;

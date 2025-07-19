@@ -1,27 +1,22 @@
 package com.example.oneproject.DTO;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class DateRangeDTO {
-    private LocalDate start;
-    private LocalDate end;
+    private LocalDateTime start;
+    private LocalDateTime end;
 
-    public DateRangeDTO(LocalDate localDate, LocalDate localDate1) {
+    public DateRangeDTO(LocalDateTime start, LocalDateTime end) {
+        this.start = start;
+        this.end = end;
     }
 
-    public LocalDate getStart() {
+    public LocalDateTime getStart() {
         return start;
     }
 
-    public void setStart(LocalDate start) {
-        this.start = start;
-    }
-
-    public LocalDate getEnd() {
+    public LocalDateTime getEnd() {
         return end;
-    }
-
-    public void setEnd(LocalDate end) {
-        this.end = end;
     }
 }
