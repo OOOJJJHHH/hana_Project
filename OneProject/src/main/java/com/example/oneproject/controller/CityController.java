@@ -233,17 +233,37 @@ public class CityController {
 
     // ✅ 특정 숙소 및 객실의 리뷰 조회
     @GetMapping("/getReviews")
-    public ResponseEntity<List<Review>> getReviewsByRoom(
+    public ResponseEntity<List<ReviewDTO>> getReviewsByRoom(
             @RequestParam Long clodContentId,
             @RequestParam Long roomId
     ) {
         try {
             List<Review> reviews = reviewService.getReviewsForRoom(clodContentId, roomId);
-            return ResponseEntity.ok(reviews);
+            List<ReviewDTO> result = reviews.stream()
+                    .map(this::toDto)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.internalServerError().build();
         }
     }
+
+    // ✅ Review → ReviewDTO 변환
+    private ReviewDTO toDto(Review review) {
+        String userId = (review.getUser() != null) ? review.getUser().getuId() : null;
+        Long clodContentId = (review.getClodContent() != null) ? review.getClodContent().getId() : null;
+        Long roomId = (review.getRoom() != null) ? review.getRoom().getId() : null;
+
+        return new ReviewDTO(
+                userId,
+                clodContentId,
+                roomId,
+                review.getRating(),
+                review.getComment()
+        );
+    }
+
+
 
     // ✅ 특정 유저가 작성한 모든 리뷰 (마이페이지용)
     @GetMapping("/getMyReviews")

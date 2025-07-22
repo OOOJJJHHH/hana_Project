@@ -8,6 +8,14 @@ public class ReviewDTO {
     private double rating;
     private String comment;
 
+    public ReviewDTO(String userId, Long clodContentId, Long roomId, double rating, String comment) {
+        this.userId = userId;
+        this.clodContentId = clodContentId;
+        this.roomId = roomId;
+        this.rating = rating;
+        this.comment = comment;
+    }
+
     public String getUserId() {
         return userId;
     }
