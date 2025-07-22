@@ -250,7 +250,7 @@ public class CityController {
 
     // ✅ Review → ReviewDTO 변환
     private ReviewDTO toDto(Review review) {
-        Long id = review.getId(); // ✅ 리뷰 ID 포함
+        Long id = review.getId();
         String userId = (review.getUser() != null) ? review.getUser().getuId() : null;
         Long clodContentId = (review.getClodContent() != null) ? review.getClodContent().getId() : null;
         Long roomId = (review.getRoom() != null) ? review.getRoom().getId() : null;
