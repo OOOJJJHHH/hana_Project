@@ -250,17 +250,35 @@ public class CityController {
 
     // ✅ Review → ReviewDTO 변환
     private ReviewDTO toDto(Review review) {
+        Long id = review.getId(); // ✅ 리뷰 ID 포함
         String userId = (review.getUser() != null) ? review.getUser().getuId() : null;
         Long clodContentId = (review.getClodContent() != null) ? review.getClodContent().getId() : null;
         Long roomId = (review.getRoom() != null) ? review.getRoom().getId() : null;
 
         return new ReviewDTO(
+                id,
                 userId,
                 clodContentId,
                 roomId,
                 review.getRating(),
                 review.getComment()
         );
+    }
+
+    // ✅ 특정 게시물 수정
+    @PutMapping("/reviews/{id}")
+    public ResponseEntity<?> updateReview(
+            @PathVariable Long id,
+            @RequestBody ReviewDTO reviewDTO
+    ) {
+        try {
+            reviewService.updateReview(id, reviewDTO);
+            return ResponseEntity.ok().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
 

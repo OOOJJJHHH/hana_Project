@@ -3,12 +3,14 @@ package com.example.oneproject.Service;
 import com.example.oneproject.DTO.ReviewDTO;
 import com.example.oneproject.Entity.*;
 import com.example.oneproject.Repository.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.example.oneproject.Enum.ReservationStatus;
 
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -53,6 +55,21 @@ public class ReviewService {
 
     public List<Review> getReviewsForRoom(Long clodContentId, Long roomId) {
         return reviewRepository.findByClodContentIdAndRoomId(clodContentId, roomId);
+    }
+
+    @Transactional
+    public void updateReview(Long reviewId, ReviewDTO reviewDTO) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new NoSuchElementException("리뷰를 찾을 수 없습니다."));
+
+        if (!review.getUser().getuId().equals(reviewDTO.getUserId())) {
+            throw new SecurityException("리뷰 작성자만 수정할 수 있습니다.");
+        }
+
+        review.setComment(reviewDTO.getComment());
+        review.setRating(reviewDTO.getRating());
+
+        reviewRepository.save(review); // 실제로는 JPA의 변경 감지로 생략 가능
     }
 
     public List<Review> getReviewsByUser(String userId) {

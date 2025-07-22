@@ -2,13 +2,15 @@ package com.example.oneproject.DTO;
 
 
 public class ReviewDTO {
+    private Long id;
     private String userId;
     private Long clodContentId;
     private Long roomId;
     private double rating;
     private String comment;
 
-    public ReviewDTO(String userId, Long clodContentId, Long roomId, double rating, String comment) {
+    public ReviewDTO(Long id, String userId, Long clodContentId, Long roomId, double rating, String comment) {
+        this.id = id;
         this.userId = userId;
         this.clodContentId = clodContentId;
         this.roomId = roomId;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 
@@ -8,11 +8,23 @@ const HotelReWrite = ({
                           hotelId,
                           roomId,
                           userId,
+                          editingReview,       // ✅ 추가: 수정할 리뷰 정보
+                          refreshReviews,      // ✅ 추가: 목록 갱신 함수
                       }) => {
     const [hoverRating, setHoverRating] = useState(0);
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState("");
     const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (editingReview) {
+            setRating(editingReview.rating);
+            setComment(editingReview.comment);
+        } else {
+            setRating(5);
+            setComment("");
+        }
+    }, [editingReview, isOpen]);
 
     if (!isOpen) return null;
 
@@ -27,8 +39,7 @@ const HotelReWrite = ({
         const { left, width } = e.currentTarget.getBoundingClientRect();
         const clickX = e.clientX - left;
         const isHalf = clickX < width / 2;
-        const selected = isHalf ? index - 0.5 : index;
-        setRating(selected);
+        setRating(isHalf ? index - 0.5 : index);
     };
 
     const handleMouseMove = (e, index) => {
@@ -55,30 +66,29 @@ const HotelReWrite = ({
 
         setSubmitting(true);
 
-        console.log("POST payload:", {
-            hotelId,
+        const payload = {
+            clodContentId: hotelId,
             roomId,
             userId,
             rating,
             comment: comment.trim(),
-        });
-
+        };
 
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/saveReview`, {
-                clodContentId: hotelId,
-                roomId,
-                userId,
-                rating,
-                comment: comment.trim(),
-            });
+            if (editingReview) {
+                // ✅ 수정 요청
+                await axios.put(`${process.env.REACT_APP_API_URL}/reviews/${editingReview.id}`, payload);
+                alert("리뷰가 수정되었습니다!");
+            } else {
+                // ✅ 신규 작성
+                await axios.post(`${process.env.REACT_APP_API_URL}/saveReview`, payload);
+                alert("리뷰가 등록되었습니다!");
+            }
 
-            alert("리뷰가 등록되었습니다!");
-            setComment("");
-            setRating(5);
-            onClose(); // 모달 닫기
+            onClose();              // 모달 닫기
+            refreshReviews();      // 리뷰 목록 새로고침
         } catch (error) {
-            alert("리뷰 등록에 실패했습니다.");
+            alert("리뷰 저장에 실패했습니다.");
             console.error(error);
         } finally {
             setSubmitting(false);
@@ -88,7 +98,9 @@ const HotelReWrite = ({
     return (
         <div style={overlay}>
             <div style={modal}>
-                <h3 style={styles.title}>리뷰 작성</h3>
+                <h3 style={styles.title}>
+                    {editingReview ? "리뷰 수정" : "리뷰 작성"}
+                </h3>
 
                 {/* 별점 */}
                 <div style={styles.ratingContainer}>
@@ -123,7 +135,9 @@ const HotelReWrite = ({
                         취소
                     </button>
                     <button onClick={handleSubmit} disabled={submitting} style={styles.submitButton}>
-                        {submitting ? "등록 중..." : "리뷰 등록"}
+                        {submitting
+                            ? (editingReview ? "수정 중..." : "등록 중...")
+                            : (editingReview ? "리뷰 수정" : "리뷰 등록")}
                     </button>
                 </div>
             </div>
@@ -131,7 +145,7 @@ const HotelReWrite = ({
     );
 };
 
-// 스타일
+// 스타일은 동일
 const overlay = {
     position: "fixed",
     top: 0,

@@ -1,26 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import HotelReWrite from "./HotelReWrite"; // ✅ 모달 컴포넌트 import
+import HotelReWrite from "./HotelReWrite"; // ✅ 리뷰 작성/수정 모달
 
 const HotelReviews = ({ hotelId, roomId, userId }) => {
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const [showModal, setShowModal] = useState(false); // ✅ 모달 상태
-    const [submitting, setSubmitting] = useState(false);
-    const [newRating, setNewRating] = useState(5);
-    const [newComment, setNewComment] = useState("");
-
-    const renderStars = (rating) => {
-        const full = Math.floor(rating);
-        const half = rating % 1 >= 0.5;
-        const stars = [];
-        for (let i = 0; i < full; i++) stars.push("★");
-        if (half) stars.push("☆");
-        while (stars.length < 5) stars.push("✩");
-        return stars.join("");
-    };
+    const [showModal, setShowModal] = useState(false);
+    const [editingReview, setEditingReview] = useState(null); // ✅ 수정 모드 여부
 
     const fetchReviews = async () => {
         if (!hotelId || !roomId) {
@@ -33,7 +21,7 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
                 `${process.env.REACT_APP_API_URL}/getReviews`,
                 {
                     params: {
-                        clodContentId: hotelId, // ✅ 이름 변경!
+                        clodContentId: hotelId,
                         roomId,
                     },
                 }
@@ -48,58 +36,26 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
         }
     };
 
-
     useEffect(() => {
         fetchReviews();
     }, [hotelId, roomId]);
-
-    const handleSubmitReview = async () => {
-        if (!userId) {
-            alert("로그인이 필요합니다.");
-            return;
-        }
-        if (!newComment.trim()) {
-            alert("리뷰 내용을 입력해주세요.");
-            return;
-        }
-        setSubmitting(true);
-        try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/reviews`, {
-                hotelId,
-                roomId,
-                userId,
-                rating: newRating,
-                comment: newComment.trim(),
-            });
-            setNewComment("");
-            setNewRating(5);
-            setShowModal(false); // ✅ 모달 닫기
-            fetchReviews();
-        } catch {
-            alert("리뷰 작성에 실패했습니다.");
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    const handleDeleteAllReviews = async () => {
-        if (!window.confirm("정말 모든 리뷰를 삭제하시겠습니까?")) return;
-        try {
-            await axios.delete(`${process.env.REACT_APP_API_URL}/reviews`, {
-                data: { hotelId, roomId, userId },
-            });
-            fetchReviews();
-        } catch {
-            alert("리뷰 삭제에 실패했습니다.");
-        }
-    };
 
     const handleWriteClick = () => {
         if (!userId) {
             alert("로그인이 필요합니다.");
             return;
         }
-        setShowModal(true); // ✅ 모달 열기
+        setEditingReview(null); // 작성 모드
+        setShowModal(true);
+    };
+
+    const handleEditClick = (review) => {
+        if (!userId) {
+            alert("로그인이 필요합니다.");
+            return;
+        }
+        setEditingReview(review); // 수정 모드
+        setShowModal(true);
     };
 
     const handleDeleteClick = () => {
@@ -107,7 +63,23 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
             alert("로그인이 필요합니다.");
             return;
         }
-        handleDeleteAllReviews();
+        if (!window.confirm("정말 모든 리뷰를 삭제하시겠습니까?")) return;
+        axios
+            .delete(`${process.env.REACT_APP_API_URL}/reviews`, {
+                data: { hotelId, roomId, userId },
+            })
+            .then(fetchReviews)
+            .catch(() => alert("리뷰 삭제에 실패했습니다."));
+    };
+
+    const renderStars = (rating) => {
+        const full = Math.floor(rating);
+        const half = rating % 1 >= 0.5;
+        const stars = [];
+        for (let i = 0; i < full; i++) stars.push("★");
+        if (half) stars.push("☆");
+        while (stars.length < 5) stars.push("✩");
+        return stars.join("");
     };
 
     const styles = {
@@ -149,13 +121,15 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
             marginTop: 6,
             fontSize: "0.9rem",
         },
-    };
-
-    const onMouseEnter = (e) => {
-        e.currentTarget.style.backgroundColor = "#0056b3";
-    };
-    const onMouseLeave = (e) => {
-        e.currentTarget.style.backgroundColor = "#007bff";
+        reviewCardEditBtn: {
+            color: "#007bff",
+            background: "none",
+            border: "none",
+            padding: 0,
+            marginRight: 10,
+            fontSize: "0.9rem",
+            cursor: "pointer",
+        },
     };
 
     return (
@@ -166,31 +140,28 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
                     <button
                         style={styles.button}
                         onClick={handleWriteClick}
-                        onMouseEnter={onMouseEnter}
-                        onMouseLeave={onMouseLeave}
                     >
                         작성
                     </button>
                     <button
                         style={styles.button}
                         onClick={handleDeleteClick}
-                        onMouseEnter={onMouseEnter}
-                        onMouseLeave={onMouseLeave}
                     >
                         삭제
                     </button>
                 </div>
             </div>
 
-            {/* ✅ 모달 컴포넌트 삽입 */}
+            {/* ✅ 작성/수정 모달 */}
             <HotelReWrite
                 isOpen={showModal}
                 onClose={() => setShowModal(false)}
                 hotelId={hotelId}
                 roomId={roomId}
                 userId={userId}
+                editingReview={editingReview}
+                refreshReviews={fetchReviews}
             />
-
 
             {/* 상태 표시 */}
             {loading && <p>리뷰를 불러오는 중입니다...</p>}
@@ -198,8 +169,7 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
             {!loading && !error && reviews.length === 0 && <p>아직 리뷰가 없습니다.</p>}
 
             {/* 리뷰 목록 */}
-            {!loading &&
-                !error &&
+            {!loading && !error &&
                 reviews.map((review) => (
                     <div key={review.id} className="review-card" style={{ marginBottom: 12 }}>
                         <p>
@@ -207,21 +177,29 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
                         </p>
                         <p>{review.comment}</p>
                         {userId === review.userId && (
-                            <button
-                                onClick={() => {
-                                    if (window.confirm("이 리뷰를 삭제하시겠습니까?")) {
-                                        axios
-                                            .delete(`${process.env.REACT_APP_API_URL}/reviews/${review.id}`, {
-                                                data: { userId },
-                                            })
-                                            .then(fetchReviews)
-                                            .catch(() => alert("리뷰 삭제에 실패했습니다."));
-                                    }
-                                }}
-                                style={styles.reviewCardDeleteBtn}
-                            >
-                                삭제
-                            </button>
+                            <div>
+                                <button
+                                    onClick={() => handleEditClick(review)}
+                                    style={styles.reviewCardEditBtn}
+                                >
+                                    수정
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (window.confirm("이 리뷰를 삭제하시겠습니까?")) {
+                                            axios
+                                                .delete(`${process.env.REACT_APP_API_URL}/reviews/${review.id}`, {
+                                                    data: { userId },
+                                                })
+                                                .then(fetchReviews)
+                                                .catch(() => alert("리뷰 삭제에 실패했습니다."));
+                                        }
+                                    }}
+                                    style={styles.reviewCardDeleteBtn}
+                                >
+                                    삭제
+                                </button>
+                            </div>
                         )}
                     </div>
                 ))}
