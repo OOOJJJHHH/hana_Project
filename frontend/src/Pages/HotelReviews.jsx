@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import HotelReWrite from "./HotelReWrite"; // ✅ 모달 컴포넌트 import
 
 const HotelReviews = ({ hotelId, roomId, userId }) => {
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const [showForm, setShowForm] = useState(false);
+    const [showModal, setShowModal] = useState(false); // ✅ 모달 상태
     const [submitting, setSubmitting] = useState(false);
     const [newRating, setNewRating] = useState(5);
     const [newComment, setNewComment] = useState("");
 
-    // 별점 렌더링 함수 (이전과 동일)
     const renderStars = (rating) => {
         const full = Math.floor(rating);
         const half = rating % 1 >= 0.5;
@@ -47,8 +47,7 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
         fetchReviews();
     }, [hotelId, roomId]);
 
-    const handleSubmitReview = async (e) => {
-        e.preventDefault();
+    const handleSubmitReview = async () => {
         if (!userId) {
             alert("로그인이 필요합니다.");
             return;
@@ -68,7 +67,7 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
             });
             setNewComment("");
             setNewRating(5);
-            setShowForm(false); // 작성 후 폼 닫기
+            setShowModal(false); // ✅ 모달 닫기
             fetchReviews();
         } catch {
             alert("리뷰 작성에 실패했습니다.");
@@ -89,13 +88,12 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
         }
     };
 
-    // 클릭 핸들러 함수
     const handleWriteClick = () => {
         if (!userId) {
             alert("로그인이 필요합니다.");
             return;
         }
-        setShowForm((prev) => !prev);
+        setShowModal(true); // ✅ 모달 열기
     };
 
     const handleDeleteClick = () => {
@@ -106,7 +104,6 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
         handleDeleteAllReviews();
     };
 
-    // 인라인 스타일
     const styles = {
         header: {
             display: "flex",
@@ -137,9 +134,6 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
             fontSize: "1rem",
             transition: "background-color 0.3s ease",
         },
-        buttonHover: {
-            backgroundColor: "#0056b3",
-        },
         reviewCardDeleteBtn: {
             color: "red",
             cursor: "pointer",
@@ -151,7 +145,6 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
         },
     };
 
-    // hover효과 인라인으로 간단 구현용 함수 (선택 사항)
     const onMouseEnter = (e) => {
         e.currentTarget.style.backgroundColor = "#0056b3";
     };
@@ -161,7 +154,6 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
 
     return (
         <div className="hotel-review-section" style={{ minHeight: "150px" }}>
-            {/* 헤더 + 버튼들 한 줄에 배치 */}
             <div style={styles.header}>
                 <h2 style={styles.title}>리뷰</h2>
                 <div style={styles.buttonContainer}>
@@ -184,47 +176,17 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
                 </div>
             </div>
 
-            {/* 리뷰 작성 폼 (showForm에 따라 표시) */}
-            {showForm && (
-                <form
-                    onSubmit={handleSubmitReview}
-                    className="review-form"
-                    style={{ marginBottom: "20px" }}
-                >
-                    <label>
-                        별점:
-                        <select
-                            value={newRating}
-                            onChange={(e) => setNewRating(Number(e.target.value))}
-                            disabled={submitting}
-                        >
-                            {[5, 4, 3, 2, 1].map((num) => (
-                                <option key={num} value={num}>
-                                    {num}점
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-                    <br />
-                    <label>
-                        리뷰 내용:
-                        <textarea
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            disabled={submitting}
-                            rows={3}
-                            placeholder="리뷰를 작성해주세요."
-                            style={{ width: "100%" }}
-                        />
-                    </label>
-                    <br />
-                    <button type="submit" disabled={submitting} style={{ ...styles.button }}>
-                        {submitting ? "등록중..." : "리뷰 등록"}
-                    </button>
-                </form>
-            )}
+            {/* ✅ 모달 컴포넌트 삽입 */}
+            <HotelReWrite
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                hotelId={hotelId}
+                roomId={roomId}
+                userId={userId}
+            />
 
-            {/* 리뷰 상태 표시 */}
+
+            {/* 상태 표시 */}
             {loading && <p>리뷰를 불러오는 중입니다...</p>}
             {error && <p style={{ color: "red" }}>{error}</p>}
             {!loading && !error && reviews.length === 0 && <p>아직 리뷰가 없습니다.</p>}
@@ -232,14 +194,12 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
             {/* 리뷰 목록 */}
             {!loading &&
                 !error &&
-                reviews.length > 0 &&
                 reviews.map((review) => (
                     <div key={review.id} className="review-card" style={{ marginBottom: 12 }}>
                         <p>
                             <strong>{review.user}</strong> {renderStars(review.rating)} ({review.rating})
                         </p>
                         <p>{review.comment}</p>
-                        {/* 개별 리뷰 삭제 버튼 (선택 시) */}
                         {userId === review.userId && (
                             <button
                                 onClick={() => {

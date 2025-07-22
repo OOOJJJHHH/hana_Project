@@ -60,6 +60,9 @@ public class CityController {
     private UserService userService;
 
     @Autowired
+    private ReviewService reviewService;
+
+    @Autowired
     private ReservationService reservationService;
 
     @Autowired
@@ -216,6 +219,75 @@ public class CityController {
         response.put("reservationId", saved.getId());
 
         return ResponseEntity.ok(response);  // 🔄 JSON으로 응답
+    }
+
+    // 리뷰 ==========================================================================
+    // ✅ 리뷰 등록
+    @PostMapping("/saveReview")
+    public ResponseEntity<String> saveReview(@RequestBody ReviewDTO reviewDto) {
+        try {
+            reviewService.createReview(reviewDto);
+            return ResponseEntity.ok("리뷰 등록 완료");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("리뷰 등록 실패: " + e.getMessage());
+        }
+    }
+
+    // ✅ 특정 숙소 및 객실의 리뷰 조회
+    @GetMapping("/getReviews")
+    public ResponseEntity<List<Review>> getReviewsByRoom(
+            @RequestParam Long clodContentId,
+            @RequestParam Long roomId
+    ) {
+        try {
+            List<Review> reviews = reviewService.getReviewsForRoom(clodContentId, roomId);
+            return ResponseEntity.ok(reviews);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // ✅ 특정 유저가 작성한 모든 리뷰 (마이페이지용)
+    @GetMapping("/getMyReviews")
+    public ResponseEntity<List<Review>> getMyReviews(@RequestParam String userId) {
+        try {
+            return ResponseEntity.ok(reviewService.getReviewsByUser(userId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // ✅ 리뷰 하나 삭제
+    @DeleteMapping("/deleteReview/{reviewId}")
+    public ResponseEntity<String> deleteReview(
+            @PathVariable Long reviewId,
+            @RequestBody Map<String, Long> body // { "userId": 1 }
+    ) {
+        try {
+            reviewService.deleteReview(reviewId, body.get("userId"));
+            return ResponseEntity.ok("리뷰 삭제 완료");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("삭제 실패: " + e.getMessage());
+        }
+    }
+
+    // ✅ 특정 숙소/객실의 해당 유저가 작성한 모든 리뷰 삭제
+    @DeleteMapping("/deleteAllMyReviews")
+    public ResponseEntity<String> deleteAllMyReviews(@RequestBody Map<String, Long> body) {
+        try {
+            Long clodContentId = body.get("clodContentId");
+            Long roomId = body.get("roomId");
+            Long userId = body.get("userId");
+
+            reviewService.deleteAllUserReviews(clodContentId, roomId, userId);
+            return ResponseEntity.ok("해당 숙소/객실의 모든 리뷰 삭제 완료");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("삭제 실패: " + e.getMessage());
+        }
     }
 
 
