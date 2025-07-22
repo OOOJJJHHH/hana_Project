@@ -30,8 +30,13 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
         setLoading(true);
         try {
             const response = await axios.get(
-                `${process.env.REACT_APP_API_URL}/reviews`,
-                { params: { hotelId, roomId } }
+                `${process.env.REACT_APP_API_URL}/getReviews`,
+                {
+                    params: {
+                        clodContentId: hotelId, // ✅ 이름 변경!
+                        roomId,
+                    },
+                }
             );
             setReviews(response.data);
             setError(null);
@@ -42,6 +47,7 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
             setLoading(false);
         }
     };
+
 
     useEffect(() => {
         fetchReviews();

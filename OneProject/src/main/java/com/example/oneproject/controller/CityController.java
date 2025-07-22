@@ -220,6 +220,7 @@ public class CityController {
     // ✅ 리뷰 등록
     @PostMapping("/saveReview")
     public ResponseEntity<String> saveReview(@RequestBody ReviewDTO reviewDto) {
+        System.out.println("userId = " + reviewDto.getUserId());
         try {
             reviewService.createReview(reviewDto);
             return ResponseEntity.ok("리뷰 등록 완료");

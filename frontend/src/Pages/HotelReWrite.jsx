@@ -55,9 +55,18 @@ const HotelReWrite = ({
 
         setSubmitting(true);
 
+        console.log("POST payload:", {
+            hotelId,
+            roomId,
+            userId,
+            rating,
+            comment: comment.trim(),
+        });
+
+
         try {
-            await axios.post(`${process.env.REACT_APP_API_URL}/reviews`, {
-                hotelId,
+            await axios.post(`${process.env.REACT_APP_API_URL}/saveReview`, {
+                clodContentId: hotelId,
                 roomId,
                 userId,
                 rating,
