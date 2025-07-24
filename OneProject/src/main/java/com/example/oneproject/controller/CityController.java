@@ -297,7 +297,7 @@ public class CityController {
     @DeleteMapping("/deleteReview/{reviewId}")
     public ResponseEntity<String> deleteReview(
             @PathVariable Long reviewId,
-            @RequestBody Map<String, Long> body // { "userId": 1 }
+            @RequestBody Map<String, String> body // { "userId": 1 }
     ) {
         try {
             reviewService.deleteReview(reviewId, body.get("userId"));
