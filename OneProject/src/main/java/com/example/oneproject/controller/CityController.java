@@ -398,19 +398,36 @@ public class CityController {
     // 로그인한 사용자의 정보 조회
     @GetMapping("/getUser/{uId}")
     public ResponseEntity<?> getUser(@PathVariable String uId, HttpSession session) {
+        System.out.println("📩 [요청] 클라이언트에서 전달된 uId: " + uId);
+
+        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+        System.out.println("🗃️ [세션] 저장된 loginUser 객체: " + loginUser);
+
         String loggedInUId = getLoggedInUserId(session);
+        System.out.println("🔐 [세션] 추출된 loggedInUId: " + loggedInUId);
+
         if (loggedInUId == null) {
+            System.out.println("❌ 세션에 로그인 정보가 없습니다.");
             return ResponseEntity.status(401).body("로그인 필요");
         }
+
         if (!uId.equals(loggedInUId)) {
+            System.out.println("⛔ 세션 uId와 요청된 uId가 일치하지 않습니다.");
             return ResponseEntity.status(403).body("권한이 없습니다.");
         }
+
         UserUpdateDTO dto = userService.getUserByUId(uId);
+        System.out.println("📦 [DB] userService에서 가져온 사용자 정보: " + dto);
+
         if (dto == null) {
+            System.out.println("❌ 해당 uId로 사용자를 찾을 수 없습니다.");
             return ResponseEntity.status(404).body("사용자를 찾을 수 없습니다.");
         }
+
+        System.out.println("✅ 사용자 정보 반환 성공");
         return ResponseEntity.ok(dto);
     }
+
 
     // 로그인한 사용자의 정보 수정
     @PostMapping("/user/update")
