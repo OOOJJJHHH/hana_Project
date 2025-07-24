@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Optional;
 
@@ -105,11 +106,23 @@ public class UserService {
 
         if(userOptional.isPresent()){
             UserContent userContent = userOptional.get();
-            System.out.println(userContent);
+            System.out.println("🔍 DB에서 찾은 사용자: " + userContent);
 
             if(userContent.getuPassword().equals(uPassword)){
                 UserDTO userDTO = new UserDTO(userContent.getuId(), userContent.getuFirstName(), userContent.getuUser());
+
+                // 세션에 로그인 사용자 정보 저장
                 session.setAttribute("loginUser", userDTO);
+
+                // 세션에 저장된 모든 속성 출력 (디버깅용)
+                System.out.println("🗃️ 세션에 저장된 모든 속성:");
+                Enumeration<String> attributeNames = session.getAttributeNames();
+                while(attributeNames.hasMoreElements()) {
+                    String name = attributeNames.nextElement();
+                    Object value = session.getAttribute(name);
+                    System.out.println(" - " + name + " : " + value);
+                }
+
                 return "로그인성공";
             }
             else{
@@ -120,6 +133,7 @@ public class UserService {
             return "존재하지 않는 사용자";
         }
     }
+
 
     // googleId로 사용자 찾기
     public Optional<UserContent> findByGoogleId(String googleId) {
