@@ -19,6 +19,8 @@ const EditPop = ({ uId, onClose }) => {
     useEffect(() => {
         if (!uId) return;
 
+        console.log(uId);
+
         axios.get(`${process.env.REACT_APP_API_URL}/getUser/${uId}`, {
             withCredentials: true,
         })
