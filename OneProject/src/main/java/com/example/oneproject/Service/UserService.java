@@ -1,12 +1,15 @@
 package com.example.oneproject.Service;
 
 import com.example.oneproject.DTO.UserDTO;
+import com.example.oneproject.DTO.UserUpdateDTO;
 import com.example.oneproject.Entity.UserContent;
 import com.example.oneproject.Repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
+
 
 import java.io.IOException;
 import java.util.List;
@@ -58,6 +61,42 @@ public class UserService {
         }
 
         return landlords;
+    }
+
+    // 로그인한 uId로 유저 정보 조회
+    public UserUpdateDTO getUserByUId(String uId) {
+        Optional<UserContent> userOpt = userRepository.findByUId(uId);
+        if (userOpt.isPresent()) {
+            UserContent user = userOpt.get();
+
+            UserUpdateDTO dto = new UserUpdateDTO();
+            dto.setuId(user.getuId());
+            dto.setuFirstName(user.getuFirstName());
+            dto.setuLastName(user.getuLastName());
+            dto.setuIdEmail(user.getuIdEmail());
+
+            return dto;
+        }
+        return null; // 없으면 null 처리하거나 예외 처리 가능
+    }
+
+    // 유저 정보 업데이트
+    @Transactional
+    public UserUpdateDTO updateUser(UserUpdateDTO dto) {
+        Optional<UserContent> userOpt = userRepository.findByUId(dto.getuId());
+        if (userOpt.isPresent()) {
+            UserContent user = userOpt.get();
+
+            user.setuFirstName(dto.getuFirstName());
+            user.setuLastName(dto.getuLastName());
+            user.setuIdEmail(dto.getuIdEmail());
+
+            // 필요하면 save 안 해도 JPA가 자동 반영해줌 (트랜잭션 안에서 변경감지)
+
+            return dto;
+        } else {
+            throw new RuntimeException("User not found");
+        }
     }
 
     // 로그인

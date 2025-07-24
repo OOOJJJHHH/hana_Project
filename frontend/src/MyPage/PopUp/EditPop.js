@@ -1,186 +1,139 @@
-import React, {useContext, useEffect, useState} from "react";
+import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
-import {UserContext, UserUpdateContext} from "../../Session/UserContext";
+import { UserUpdateContext } from "../../Session/UserContext";
 
-const EditPop = ({onClose}) => {
-    const [userProfile, setUserProfile] = useState([]);
-    const [formData, setFormData] = useState([]);
-    const [hoveredButton, setHoveredButton] = useState(null); // 'save', 'cancel', 또는 null
-    const userInfo = useContext(UserContext);
+const EditPop = ({ uId, onClose }) => {
     const setUserInfo = useContext(UserUpdateContext);
 
+    const [userProfile, setUserProfile] = useState(null);
+    const [formData, setFormData] = useState({});
+    const [hoveredButton, setHoveredButton] = useState(null);
+
     const formContent = {
-        uFirstName : "이름",
-        uId : "아이디",
-        uIdEmail : "이메일",
-        uLastName : "성",
-        uPassword : "비밀번호",
+        uFirstName: "이름",
+        uId: "아이디",
+        uIdEmail: "이메일",
+        uLastName: "성"
     };
 
     useEffect(() => {
-        axios.get("http://localhost:8080/getOneUser", {
-            withCredentials: true
+        if (!uId) return;
+
+        axios.get(`${process.env.REACT_APP_API_URL}/getUser/${uId}`, {
+            withCredentials: true,
         })
             .then(response => {
-                console.log("데이터 도착:", response.data);
-                setUserProfile(response.data[0]);
-                setFormData(response.data[0]);
-
+                setUserProfile(response.data);
+                setFormData({
+                    uId: response.data.uId,
+                    uFirstName: response.data.uFirstName,
+                    uLastName: response.data.uLastName,
+                    uIdEmail: response.data.uIdEmail,
+                });
             })
             .catch(error => {
-                console.error("에러 발생:", error);
+                console.error("유저 정보 불러오기 실패:", error);
             });
-    }, []);
-
-    useEffect(() => {
-        if (userProfile) {
-            console.log("userProfile이 변경됨:", userProfile);
-        }
-    }, [userProfile]);
-
+    }, [uId]);
 
     const contentChange = (e) => {
-        const {name, value} = e.target;
-        setFormData({...formData, [name]: value});
-    }
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(formData);
 
-        try{
-            await axios.post("http://localhost:8080/saveUser",
-                formData,
-                {
-                    withCredentials: true
-                });
-            alert("데이터가 성공적으로 수정되었습니다");
+        try {
+            await axios.put(`${process.env.REACT_APP_API_URL}/user/update`, formData, {
+                withCredentials: true,
+            });
+            alert("정보가 성공적으로 수정되었습니다.");
 
-            // userInfo는 기존 정보 forData는 수정한 정보 ( 덮어쓰기함 )
-            const updatedUserInfo = {
-                ...userInfo,
-                ...formData
-            };
-            // state를 변경하는 함수 ( 기존 정보에서 updatedUserInfo로 변경해줘 )
-            setUserInfo(updatedUserInfo);
-
-            localStorage.setItem('loginUser', JSON.stringify(updatedUserInfo));
-            // localStorage 공간에 loginUser를 저장 , 문자로 변경
-
+            setUserInfo(formData);  // Context 업데이트 (필요에 따라 조정)
+            localStorage.setItem("loginUser", JSON.stringify(formData));
             onClose();
+        } catch (error) {
+            console.error("정보 저장 실패:", error);
+            alert("정보 저장에 실패했습니다.");
         }
-        catch (error) {
-            console.error("데이터 저장에 실패했습니다", error);
-        }
-    }
-
-    //CSS
-    const popupMain = {
-        position: "relative",
-        backgroundColor: "red",
-        width: "1000px",
-        height: "20%",
     };
 
-    const overlayStyle = {
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-    };
+    if (!userProfile) return <div>로딩 중...</div>;
 
-    const popupStyle = {
-        width: "500px",
-        height: "400px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "#fff",
-        padding: "20px",
-        borderRadius: "8px",
-        minWidth: "300px",
-        boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-        alignContent: "center",
-    };
-
-    const getButtonStyle = (buttonName) => ({
-        padding: '4px 16px',
-        backgroundColor: hoveredButton === buttonName ? 'rgba(223,248,93,0.5)' : 'white',
-        border: '1px solid #ccc',
-        cursor: 'pointer',
-        transition: 'background-color 0.2s ease',
-        marginRight: '10px',
-        borderRadius: "5px"
-    });
-
-
-    // return부분
-    if (!userProfile) {
-        return <div>로딩 중...</div>;
-    }
-
-    return(
-        <div style={overlayStyle}>
-            <div style={popupStyle}>
-
-                <div style={{marginBottom : "20px"}}>
-                    <label style={{fontSize: "25px"}}><strong>현재 정보 수정</strong></label>
-                </div>
-
-                <div>
-                    <form onSubmit={handleSubmit}>
-                        {
-                            Object.entries(formData).map(([key, value]) =>
-                                    !(key === "id" || key === "uUser") && (
-                                        <div style={{fontSize: "18px"}} key={key}>
-                                            <span style={{display: "inline-block", width: "70px"}}>{formContent[key]}</span>
-                                            <span style={{marginRight : "5px"}}> : </span>
-                                            <input
-                                                type="text"
-                                                name={key}
-                                                value={value}
-                                                onChange={(e) => contentChange(e)}
-                                                placeholder={value}
-                                                required
-                                                style={{padding: "0 0 0 5px", height: "40px"}}
-                                            />
-                                        </div>
-                                    )
-                            )
-                        }
-
-                        <div style={{marginTop: "20px"}}>
-                            <button
-                                type="submit"
-                                style={getButtonStyle('save')}
-                                onMouseEnter={() => setHoveredButton('save')}
-                                onMouseLeave={() => setHoveredButton(null)}
-                            >
-                                저장
-                            </button>
-                            <button
-                                onClick={onClose}
-                                style={getButtonStyle('cancel')}
-                                onMouseEnter={() => setHoveredButton('cancel')}
-                                onMouseLeave={() => setHoveredButton(null)}
-                            >
-                                취소
-                            </button>
+    return (
+        <div style={{
+            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            zIndex: 1000,
+        }}>
+            <div style={{
+                width: "500px",
+                padding: "20px",
+                background: "#fff",
+                borderRadius: "8px",
+                boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+            }}>
+                <h2>회원 정보 수정</h2>
+                <form onSubmit={handleSubmit}>
+                    {Object.entries(formData).map(([key, value]) => (
+                        <div key={key} style={{ marginBottom: "10px", fontSize: "16px" }}>
+                            <label style={{ display: "inline-block", width: "80px" }}>
+                                {formContent[key]}:
+                            </label>
+                            <input
+                                type="text"
+                                name={key}
+                                value={value}
+                                onChange={contentChange}
+                                required
+                                style={{ height: "35px", padding: "0 8px", width: "300px" }}
+                            />
                         </div>
+                    ))}
 
-                    </form>
-                </div>
-
+                    <div style={{ marginTop: "20px" }}>
+                        <button
+                            type="submit"
+                            style={{
+                                padding: '8px 20px',
+                                backgroundColor: hoveredButton === 'save' ? '#e9f679' : 'white',
+                                border: '1px solid #ccc',
+                                borderRadius: "5px",
+                                cursor: 'pointer',
+                                marginRight: '10px',
+                                transition: '0.3s'
+                            }}
+                            onMouseEnter={() => setHoveredButton('save')}
+                            onMouseLeave={() => setHoveredButton(null)}
+                        >
+                            저장
+                        </button>
+                        <button
+                            type="button"
+                            style={{
+                                padding: '8px 20px',
+                                backgroundColor: hoveredButton === 'cancel' ? '#e9f679' : 'white',
+                                border: '1px solid #ccc',
+                                borderRadius: "5px",
+                                cursor: 'pointer',
+                                transition: '0.3s'
+                            }}
+                            onClick={onClose}
+                            onMouseEnter={() => setHoveredButton('cancel')}
+                            onMouseLeave={() => setHoveredButton(null)}
+                        >
+                            취소
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );
-}
+};
 
 export default EditPop;

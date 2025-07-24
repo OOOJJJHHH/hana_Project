@@ -385,6 +385,47 @@ public class CityController {
     }
 
 
+    // 회원정보 가져오기 ====================================================================
+    // 세션에서 로그인한 사용자 uId 가져오기 (예시)
+    private String getLoggedInUserId(HttpSession session) {
+        return (String) session.getAttribute("uId");
+    }
+
+    // 로그인한 사용자의 정보 조회
+    @GetMapping("/getUser/{uId}")
+    public ResponseEntity<?> getUser(@PathVariable String uId, HttpSession session) {
+        String loggedInUId = getLoggedInUserId(session);
+        if (loggedInUId == null) {
+            return ResponseEntity.status(401).body("로그인 필요");
+        }
+        if (!uId.equals(loggedInUId)) {
+            return ResponseEntity.status(403).body("권한이 없습니다.");
+        }
+        UserUpdateDTO dto = userService.getUserByUId(uId);
+        if (dto == null) {
+            return ResponseEntity.status(404).body("사용자를 찾을 수 없습니다.");
+        }
+        return ResponseEntity.ok(dto);
+    }
+
+    // 로그인한 사용자의 정보 수정
+    @PostMapping("/user/update")
+    public ResponseEntity<?> updateUser(@RequestBody UserUpdateDTO dto, HttpSession session) {
+        String loggedInUId = getLoggedInUserId(session);
+        if (loggedInUId == null) {
+            return ResponseEntity.status(401).body("로그인 필요");
+        }
+        if (!dto.getuId().equals(loggedInUId)) {
+            return ResponseEntity.status(403).body("권한이 없습니다.");
+        }
+        try {
+            UserUpdateDTO updated = userService.updateUser(dto);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body("수정 실패: " + e.getMessage());
+        }
+    }
+
 
     // 로그인=============================================================================
     @PostMapping("/api/login")
