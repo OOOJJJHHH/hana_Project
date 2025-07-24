@@ -400,6 +400,15 @@ public class CityController {
     public ResponseEntity<?> getUser(@PathVariable String uId, HttpSession session) {
         System.out.println("📩 [요청] 클라이언트에서 전달된 uId: " + uId);
 
+        // 세션에 저장된 모든 속성 출력
+        System.out.println("🗃️ [세션] 저장된 모든 속성:");
+        Enumeration<String> attributeNames = session.getAttributeNames();
+        while(attributeNames.hasMoreElements()) {
+            String name = attributeNames.nextElement();
+            Object value = session.getAttribute(name);
+            System.out.println(" - " + name + " = " + value);
+        }
+
         UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
         System.out.println("🗃️ [세션] 저장된 loginUser 객체: " + loginUser);
 
@@ -427,6 +436,7 @@ public class CityController {
         System.out.println("✅ 사용자 정보 반환 성공");
         return ResponseEntity.ok(dto);
     }
+
 
 
     // 로그인한 사용자의 정보 수정
