@@ -189,7 +189,7 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
                                     onClick={() => {
                                         if (window.confirm("이 리뷰를 삭제하시겠습니까?")) {
                                             axios
-                                                .delete(`${process.env.REACT_APP_API_URL}/reviews/${review.id}`, {
+                                                .delete(`${process.env.REACT_APP_API_URL}/deleteReview/${review.id}`, {
                                                     data: { userId },
                                                 })
                                                 .then(fetchReviews)

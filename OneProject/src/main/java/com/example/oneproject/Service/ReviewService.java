@@ -78,9 +78,11 @@ public class ReviewService {
         return reviewRepository.findByUserId(user.getId());
     }
 
-    public void deleteReview(Long reviewId, Long userId) {
+    public void deleteReview(Long reviewId, String userId) {
         Review review = reviewRepository.findById(reviewId).orElseThrow();
-        if (review.getUser().getId() != userId) {
+        UserContent user = userRepository.findByUId(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        if (review.getUser().getId() != user.getId()) {
             throw new RuntimeException("삭제 권한 없음");
         }
         reviewRepository.deleteById(reviewId);
