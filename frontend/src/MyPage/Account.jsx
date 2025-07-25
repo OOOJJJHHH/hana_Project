@@ -163,7 +163,7 @@ const Account = () => {
                     </button>
                     {edit && (
                         <div>
-                            <EditPop uId={userInfo.uId} onClose={closePopup} />
+                            <EditPop onClose={closePopup} />
                         </div>
                     )}
                 </div>
