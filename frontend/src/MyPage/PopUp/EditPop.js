@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { UserUpdateContext } from "../../Session/UserContext";
 
-const EditPop = ({ uId, onClose }) => {
+const EditPop = ({ onClose }) => {
     const setUserInfo = useContext(UserUpdateContext);
 
     const [userProfile, setUserProfile] = useState(null);
@@ -17,11 +17,8 @@ const EditPop = ({ uId, onClose }) => {
     };
 
     useEffect(() => {
-        if (!uId) return;
-
-        console.log(uId);
-
-        axios.get(`${process.env.REACT_APP_API_URL}/getUser/${uId}`, {
+        // 세션 기반 유저 정보 조회
+        axios.get(`${process.env.REACT_APP_API_URL}/user/info`, {
             withCredentials: true,
         })
             .then(response => {
@@ -36,7 +33,7 @@ const EditPop = ({ uId, onClose }) => {
             .catch(error => {
                 console.error("유저 정보 불러오기 실패:", error);
             });
-    }, [uId]);
+    }, []);  // 빈 배열로 한번만 실행
 
     const contentChange = (e) => {
         const { name, value } = e.target;
@@ -52,7 +49,7 @@ const EditPop = ({ uId, onClose }) => {
             });
             alert("정보가 성공적으로 수정되었습니다.");
 
-            setUserInfo(formData);  // Context 업데이트 (필요에 따라 조정)
+            setUserInfo(formData);  // Context 업데이트 (필요시 조정)
             localStorage.setItem("loginUser", JSON.stringify(formData));
             onClose();
         } catch (error) {

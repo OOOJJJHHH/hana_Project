@@ -69,16 +69,15 @@ public class UserService {
     }
 
     public UserContent updateUser(String uId, UserContent updatedUser) throws Exception {
-        UserContent user = userRepository.findByUId(uId)
+        UserContent existingUser = userRepository.findByUId(uId)
                 .orElseThrow(() -> new Exception("User not found"));
 
-        // 수정 가능한 필드만 업데이트
-        user.setuFirstName(updatedUser.getuFirstName());
-        user.setuLastName(updatedUser.getuLastName());
-        user.setuIdEmail(updatedUser.getuIdEmail());
-        // 필요 시 다른 필드도 수정 가능
+        existingUser.setuFirstName(updatedUser.getuFirstName());
+        existingUser.setuLastName(updatedUser.getuLastName());
+        existingUser.setuIdEmail(updatedUser.getuIdEmail());
+        // 필요한 필드만 수정, 비밀번호 등은 따로 처리하세요
 
-        return userRepository.save(user);
+        return userRepository.save(existingUser);
     }
 
     // 로그인

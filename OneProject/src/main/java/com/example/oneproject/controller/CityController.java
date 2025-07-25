@@ -386,16 +386,8 @@ public class CityController {
 
 
     // 회원정보 가져오기 ====================================================================
-    // 세션에서 로그인한 사용자 uId 가져오기 (예시)
-    private String getLoggedInUserId(HttpSession session) {
-        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
-        if (loginUser != null) {
-            return loginUser.getuId(); // 여기서 UserDTO의 uId 필드 사용
-        }
-        return null;
-    }
-
     // 로그인한 사용자의 정보 조회
+    @GetMapping("/user/info")
     public ResponseEntity<?> getUserInfo(HttpSession session) {
         String uId = (String) session.getAttribute("uId");
         if (uId == null) {
@@ -412,9 +404,8 @@ public class CityController {
 
     }
 
-
-
     // 로그인한 사용자의 정보 수정
+    @PutMapping("/user/update")
     public ResponseEntity<?> updateUserInfo(@RequestBody UserContent updatedUser, HttpSession session) {
         String uId = (String) session.getAttribute("uId");
         if (uId == null) {
