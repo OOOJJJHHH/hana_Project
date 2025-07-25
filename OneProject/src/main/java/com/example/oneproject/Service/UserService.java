@@ -64,40 +64,21 @@ public class UserService {
         return landlords;
     }
 
-    // 로그인한 uId로 유저 정보 조회
-    public UserUpdateDTO getUserByUId(String uId) {
-        Optional<UserContent> userOpt = userRepository.findByUId(uId);
-        if (userOpt.isPresent()) {
-            UserContent user = userOpt.get();
-
-            UserUpdateDTO dto = new UserUpdateDTO();
-            dto.setuId(user.getuId());
-            dto.setuFirstName(user.getuFirstName());
-            dto.setuLastName(user.getuLastName());
-            dto.setuIdEmail(user.getuIdEmail());
-
-            return dto;
-        }
-        return null; // 없으면 null 처리하거나 예외 처리 가능
+    public Optional<UserContent> findByUId(String uId) {
+        return userRepository.findByUId(uId);
     }
 
-    // 유저 정보 업데이트
-    @Transactional
-    public UserUpdateDTO updateUser(UserUpdateDTO dto) {
-        Optional<UserContent> userOpt = userRepository.findByUId(dto.getuId());
-        if (userOpt.isPresent()) {
-            UserContent user = userOpt.get();
+    public UserContent updateUser(String uId, UserContent updatedUser) throws Exception {
+        UserContent user = userRepository.findByUId(uId)
+                .orElseThrow(() -> new Exception("User not found"));
 
-            user.setuFirstName(dto.getuFirstName());
-            user.setuLastName(dto.getuLastName());
-            user.setuIdEmail(dto.getuIdEmail());
+        // 수정 가능한 필드만 업데이트
+        user.setuFirstName(updatedUser.getuFirstName());
+        user.setuLastName(updatedUser.getuLastName());
+        user.setuIdEmail(updatedUser.getuIdEmail());
+        // 필요 시 다른 필드도 수정 가능
 
-            // 필요하면 save 안 해도 JPA가 자동 반영해줌 (트랜잭션 안에서 변경감지)
-
-            return dto;
-        } else {
-            throw new RuntimeException("User not found");
-        }
+        return userRepository.save(user);
     }
 
     // 로그인

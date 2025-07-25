@@ -38,7 +38,7 @@ export const UserProvider = ({ children }) => {
 // 세션 정보를 가져오는 함수
 async function fetchSession() {
     try {
-        const response = await fetch('/api/getSessionInfo', {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/getSessionInfo`, {
             method: 'GET',
             credentials: 'include',  // 세션 정보를 포함한 요청
         });

@@ -72,37 +72,37 @@ const Meddle = () => {
     return shuffled.slice(0, count);
   };
 
-  useEffect(() => {
-    axios.get(`${process.env.REACT_APP_API_URL}/getAllLodRoom`)
-        .then(response => {
-          console.log("response.data 전체:", response.data);
-          response.data.forEach((hotel, idx) => {
-            console.log(`hotel[${idx}] 내용:`, hotel);
-          });
-
-          const hotelObject = {};
-          response.data.forEach(hotel => {
-            hotelObject[hotel.id] = {
-              name: hotel.lodName,
-              thumbnail: hotel.lodImag,
-              rooms: hotel.rooms,
-              lodOwner: hotel.lodOwner
-            };
-          });
-
-          console.log("hotelObject 전체:", hotelObject);
-          console.table(Object.values(hotelObject));
-
-          const owners = response.data.map(hotel => hotel.lodOwner);
-          const selectedOwners = getRandomOwners(owners);
-          setRandomOwners(selectedOwners);
-
-          setHotelDetails(hotelObject);
-        })
-        .catch(error => {
-          console.error("숙소 정보를 불러오는 중 오류 발생:", error);
-        });
-  }, []);
+  // useEffect(() => {
+  //   axios.get(`${process.env.REACT_APP_API_URL}/getAllLodRoom`)
+  //       .then(response => {
+  //         console.log("response.data 전체:", response.data);
+  //         response.data.forEach((hotel, idx) => {
+  //           console.log(`hotel[${idx}] 내용:`, hotel);
+  //         });
+  //
+  //         const hotelObject = {};
+  //         response.data.forEach(hotel => {
+  //           hotelObject[hotel.id] = {
+  //             name: hotel.lodName,
+  //             thumbnail: hotel.lodImag,
+  //             rooms: hotel.rooms,
+  //             lodOwner: hotel.lodOwner
+  //           };
+  //         });
+  //
+  //         console.log("hotelObject 전체:", hotelObject);
+  //         console.table(Object.values(hotelObject));
+  //
+  //         const owners = response.data.map(hotel => hotel.lodOwner);
+  //         const selectedOwners = getRandomOwners(owners);
+  //         setRandomOwners(selectedOwners);
+  //
+  //         setHotelDetails(hotelObject);
+  //       })
+  //       .catch(error => {
+  //         console.error("숙소 정보를 불러오는 중 오류 발생:", error);
+  //       });
+  // }, []);
 
 
   // ⭐ 수정: 가장 저렴한 호텔 데이터 준비 및 부족한 부분 채우기
