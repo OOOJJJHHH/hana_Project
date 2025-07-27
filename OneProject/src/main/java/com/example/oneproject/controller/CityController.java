@@ -117,6 +117,22 @@ public class CityController {
         return ResponseEntity.ok(lods);
     }
 
+    // 사용자 Id로 숙소 조회
+    @GetMapping("/getlodbyUid/{uId}")
+    public ResponseEntity<List<LodDTO>> getlodByUid(@PathVariable String uId) {
+        // 🔍 uId로 UserContent 조회
+        Optional<UserContent> userOpt = userRepository.findByUId(uId);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.notFound().build(); // 유저 없을 경우 404 반환
+        }
+
+        String uFirstName = userOpt.get().getuFirstName();
+
+        // 기존 서비스 그대로 사용
+        List<LodDTO> lods = lodService.getLodsByUFirstName(uFirstName);
+        return ResponseEntity.ok(lods);
+    }
+
     // 사용자 이름으로 숙소 조회
     @GetMapping("/getlodbyName/{uFirstName}")
     public ResponseEntity<List<LodDTO>> getlodbyName(@PathVariable String uFirstName) {
