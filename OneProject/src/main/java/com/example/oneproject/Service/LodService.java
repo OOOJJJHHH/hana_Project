@@ -307,6 +307,26 @@ public class LodService {
         );
     }
 
+    // 숙소 삭제
+    public void deleteLodging(Long lodId) {
+        lodRepository.deleteById(lodId);
+    }
+
+    // 숙소 수정
+    public ClodContent updateLodging(Long lodId, ClodContent updatedLodging) {
+        ClodContent existingLodging = lodRepository.findById(lodId)
+                .orElseThrow(() -> new RuntimeException("숙소를 찾을 수 없습니다."));
+
+        // 수정할 필드들
+        existingLodging.setLodName(updatedLodging.getLodName());
+        existingLodging.setLodLocation(updatedLodging.getLodLocation());
+        existingLodging.setLodCallNum(updatedLodging.getLodCallNum());
+        existingLodging.setLodOwner(updatedLodging.getLodOwner());
+        existingLodging.setLodCity(updatedLodging.getLodCity());
+        existingLodging.setLodImag(updatedLodging.getLodImag());
+
+        return lodRepository.save(existingLodging);
+    }
 
 
 }

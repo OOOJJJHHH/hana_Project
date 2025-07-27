@@ -106,7 +106,7 @@ const User = () => {
             case 'wishlist': return <Wishlist />;
             case 'recently': return <ReView />;
             case 'Reservation': return <Reservation />;
-            case 'Accommodation': return <Accommodation />;
+            case 'Accommodation': return <Accommodation uId={userInfo.uId} />;
             default: return <div>선택된 메뉴가 없습니다.</div>;
         }
     };

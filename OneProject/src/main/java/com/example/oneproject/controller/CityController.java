@@ -207,6 +207,19 @@ public class CityController {
         }
     }
 
+    // 숙소 삭제
+    @DeleteMapping("lodging/{lodId}")
+    public String deleteLodging(@PathVariable Long lodId) {
+        lodService.deleteLodging(lodId);
+        return "숙소가 삭제되었습니다.";
+    }
+
+    // 숙소 수정
+    @PutMapping("lodging/{lodId}")
+    public ClodContent updateLodging(@PathVariable Long lodId, @RequestBody ClodContent updatedLodging) {
+        return lodService.updateLodging(lodId, updatedLodging);
+    }
+
     // 예약 ===========================================================================
     // 예약되어있는 날짜 확인
     @GetMapping("reservation/reserved-dates/{roomId}")
