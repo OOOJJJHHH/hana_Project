@@ -109,13 +109,14 @@ const Accommodation = ({ uId }) => {
                                 overflow: 'hidden',
                             }}>
                                 <img
-                                    src={lod.lodImag
-                                        ? `${process.env.REACT_APP_API_URL}/lodging/image/${lod.lodImag}`
-                                        : '/default-lodging.jpg'}
+                                    src={
+                                        lod.lodImag?.startsWith("http")
+                                            ? lod.lodImag
+                                            : `${process.env.REACT_APP_API_URL}/lodging/image/${encodeURIComponent(lod.lodImag)}`
+                                    }
                                     alt={`${lod.lodName} 이미지`}
                                     style={{ width: '100%', height: '200px', objectFit: 'cover' }}
                                 />
-
                                 <div style={{ padding: '20px' }}>
                                     <Link to={`/hotel-detail?name=${lod.lodName}`} style={{ textDecoration: 'none' }}>
                                         <h2 style={{ fontSize: '20px', color: '#333' }}>

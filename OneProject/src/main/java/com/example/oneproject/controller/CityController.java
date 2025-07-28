@@ -13,6 +13,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -251,18 +252,11 @@ public class CityController {
     }
 
     // S3 이미지 변환
-    @GetMapping("lodging/image/**")
-    public ResponseEntity<Void> redirectToS3Image(HttpServletRequest request) {
-        // 요청 URL에서 image 뒤 경로 추출 (예: /lodging/image/lodUploads/uuid_파일명.jpg)
-        String requestURI = request.getRequestURI();
-        String prefix = "/lodging/image/";
-        String key = requestURI.substring(requestURI.indexOf(prefix) + prefix.length());
-
-        String presignedUrl = s3Service.generatePresignedUrl(key);
-
-        return ResponseEntity.status(HttpStatus.FOUND)
-                .header(HttpHeaders.LOCATION, presignedUrl)
-                .build();
+    @GetMapping("lodging/image/{key}")
+    public String getPresignedUrl(@PathVariable String key) throws UnsupportedEncodingException {
+        // 🔥 URL 인코딩된 S3 키 디코드 (예: lodUploads%2Fmy-image.jpg → lodUploads/my-image.jpg)
+        String decodedKey = URLDecoder.decode(key, "UTF-8");
+        return s3Service.generatePresignedUrl(decodedKey);
     }
 
     // 예약 ===========================================================================
