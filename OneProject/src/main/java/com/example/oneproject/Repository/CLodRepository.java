@@ -35,9 +35,6 @@ public interface CLodRepository extends JpaRepository<ClodContent, Long> {
             "LEFT JOIN FETCH r.roomImages")
     List<ClodContent> findAllWithRoomsAndImages();
 
-//    @Query("SELECT DISTINCT c FROM ClodContent c\n" +
-//            "    LEFT JOIN FETCH c.rooms r\n" +
-//            "    LEFT JOIN FETCH r.roomImages\n" +
-//            "    WHERE c.lodName = :lodName")
-//    Optional<ClodContent> findByLodNameWithRooms(@Param("lodName") String lodName);
+
+
 }

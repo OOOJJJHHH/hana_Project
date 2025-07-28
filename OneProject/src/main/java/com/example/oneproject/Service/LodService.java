@@ -89,8 +89,6 @@ public class LodService {
     }
 
 
-
-
     public List<LodDTO> getLodsByUFirstName(String uFirstName) {
         List<ClodContent> contents = lodRepository.findByLodOwner(uFirstName);
 
@@ -253,11 +251,11 @@ public class LodService {
         // 5. 각 객실에 이미지 리스트 세팅
         content.getRooms().forEach(room -> {
             List<RoomImages> images = roomImagesMap.get(room.getId());
-            if (images != null) {
-                room.updateRoomImages(images);
+            if (images != null && !images.isEmpty()) { // 이미지가 존재하고 비어있지 않은 경우
+                room.updateRoomImages(images); // 수정된 updateRoomImages 메서드 호출
                 log.info("객실 {} 에 이미지 {}개 설정", room.getId(), images.size());
-            } else {
-                room.setRoomImages(Collections.emptyList());
+            } else { // 이미지가 없거나 비어있는 경우
+                room.clearRoomImages(); // 새로 추가된 clearRoomImages 메서드 호출
                 log.info("객실 {} 에 이미지 없음", room.getId());
             }
         });

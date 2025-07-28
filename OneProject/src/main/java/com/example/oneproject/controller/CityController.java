@@ -217,6 +217,7 @@ public class CityController {
         }
     }
 
+    // 숙소 수정 (단독)
     @PutMapping(value = "/lodging/{id}", consumes = "multipart/form-data")
     public ResponseEntity<ClodContent> updateLodging(
             @PathVariable Long id,
