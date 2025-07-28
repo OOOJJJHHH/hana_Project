@@ -11,6 +11,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 
+import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -23,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,6 +61,9 @@ public class CityController {
 
     @Autowired
     private ReservationService reservationService;
+
+    @Autowired
+    private final RoomService roomService;
 
     @Autowired
     private WishListRepository wishListRepository;
@@ -207,17 +212,38 @@ public class CityController {
         }
     }
 
-    // 숙소 삭제
-    @DeleteMapping("lodging/{lodId}")
-    public String deleteLodging(@PathVariable Long lodId) {
-        lodService.deleteLodging(lodId);
-        return "숙소가 삭제되었습니다.";
+    @PutMapping(value = "/lodging/{id}", consumes = "multipart/form-data")
+    public ResponseEntity<ClodContent> updateLodging(
+            @PathVariable Long id,
+            @RequestPart("data") LodgingUpdateDto dto,
+            @RequestPart(value = "lodImag", required = false) MultipartFile lodImag
+    ) {
+        ClodContent updated = lodService.updateLodging(id, dto, lodImag);
+        return ResponseEntity.ok(updated);
     }
 
-    // 숙소 수정
-    @PutMapping("lodging/{lodId}")
-    public ClodContent updateLodging(@PathVariable Long lodId, @RequestBody ClodContent updatedLodging) {
-        return lodService.updateLodging(lodId, updatedLodging);
+
+    // 객실 수정 (단독)
+    @PutMapping("/room/{roomId}")
+    public ResponseEntity<Room> updateRoom(
+            @PathVariable Long roomId,
+            @RequestBody RoomUpdateDto dto) {
+        Room updated = roomService.updateRoom(roomId, dto);
+        return ResponseEntity.ok(updated);
+    }
+
+    // 객실 삭제
+    @DeleteMapping("/room/{roomId}")
+    public ResponseEntity<?> deleteRoom(@PathVariable Long roomId) {
+        roomService.deleteRoom(roomId);
+        return ResponseEntity.ok().build();
+    }
+
+    // 숙소 삭제 (객실 및 이미지 포함 전부 삭제됨)
+    @DeleteMapping("/lodging/{id}")
+    public ResponseEntity<?> deleteLodging(@PathVariable Long id) {
+        lodService.deleteLodging(id);
+        return ResponseEntity.ok().build();
     }
 
     // 예약 ===========================================================================

@@ -26,7 +26,7 @@ public class ClodContent {
     private String lodCallNum;
     private String lodImag;
 
-    @OneToMany(mappedBy = "clodContent", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "clodContent", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     @BatchSize(size = 10)
     private List<Room> rooms;

@@ -49,3 +49,7 @@
   max-width: 1200px; /* 최대 너비 설정, 필요에 따라 조정 */
   text-align: center;
 }
+
+/* index.css 또는 App.css에 추가 */
+@import "~slick-carousel/slick/slick.css";
+@import "~slick-carousel/slick/slick-theme.css";

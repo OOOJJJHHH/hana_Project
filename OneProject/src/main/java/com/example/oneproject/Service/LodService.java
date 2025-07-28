@@ -1,12 +1,11 @@
 package com.example.oneproject.Service;
 
-import com.example.oneproject.DTO.LodAddPre;
-import com.example.oneproject.DTO.LodDTO;
-import com.example.oneproject.DTO.RoomAddPre;
+import com.example.oneproject.DTO.*;
 import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.Room;
 import com.example.oneproject.Entity.RoomImages;
 import com.example.oneproject.Repository.CLodRepository;
+import com.example.oneproject.Repository.RoomImagesRepository;
 import com.example.oneproject.Repository.RoomRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -16,10 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,6 +28,9 @@ public class LodService {
 
     @Autowired
     private RoomRepository roomRepository;
+
+    @Autowired
+    private RoomImagesRepository roomImagesRepository;
 
     @Autowired
     private S3Service s3Service;
@@ -307,25 +306,68 @@ public class LodService {
         );
     }
 
-    // 숙소 삭제
-    public void deleteLodging(Long lodId) {
-        lodRepository.deleteById(lodId);
+
+    // 객실 추가 (숙소에 객실 연결)
+    @Transactional
+    public Room addRoom(Long lodgingId, RoomAddPre dto) {
+        ClodContent lodging = lodRepository.findById(lodgingId)
+                .orElseThrow(() -> new RuntimeException("숙소를 찾을 수 없습니다. id: " + lodgingId));
+
+        Room newRoom = Room.builder()
+                .roomName(dto.getRoomName())
+                .price(dto.getPrice())
+                .clodContent(lodging)
+                .build();
+
+        // RoomImages 엔티티도 생성해서 연결 가능 (dto.getRoomImages() 활용)
+        if(dto.getRoomImages() != null) {
+            List<RoomImages> images = dto.getRoomImages().stream()
+                    .map(key -> {
+                        RoomImages ri = new RoomImages();
+                        ri.setImageKey(key);
+                        ri.setRoom(newRoom);
+                        return ri;
+                    })
+                    .collect(Collectors.toList());
+
+            newRoom.setRoomImages(images);
+        }
+
+        return roomRepository.save(newRoom);
     }
 
-    // 숙소 수정
-    public ClodContent updateLodging(Long lodId, ClodContent updatedLodging) {
-        ClodContent existingLodging = lodRepository.findById(lodId)
-                .orElseThrow(() -> new RuntimeException("숙소를 찾을 수 없습니다."));
 
-        // 수정할 필드들
-        existingLodging.setLodName(updatedLodging.getLodName());
-        existingLodging.setLodLocation(updatedLodging.getLodLocation());
-        existingLodging.setLodCallNum(updatedLodging.getLodCallNum());
-        existingLodging.setLodOwner(updatedLodging.getLodOwner());
-        existingLodging.setLodCity(updatedLodging.getLodCity());
-        existingLodging.setLodImag(updatedLodging.getLodImag());
+    @Transactional
+    public ClodContent updateLodging(Long lodgingId, LodgingUpdateDto dto, MultipartFile lodImagFile) {
+        ClodContent lodging = lodRepository.findById(lodgingId)
+                .orElseThrow(() -> new RuntimeException("숙소가 존재하지 않습니다."));
 
-        return lodRepository.save(existingLodging);
+        // 기본 정보 수정
+        lodging.setLodName(dto.getLodName());
+        lodging.setLodCity(dto.getLodCity());
+        lodging.setLodLocation(dto.getLodLocation());
+        lodging.setLodCallNum(dto.getLodCallNum());
+
+        // 이미지가 새로 들어온 경우
+        if (lodImagFile != null && !lodImagFile.isEmpty()) {
+            try {
+                String imageKey = s3Uploader.uploadFile("lodUploads", lodImagFile);
+                lodging.setLodImag(imageKey);
+            } catch (IOException e) {
+                throw new RuntimeException("이미지 업로드 실패", e);
+            }
+        }
+
+        return lodRepository.save(lodging);
+    }
+
+
+
+    @Transactional
+    public void deleteLodging(Long lodgingId) {
+        ClodContent lodging = lodRepository.findById(lodgingId)
+                .orElseThrow(() -> new RuntimeException("숙소가 존재하지 않습니다."));
+        lodRepository.delete(lodging);
     }
 
 
