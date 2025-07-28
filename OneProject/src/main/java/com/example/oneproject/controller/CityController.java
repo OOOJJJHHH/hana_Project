@@ -251,7 +251,7 @@ public class CityController {
     }
 
     // S3 이미지 변환
-    @GetMapping("/image/**")
+    @GetMapping("lodging/image/**")
     public ResponseEntity<Void> redirectToS3Image(HttpServletRequest request) {
         // 요청 URL에서 image 뒤 경로 추출 (예: /lodging/image/lodUploads/uuid_파일명.jpg)
         String requestURI = request.getRequestURI();
