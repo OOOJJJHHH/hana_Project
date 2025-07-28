@@ -6,6 +6,7 @@ import com.example.oneproject.Entity.*;
 import com.example.oneproject.Repository.UserRepository;
 import com.example.oneproject.Repository.WishListRepository;
 import com.example.oneproject.Service.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -64,6 +65,9 @@ public class CityController {
 
     @Autowired
     private final RoomService roomService;
+
+    @Autowired
+    private final S3Service s3Service;
 
     @Autowired
     private WishListRepository wishListRepository;
@@ -244,6 +248,21 @@ public class CityController {
     public ResponseEntity<?> deleteLodging(@PathVariable Long id) {
         lodService.deleteLodging(id);
         return ResponseEntity.ok().build();
+    }
+
+    // S3 이미지 변환
+    @GetMapping("/image/**")
+    public ResponseEntity<Void> redirectToS3Image(HttpServletRequest request) {
+        // 요청 URL에서 image 뒤 경로 추출 (예: /lodging/image/lodUploads/uuid_파일명.jpg)
+        String requestURI = request.getRequestURI();
+        String prefix = "/lodging/image/";
+        String key = requestURI.substring(requestURI.indexOf(prefix) + prefix.length());
+
+        String presignedUrl = s3Service.generatePresignedUrl(key);
+
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .header(HttpHeaders.LOCATION, presignedUrl)
+                .build();
     }
 
     // 예약 ===========================================================================
