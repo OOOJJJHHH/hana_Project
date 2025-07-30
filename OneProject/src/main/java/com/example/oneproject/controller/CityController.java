@@ -280,9 +280,9 @@ public class CityController {
                 .orElseThrow(() -> new IllegalArgumentException("숙소 없음: " + lodName));
 
         roomService.processBatchUpdate(lodId, deletedRoomIds, updates, allRequestParams);
+
         return ResponseEntity.ok("객실 정보가 성공적으로 반영되었습니다.");
     }
-
 
 
     // 예약 ===========================================================================

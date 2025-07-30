@@ -3,7 +3,7 @@ package com.example.oneproject.DTO;
 import java.util.List;
 
 public class RoomUpdateDto {
-    private String id;          // "123" 또는 "new_0"
+    private String id; // "new_0", "123"
     private String roomName;
     private Integer price;
 
