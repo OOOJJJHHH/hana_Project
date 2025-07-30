@@ -72,6 +72,18 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
                     form.append(`roomImage_${r.id}_${idx}`, f);
                 });
             });
+
+            // FormData 내용 출력하기
+            console.log("=== FormData Contents ===");
+            for (const pair of form.entries()) {
+                if (pair[1] instanceof File) {
+                    console.log(pair[0], ": ", pair[1].name, `(File, size: ${pair[1].size} bytes)`);
+                } else {
+                    console.log(pair[0], ": ", pair[1]);
+                }
+            }
+            console.log("=========================");
+
             await axios.put(`${process.env.REACT_APP_API_URL}/batch-update`, form, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
