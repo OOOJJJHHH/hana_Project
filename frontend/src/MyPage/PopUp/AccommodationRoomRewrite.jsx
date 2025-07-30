@@ -28,6 +28,7 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
                 setDeletedRoomIds([]);
                 nextNewRoomId.current = 0;
             }
+            console.log(res);
         } catch (err) {
             console.error("객실 조회 실패", err);
             alert("객실 정보를 불러오는데 실패했습니다.");

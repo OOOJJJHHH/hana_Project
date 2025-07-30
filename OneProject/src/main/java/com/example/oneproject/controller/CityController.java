@@ -266,6 +266,7 @@ public class CityController {
     ) throws IOException {
 
         System.out.println("=== batchUpdate() 호출됨 ===");
+        System.out.println("=== batchUpdate() 호출됨 ===");
         System.out.println("숙소명 (lodName): " + lodName);
         System.out.println("삭제할 객실 ID들 (deletedRoomIds): " + deletedRoomJson);
         System.out.println("객실 업데이트 데이터 (roomUpdates): " + roomUpdatesJson);
@@ -281,6 +282,7 @@ public class CityController {
         roomService.processBatchUpdate(lodId, deletedRoomIds, updates, allRequestParams);
         return ResponseEntity.ok("객실 정보가 성공적으로 반영되었습니다.");
     }
+
 
 
     // 예약 ===========================================================================
