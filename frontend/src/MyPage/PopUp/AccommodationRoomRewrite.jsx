@@ -97,6 +97,8 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
         try {
             const form = new FormData();
 
+            form.append("lodName", lodName);
+
             form.append("deletedRoomIds", JSON.stringify(deletedRoomIds.length > 0 ? deletedRoomIds : []));
 
             const roomsToUpdateOrCreate = rooms.map(room => {
@@ -118,6 +120,7 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
             });
 
             // 디버깅용 로그
+            console.log("lodName:", lodName);
             console.log("deletedRoomIds:", deletedRoomIds);
             console.log("roomsToUpdateOrCreate:", roomsToUpdateOrCreate);
             for (let pair of form.entries()) {

@@ -180,6 +180,4 @@ public class RoomService {
         System.out.println("=== processBatchUpdate() 완료 ===");
     }
 
-
-
 }
