@@ -2,8 +2,14 @@ package com.example.oneproject.Entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Entity
+@NoArgsConstructor // 추가
+@AllArgsConstructor // 추가
+@Builder // 추가
 public class RoomImages {
 
     @Id

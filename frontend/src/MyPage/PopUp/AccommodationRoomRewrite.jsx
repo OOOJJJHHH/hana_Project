@@ -1,27 +1,32 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 
 const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
     const [rooms, setRooms] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [deletedRoomIds, setDeletedRoomIds] = useState([]);
+    const nextNewRoomId = useRef(0);
 
-    // 숙소명으로 객실 데이터 조회
     const fetchRooms = async () => {
         setLoading(true);
         try {
-            // Lodging name을 인코딩해서 URL에 전달
             const encodedLodName = encodeURIComponent(lodName);
             const res = await axios.get(`${process.env.REACT_APP_API_URL}/getlodUseN/${encodedLodName}`);
+
             if (res.data && res.data.rooms) {
-                // rooms 데이터에 preview, imageFile (업로드용) 초기값 세팅
                 const preparedRooms = res.data.rooms.map(room => ({
                     ...room,
                     imageFile: null,
                     preview: null,
+                    isNew: false, // DB에서 가져온 객실은 '새로운' 객실이 아님
                 }));
                 setRooms(preparedRooms);
+                setDeletedRoomIds([]);
+                nextNewRoomId.current = 0;
             } else {
                 setRooms([]);
+                setDeletedRoomIds([]);
+                nextNewRoomId.current = 0;
             }
         } catch (err) {
             console.error("객실 조회 실패", err);
@@ -36,66 +41,96 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
         }
     }, [lodName]);
 
-    const handleRoomChange = (index, field, value) => {
-        const updatedRooms = [...rooms];
-        updatedRooms[index][field] = value;
-        setRooms(updatedRooms);
+    const handleRoomChange = (id, field, value) => {
+        setRooms(prevRooms =>
+            prevRooms.map(room =>
+                room.id === id ? { ...room, [field]: value } : room
+            )
+        );
     };
 
-    const handleImageChange = (index, file) => {
-        const updatedRooms = [...rooms];
-        updatedRooms[index].imageFile = file;
-        updatedRooms[index].preview = URL.createObjectURL(file);
-        setRooms(updatedRooms);
+    const handleImageChange = (id, file) => {
+        setRooms(prevRooms =>
+            prevRooms.map(room =>
+                room.id === id
+                    ? {
+                        ...room,
+                        imageFile: file,
+                        preview: file ? URL.createObjectURL(file) : null,
+                    }
+                    : room
+            )
+        );
     };
 
-    // 객실 삭제
-    const handleDeleteRoom = async (roomId) => {
-        if (!window.confirm("객실을 삭제하시겠습니까?")) return;
-        try {
-            await axios.delete(`${process.env.REACT_APP_API_URL}/room/${roomId}`);
-            alert("객실이 삭제되었습니다.");
-            fetchRooms();
-            onUpdate();
-        } catch (err) {
-            console.error("객실 삭제 실패", err);
-            alert("객실 삭제 실패");
+    const handleAddRoom = () => {
+        if (rooms.length >= 3) {
+            alert("객실은 최대 3개까지 등록할 수 있습니다.");
+            return;
+        }
+
+        const newRoom = {
+            id: `new_${nextNewRoomId.current++}`,
+            roomName: "",
+            price: 0,
+            roomImages: [],
+            imageFile: null,
+            preview: null,
+            isNew: true,
+        };
+        setRooms(prevRooms => [...prevRooms, newRoom]);
+    };
+
+    const handleDeleteRoom = (id) => {
+        if (!window.confirm("객실을 목록에서 제거하시겠습니까? '저장' 버튼을 눌러야 최종 반영됩니다.")) return;
+
+        const roomToDelete = rooms.find(room => room.id === id);
+        setRooms(prevRooms => prevRooms.filter(room => room.id !== id));
+
+        if (roomToDelete && !roomToDelete.isNew) {
+            setDeletedRoomIds(prevIds => [...prevIds, roomToDelete.id]);
         }
     };
 
-    // 저장 (수정)
     const handleSubmit = async () => {
+        setLoading(true);
         try {
-            for (const room of rooms) {
-                const form = new FormData();
+            const form = new FormData();
 
-                const roomData = {
-                    roomName: room.roomName,
-                    price: Number(room.price),
-                    // capacity, description 같은 필드가 있으면 추가
-                    capacity: room.capacity,
-                    description: room.description,
-                };
-
-                const json = new Blob([JSON.stringify(roomData)], { type: "application/json" });
-                form.append("data", json);
-
-                if (room.imageFile) {
-                    form.append("roomImage", room.imageFile);
-                }
-
-                await axios.put(
-                    `${process.env.REACT_APP_API_URL}/room/${room.id}`,
-                    form,
-                    { headers: { "Content-Type": "multipart/form-data" } }
-                );
+            if (deletedRoomIds.length > 0) {
+                form.append("deletedRoomIds", JSON.stringify(deletedRoomIds));
+            } else {
+                form.append("deletedRoomIds", "[]");
             }
-            alert("객실 정보가 수정되었습니다.");
+
+            const roomsToUpdateOrCreate = rooms.map(room => ({
+                id: room.isNew ? null : room.id,
+                roomName: room.roomName,
+                price: Number(room.price),
+                isNew: room.isNew,
+            }));
+            form.append("roomUpdates", JSON.stringify(roomsToUpdateOrCreate));
+
+            rooms.forEach(room => {
+                if (room.imageFile) {
+                    form.append(`roomImage_${room.id}`, room.imageFile);
+                }
+            });
+
+            await axios.put(
+                `${process.env.REACT_APP_API_URL}/rooms/batch-update`,
+                form,
+                { headers: { "Content-Type": "multipart/form-data" } }
+            );
+
+            alert("객실 정보가 성공적으로 반영되었습니다.");
             onUpdate();
             onClose();
         } catch (err) {
-            console.error("객실 수정 실패:", err);
-            alert("객실 수정 실패");
+            console.error("객실 정보 반영 실패:", err.response ? err.response.data : err.message);
+            alert("객실 정보 반영 실패");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -115,61 +150,119 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
             <div className="modal-container" onClick={e => e.stopPropagation()}>
                 <h2>객실 수정 - 숙소명: {lodName}</h2>
 
-                {rooms.length === 0 && <p>등록된 객실이 없습니다.</p>}
+                <button
+                    style={{
+                        backgroundColor: "#28a745",
+                        color: "#fff",
+                        padding: "10px 20px",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        marginBottom: "20px",
+                    }}
+                    onClick={handleAddRoom}
+                    disabled={rooms.length >= 3}
+                >
+                    객실 추가 ({rooms.length}/3)
+                </button>
+
+                {rooms.length === 0 && <p>등록된 객실이 없습니다. 객실을 추가해주세요.</p>}
 
                 {rooms.map((room, index) => (
                     <div
                         key={room.id}
                         style={{ marginBottom: "30px", borderBottom: "1px solid #ccc", paddingBottom: "20px" }}
                     >
+                        {/* ✅ 객실 유형 표시 추가 */}
+                        {room.isNew ? (
+                            <p style={{ color: "purple", fontWeight: "bold", fontSize: "1rem", marginBottom: "10px" }}>
+                                ✨ 새로운 객실
+                            </p>
+                        ) : (
+                            <p style={{ color: "#337ab7", fontWeight: "bold", fontSize: "1rem", marginBottom: "10px" }}>
+                                🏠 기존 객실
+                            </p>
+                        )}
                         <input
                             type="text"
-                            value={room.roomName}
-                            onChange={(e) => handleRoomChange(index, "roomName", e.target.value)}
+                            value={room.roomName || ''}
+                            onChange={(e) => handleRoomChange(room.id, "roomName", e.target.value)}
                             placeholder="객실 이름"
                         />
                         <input
                             type="number"
-                            value={room.price}
-                            onChange={(e) => handleRoomChange(index, "price", e.target.value)}
+                            value={room.price || ''}
+                            onChange={(e) => handleRoomChange(room.id, "price", e.target.value)}
                             placeholder="가격"
-                        />
-                        <input
-                            type="number"
-                            value={room.capacity || ""}
-                            onChange={(e) => handleRoomChange(index, "capacity", e.target.value)}
-                            placeholder="수용 인원"
-                        />
-                        <input
-                            type="text"
-                            value={room.description || ""}
-                            onChange={(e) => handleRoomChange(index, "description", e.target.value)}
-                            placeholder="설명"
                         />
 
                         <label style={{ display: "block", marginTop: "10px" }}>이미지 업로드</label>
                         <input
                             type="file"
                             accept="image/*"
-                            onChange={(e) => handleImageChange(index, e.target.files[0])}
+                            onChange={(e) => handleImageChange(room.id, e.target.files[0])}
                         />
 
-                        {(room.preview || (room.roomImages && room.roomImages[0])) && (
-                            <img
-                                src={room.preview || room.roomImages[0]}
-                                alt="객실 이미지"
-                                style={{
-                                    width: "100%",
-                                    marginTop: "10px",
-                                    borderRadius: "10px",
-                                    maxHeight: "200px",
-                                    objectFit: "cover",
-                                }}
-                            />
-                        )}
+                        <div style={{ marginTop: "10px", textAlign: "center" }}>
+                            {room.preview ? (
+                                <>
+                                    <p style={{ fontSize: "14px", color: "green", marginBottom: "5px" }}>
+                                        ✅ **새로 선택된 이미지 (업로드 예정)**
+                                    </p>
+                                    <img
+                                        src={room.preview}
+                                        alt="새 이미지 미리보기"
+                                        style={{
+                                            width: "100%",
+                                            borderRadius: "10px",
+                                            maxHeight: "200px",
+                                            objectFit: "cover",
+                                            border: "2px solid green"
+                                        }}
+                                    />
+                                    <button
+                                        style={{
+                                            marginTop: "10px",
+                                            backgroundColor: "#f0ad4e",
+                                            color: "white",
+                                            padding: "6px 12px",
+                                            border: "none",
+                                            borderRadius: "6px",
+                                            cursor: "pointer"
+                                        }}
+                                        onClick={() => handleImageChange(room.id, null)}
+                                    >
+                                        새 이미지 선택 취소
+                                    </button>
+                                </>
+                            ) : (
+                                room.roomImages && room.roomImages.length > 0 && room.roomImages[0] ? (
+                                    <>
+                                        <p style={{ fontSize: "14px", color: "#337ab7", marginBottom: "5px" }}>
+                                            🖼️ **기존 객실 이미지 (DB에서 로드됨)**
+                                        </p>
+                                        <img
+                                            src={room.roomImages[0]}
+                                            alt="기존 객실 이미지"
+                                            style={{
+                                                width: "100%",
+                                                borderRadius: "10px",
+                                                maxHeight: "200px",
+                                                objectFit: "cover",
+                                                border: "2px solid #337ab7"
+                                            }}
+                                        />
+                                    </>
+                                ) : (
+                                    <p style={{ fontSize: "14px", color: "#888" }}>
+                                        ⚠️ 등록된 객실 이미지가 없습니다. 새로운 이미지를 업로드해주세요.
+                                    </p>
+                                )
+                            )}
+                        </div>
 
                         <button
-                            style={{ marginTop: "10px", backgroundColor: "red", color: "white", padding: "6px 12px", border: "none", borderRadius: "6px", cursor: "pointer" }}
+                            style={{ marginTop: "20px", backgroundColor: "red", color: "white", padding: "6px 12px", border: "none", borderRadius: "6px", cursor: "pointer" }}
                             onClick={() => handleDeleteRoom(room.id)}
                         >
                             객실 삭제

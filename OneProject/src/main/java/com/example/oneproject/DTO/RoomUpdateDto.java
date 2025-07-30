@@ -3,18 +3,28 @@ package com.example.oneproject.DTO;
 import java.util.List;
 
 public class RoomUpdateDto {
-    private Long id;  // 수정할 객실 아이디, 신규는 null
+    private String id;          // "123" 또는 "new_0"
     private String roomName;
-    private int price;
-    private List<String> roomImages;  // 이미지 S3 key 리스트
+    private Integer price;
 
-    // getter/setter
+    public boolean isNew() {
+        return id != null && id.startsWith("new_");
+    }
 
-    public Long getId() {
+    public Long getParsedId() {
+        if (isNew()) return null;
+        try {
+            return Long.parseLong(id);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -26,19 +36,11 @@ public class RoomUpdateDto {
         this.roomName = roomName;
     }
 
-    public int getPrice() {
+    public Integer getPrice() {
         return price;
     }
 
-    public void setPrice(int price) {
+    public void setPrice(Integer price) {
         this.price = price;
-    }
-
-    public List<String> getRoomImages() {
-        return roomImages;
-    }
-
-    public void setRoomImages(List<String> roomImages) {
-        this.roomImages = roomImages;
     }
 }

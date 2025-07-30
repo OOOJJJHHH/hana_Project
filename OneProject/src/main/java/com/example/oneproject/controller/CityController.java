@@ -3,9 +3,11 @@ package com.example.oneproject.controller;
 
 import com.example.oneproject.DTO.*;
 import com.example.oneproject.Entity.*;
+import com.example.oneproject.Repository.CLodRepository;
 import com.example.oneproject.Repository.UserRepository;
 import com.example.oneproject.Repository.WishListRepository;
 import com.example.oneproject.Service.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -72,6 +74,13 @@ public class CityController {
 
     @Autowired
     private WishListRepository wishListRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private CLodRepository lodRepository;
+
 
     // 도시 정보 저장
     @PostMapping("/saveCity")
@@ -229,22 +238,6 @@ public class CityController {
     }
 
 
-    // 객실 수정 (단독)
-    @PutMapping("/room/{roomId}")
-    public ResponseEntity<Room> updateRoom(
-            @PathVariable Long roomId,
-            @RequestBody RoomUpdateDto dto) {
-        Room updated = roomService.updateRoom(roomId, dto);
-        return ResponseEntity.ok(updated);
-    }
-
-    // 객실 삭제
-    @DeleteMapping("/room/{roomId}")
-    public ResponseEntity<?> deleteRoom(@PathVariable Long roomId) {
-        roomService.deleteRoom(roomId);
-        return ResponseEntity.ok().build();
-    }
-
     // 숙소 삭제 (객실 및 이미지 포함 전부 삭제됨)
     @DeleteMapping("/lodging/{id}")
     public ResponseEntity<?> deleteLodging(@PathVariable Long id) {
@@ -258,6 +251,27 @@ public class CityController {
         // 🔥 URL 인코딩된 S3 키 디코드 (예: lodUploads%2Fmy-image.jpg → lodUploads/my-image.jpg)
         String decodedKey = URLDecoder.decode(key, "UTF-8");
         return s3Service.generatePresignedUrl(decodedKey);
+    }
+
+    // --- 🚨 객실 일괄 업데이트/삭제/추가 API 🚨 ---
+    // 프론트엔드의 AccommodationRoomRewrite 컴포넌트에서 호출될 엔드포인트
+    @PutMapping("/batch-update")
+    public ResponseEntity<?> batchUpdate(
+            @RequestParam String lodName,
+            @RequestPart("deletedRoomIds") String deletedRoomJson,
+            @RequestPart("roomUpdates") String roomUpdatesJson,
+            @RequestParam(required = false) Map<String, MultipartFile> allRequestParams
+    ) throws IOException {
+
+        List<Long> deletedRoomIds = objectMapper.readValue(deletedRoomJson, new TypeReference<>() {});
+        List<RoomUpdateDto> updates = objectMapper.readValue(roomUpdatesJson, new TypeReference<>() {});
+
+        Long lodId = lodRepository.findByLodName(lodName)
+                .map(ClodContent::getId)
+                .orElseThrow(() -> new IllegalArgumentException("숙소 없음: " + lodName));
+
+        roomService.processBatchUpdate(lodId, deletedRoomIds, updates, allRequestParams);
+        return ResponseEntity.ok("객실 정보가 성공적으로 반영되었습니다.");
     }
 
     // 예약 ===========================================================================
