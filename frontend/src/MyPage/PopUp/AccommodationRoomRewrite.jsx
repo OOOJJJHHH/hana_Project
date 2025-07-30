@@ -97,18 +97,18 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
         try {
             const form = new FormData();
 
-            if (deletedRoomIds.length > 0) {
-                form.append("deletedRoomIds", JSON.stringify(deletedRoomIds));
-            } else {
-                form.append("deletedRoomIds", "[]");
-            }
+            form.append("deletedRoomIds", JSON.stringify(deletedRoomIds.length > 0 ? deletedRoomIds : []));
 
-            const roomsToUpdateOrCreate = rooms.map(room => ({
-                id: room.isNew ? null : room.id,
-                roomName: room.roomName,
-                price: Number(room.price),
-                isNew: room.isNew,
-            }));
+            const roomsToUpdateOrCreate = rooms.map(room => {
+                const roomData = {
+                    roomName: room.roomName,
+                    price: Number(room.price),
+                    isNew: room.isNew,
+                };
+                if (!room.isNew) roomData.id = room.id;
+                return roomData;
+            });
+
             form.append("roomUpdates", JSON.stringify(roomsToUpdateOrCreate));
 
             rooms.forEach(room => {
@@ -117,8 +117,15 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
                 }
             });
 
+            // 디버깅용 로그
+            console.log("deletedRoomIds:", deletedRoomIds);
+            console.log("roomsToUpdateOrCreate:", roomsToUpdateOrCreate);
+            for (let pair of form.entries()) {
+                console.log(pair[0], pair[1]);
+            }
+
             await axios.put(
-                `${process.env.REACT_APP_API_URL}/rooms/batch-update`,
+                `${process.env.REACT_APP_API_URL}/batch-update`,
                 form,
                 { headers: { "Content-Type": "multipart/form-data" } }
             );
@@ -133,6 +140,7 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
             setLoading(false);
         }
     };
+
 
     if (loading) {
         return (

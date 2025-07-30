@@ -9,6 +9,8 @@ import com.example.oneproject.Repository.RoomImagesRepository;
 import com.example.oneproject.Repository.RoomRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -90,6 +92,8 @@ public class RoomService {
     }
 
 
+    private static final Logger logger = LoggerFactory.getLogger(RoomService.class);
+
     @Transactional
     public void processBatchUpdate(
             Long lodId,
@@ -97,26 +101,34 @@ public class RoomService {
             List<RoomUpdateDto> updates,
             Map<String, MultipartFile> roomImages
     ) throws IOException {
+        logger.info("processBatchUpdate 시작 - lodId: {}", lodId);
+        logger.info("삭제할 객실 ID 목록: {}", deletedRoomIds);
+        logger.info("업데이트 및 추가할 객실 목록: {}", updates.stream()
+                .map(dto -> String.format("[id=%s, roomName=%s, price=%d, isNew=%b]", dto.getId(), dto.getRoomName(), dto.getPrice(), dto.isNew()))
+                .toList());
+        logger.info("첨부된 이미지 키 목록: {}", roomImages != null ? roomImages.keySet() : "없음");
 
         ClodContent clod = lodRepository.findById(lodId)
                 .orElseThrow(() -> new IllegalArgumentException("숙소 없음: " + lodId));
 
-        // ✂️ 삭제 처리
+        // 삭제 처리
         for (Long delId : deletedRoomIds) {
             roomRepository.findById(delId).ifPresent(room -> {
-                // S3 이미지 먼저 삭제
+                logger.info("객실 삭제 처리 - id: {}", delId);
                 for (RoomImages img : room.getRoomImages()) {
+                    logger.info("이미지 삭제 - key: {}", img.getImageKey());
                     s3Uploader.deleteFile(img.getImageKey());
                 }
-                roomRepository.delete(room); // orphanRemoval + cascade에 따라 이미지도 삭제
+                roomRepository.delete(room);
             });
         }
 
-        // ➕ 추가 & 수정 처리
+        // 추가 및 수정 처리
         for (RoomUpdateDto dto : updates) {
-            MultipartFile file = roomImages.get(dto.getId()); // id는 "new_0" 또는 실제 Long 문자열
+            MultipartFile file = roomImages != null ? roomImages.get(dto.getId()) : null;
 
             if (dto.isNew()) {
+                logger.info("새 객실 추가 - 이름: {}, 가격: {}", dto.getRoomName(), dto.getPrice());
                 Room newRoom = Room.builder()
                         .roomName(dto.getRoomName())
                         .price(dto.getPrice())
@@ -125,41 +137,44 @@ public class RoomService {
 
                 if (file != null && !file.isEmpty()) {
                     String key = s3Uploader.uploadFile("roomUploads", file);
+                    logger.info("새 객실 이미지 업로드 - key: {}", key);
                     RoomImages img = RoomImages.builder().imageKey(key).build();
                     newRoom.addRoomImage(img);
                 }
 
-                roomRepository.save(newRoom); // 새 객실 저장
+                roomRepository.save(newRoom);
 
             } else {
                 Long rid = dto.getParsedId();
                 if (rid != null) {
                     roomRepository.findById(rid).ifPresent(room -> {
+                        logger.info("객실 수정 - id: {}, 이름: {}, 가격: {}", rid, dto.getRoomName(), dto.getPrice());
                         room.setRoomName(dto.getRoomName());
                         room.setPrice(dto.getPrice());
 
                         if (file != null && !file.isEmpty()) {
                             try {
-                                // 기존 이미지 삭제
                                 for (RoomImages img : new ArrayList<>(room.getRoomImages())) {
+                                    logger.info("기존 이미지 삭제 - key: {}", img.getImageKey());
                                     s3Uploader.deleteFile(img.getImageKey());
                                 }
                                 room.clearRoomImages();
 
-                                // 새 이미지 업로드
                                 String key = s3Uploader.uploadFile("roomUploads", file);
+                                logger.info("새 이미지 업로드 - key: {}", key);
                                 RoomImages img = RoomImages.builder().imageKey(key).build();
                                 room.addRoomImage(img);
                             } catch (IOException e) {
+                                logger.error("이미지 업로드 실패", e);
                                 throw new RuntimeException("이미지 업로드 실패", e);
                             }
                         }
-
-                        // 수정 시 save 생략 가능 (변경 감지)
                     });
                 }
             }
         }
+
+        logger.info("processBatchUpdate 완료");
     }
 
 

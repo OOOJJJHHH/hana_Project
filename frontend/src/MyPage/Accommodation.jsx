@@ -252,28 +252,29 @@ const Accommodation = ({ uId }) => {
                                     <Link to={`/hotel-detail?name=${lod.lodName}`} style={{ textDecoration: "none" }}>
                                         <h2 className="lodging-name">{lod.lodName}</h2>
                                     </Link>
-                                    <p className="lodging-info">
+                                    {/* 여기서 p -> div로 변경 */}
+                                    <div className="lodging-info">
                                         <strong>도시:</strong>{" "}
                                         <MarqueeText text={lod.lodCity} hovered={hoveredId === lod.id} />
-                                    </p>
-                                    <p className="lodging-info">
+                                    </div>
+                                    <div className="lodging-info">
                                         <strong>주소:</strong>{" "}
                                         <MarqueeText text={lod.lodLocation} hovered={hoveredId === lod.id} />
-                                    </p>
-                                    <p className="lodging-info">
+                                    </div>
+                                    <div className="lodging-info">
                                         <strong>전화번호:</strong>{" "}
                                         <MarqueeText text={lod.lodCallNum} hovered={hoveredId === lod.id} />
-                                    </p>
+                                    </div>
                                 </div>
                                 <div className="lodging-actions">
                                     <button className="btn btn-delete" onClick={() => handleDeleteLodging(lod.id)}>삭제</button>
                                     <button className="btn btn-edit-lodging" onClick={() => handleEditLodging(lod)}>숙소 수정</button>
                                     <button className="btn btn-edit-rooms" onClick={() => setEditingRooms(lod.lodName)}>객실 수정</button>
-
                                 </div>
                             </div>
                         </div>
                     ))}
+
                 </Slider>
             )}
 

@@ -10,6 +10,8 @@ import com.example.oneproject.Service.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -255,6 +257,8 @@ public class CityController {
 
     // --- 🚨 객실 일괄 업데이트/삭제/추가 API 🚨 ---
     // 프론트엔드의 AccommodationRoomRewrite 컴포넌트에서 호출될 엔드포인트
+    private static final Logger logger = LoggerFactory.getLogger(CityController.class);
+
     @PutMapping("/batch-update")
     public ResponseEntity<?> batchUpdate(
             @RequestParam String lodName,
@@ -262,6 +266,10 @@ public class CityController {
             @RequestPart("roomUpdates") String roomUpdatesJson,
             @RequestParam(required = false) Map<String, MultipartFile> allRequestParams
     ) throws IOException {
+        logger.info("batchUpdate 호출 - lodName: {}", lodName);
+        logger.info("deletedRoomJson: {}", deletedRoomJson);
+        logger.info("roomUpdatesJson: {}", roomUpdatesJson);
+        logger.info("allRequestParams keys: {}", allRequestParams != null ? allRequestParams.keySet() : "없음");
 
         List<Long> deletedRoomIds = objectMapper.readValue(deletedRoomJson, new TypeReference<>() {});
         List<RoomUpdateDto> updates = objectMapper.readValue(roomUpdatesJson, new TypeReference<>() {});
