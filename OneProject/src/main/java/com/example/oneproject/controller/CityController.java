@@ -262,27 +262,39 @@ public class CityController {
             @RequestParam String lodName,
             @RequestPart("deletedRoomIds") String deletedRoomJson,
             @RequestPart("roomUpdates") String roomUpdatesJson,
-            @RequestParam(required = false) Map<String, MultipartFile> allRequestParams
+            @RequestPart(required = false) List<MultipartFile> files // ✅ 모든 이미지 파일들
     ) throws IOException {
 
         System.out.println("=== batchUpdate() 호출됨 ===");
-        System.out.println("=== batchUpdate() 호출됨 ===");
-        System.out.println("숙소명 (lodName): " + lodName);
-        System.out.println("삭제할 객실 ID들 (deletedRoomIds): " + deletedRoomJson);
-        System.out.println("객실 업데이트 데이터 (roomUpdates): " + roomUpdatesJson);
-        System.out.println("전송된 파일들 키: " + (allRequestParams != null ? allRequestParams.keySet() : "없음"));
+        System.out.println("숙소명: " + lodName);
+        System.out.println("삭제할 객실 ID들: " + deletedRoomJson);
+        System.out.println("객실 업데이트 데이터: " + roomUpdatesJson);
+        System.out.println("전송된 파일 수: " + (files != null ? files.size() : 0));
 
         List<Long> deletedRoomIds = objectMapper.readValue(deletedRoomJson, new TypeReference<>() {});
         List<RoomUpdateDto> updates = objectMapper.readValue(roomUpdatesJson, new TypeReference<>() {});
+
+        // ✅ roomId와 매칭된 파일 리스트를 분리 (roomImage_{roomId}_{index})
+        Map<String, List<MultipartFile>> roomImageMap = new HashMap<>();
+        if (files != null) {
+            for (MultipartFile file : files) {
+                String key = Objects.requireNonNull(file.getName()); // roomImage_new_0_0 형태
+                int lastUnderscore = key.lastIndexOf('_');
+                if (lastUnderscore == -1) continue;
+                String roomKey = key.substring(0, lastUnderscore); // roomImage_new_0
+
+                roomImageMap.computeIfAbsent(roomKey, k -> new ArrayList<>()).add(file);
+            }
+        }
 
         Long lodId = lodRepository.findByLodName(lodName)
                 .map(ClodContent::getId)
                 .orElseThrow(() -> new IllegalArgumentException("숙소 없음: " + lodName));
 
-        roomService.processBatchUpdate(lodId, deletedRoomIds, updates, allRequestParams);
-
+        roomService.processBatchUpdate(lodId, deletedRoomIds, updates, roomImageMap);
         return ResponseEntity.ok("객실 정보가 성공적으로 반영되었습니다.");
     }
+
 
 
     // 예약 ===========================================================================

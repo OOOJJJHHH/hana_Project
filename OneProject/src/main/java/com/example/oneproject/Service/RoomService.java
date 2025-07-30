@@ -100,102 +100,89 @@ public class RoomService {
             Long lodId,
             List<Long> deletedRoomIds,
             List<RoomUpdateDto> updates,
-            Map<String, MultipartFile> roomImages
+            Map<String, List<MultipartFile>> roomImages // ✅ roomImage_{id} 형식 매핑
     ) throws IOException {
 
         System.out.println("=== ✅ processBatchUpdate() 시작 ===");
-        System.out.println("숙소 ID: " + lodId);
-        System.out.println("삭제 요청된 객실 수: " + deletedRoomIds.size());
-        System.out.println("업데이트 요청된 객실 수: " + updates.size());
 
         ClodContent clod = lodRepository.findById(lodId)
                 .orElseThrow(() -> new IllegalArgumentException("숙소 없음: " + lodId));
-        System.out.println("▶ 숙소 로드 완료: " + clod.getLodName());
 
-        // === 1. 삭제 처리 ===
+        // === 1. 객실 삭제 ===
         for (Long delId : deletedRoomIds) {
             roomRepository.findById(delId).ifPresent(room -> {
-                System.out.println("🗑 삭제할 객실 ID: " + delId);
-
                 for (RoomImages img : room.getRoomImages()) {
-                    System.out.println("   ⛔ 이미지 삭제 요청: " + img.getImageKey());
                     s3Uploader.deleteFile(img.getImageKey());
                 }
-
                 wishListRepository.deleteByRoomId(delId);
-                System.out.println("   💔 위시리스트 삭제 완료");
-
                 roomRepository.delete(room);
-                System.out.println("   ✅ 객실 삭제 완료");
+                System.out.println("🗑 삭제 완료: " + delId);
             });
         }
 
-        // === 2. 수정 또는 생성 처리 ===
+        // === 2. 객실 생성/수정 ===
         for (RoomUpdateDto dto : updates) {
-            String rawId = dto.getId();
-            System.out.println("➡️ 처리 중인 DTO ID: " + rawId + ", isNew: " + dto.isNew());
-
-            MultipartFile file = roomImages != null ? roomImages.get("roomImage_" + rawId) : null;
-            if (file != null) System.out.println("   📎 첨부된 이미지: " + file.getOriginalFilename());
+            String rawId = dto.getId(); // new_0 또는 숫자
+            List<MultipartFile> files = roomImages != null ? roomImages.get("roomImage_" + rawId) : null;
 
             if (dto.isNew()) {
-                System.out.println("🆕 신규 객실 생성 로직 진입");
-
                 Room newRoom = Room.builder()
                         .roomName(dto.getRoomName())
                         .price(dto.getPrice())
                         .clodContent(clod)
                         .build();
 
-                if (file != null && !file.isEmpty()) {
-                    String key = s3Uploader.uploadFile("roomUploads", file);
-                    newRoom.addRoomImage(RoomImages.builder().imageKey(key).build());
-                    System.out.println("   📤 이미지 업로드 및 연결 완료: " + key);
+                if (files != null && !files.isEmpty()) {
+                    List<RoomImages> imageEntities = new ArrayList<>();
+                    for (MultipartFile image : files) {
+                        String key = s3Uploader.uploadFile("roomUploads", image);
+                        imageEntities.add(RoomImages.builder()
+                                .imageKey(key)
+                                .room(newRoom)
+                                .build());
+                    }
+                    newRoom.setRoomImages(imageEntities);
                 }
 
                 roomRepository.save(newRoom);
-                System.out.println("   ✅ 신규 객실 저장 완료: " + newRoom.getRoomName());
+                System.out.println("✅ 신규 객실 저장됨: " + newRoom.getRoomName());
 
             } else {
                 Long rid = dto.getParsedId();
-                if (rid == null) {
-                    System.out.println("⚠️ 잘못된 기존 ID: " + rawId);
-                    continue;
-                }
+                if (rid == null) continue;
 
                 roomRepository.findById(rid).ifPresent(room -> {
-                    System.out.println("✏️ 기존 객실 수정 시작: ID = " + rid);
                     room.setRoomName(dto.getRoomName());
                     room.setPrice(dto.getPrice());
 
-                    if (file != null && !file.isEmpty()) {
+                    if (files != null && !files.isEmpty()) {
                         try {
                             for (RoomImages img : new ArrayList<>(room.getRoomImages())) {
-                                System.out.println("   🧹 기존 이미지 제거: " + img.getImageKey());
                                 s3Uploader.deleteFile(img.getImageKey());
                             }
-
                             room.clearRoomImages();
 
-                            String key = s3Uploader.uploadFile("roomUploads", file);
-                            room.addRoomImage(RoomImages.builder().imageKey(key).build());
-                            System.out.println("   🔄 이미지 재업로드 및 연결 완료: " + key);
+                            List<RoomImages> imageEntities = new ArrayList<>();
+                            for (MultipartFile image : files) {
+                                String key = s3Uploader.uploadFile("roomUploads", image);
+                                imageEntities.add(RoomImages.builder()
+                                        .imageKey(key)
+                                        .room(room)
+                                        .build());
+                            }
+                            room.setRoomImages(imageEntities);
 
                         } catch (IOException e) {
-                            System.out.println("❌ 이미지 업로드 중 오류 발생: " + e.getMessage());
                             throw new RuntimeException("이미지 업로드 실패", e);
                         }
                     }
-
-                    System.out.println("   ✅ 기존 객실 수정 완료: " + room.getRoomName());
+                    System.out.println("🔄 기존 객실 수정됨: " + room.getRoomName());
                 });
             }
         }
 
         System.out.println("=== ✅ processBatchUpdate() 완료 ===");
     }
-
-
 
 
 }
