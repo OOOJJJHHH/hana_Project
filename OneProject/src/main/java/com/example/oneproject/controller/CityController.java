@@ -257,8 +257,6 @@ public class CityController {
 
     // --- 🚨 객실 일괄 업데이트/삭제/추가 API 🚨 ---
     // 프론트엔드의 AccommodationRoomRewrite 컴포넌트에서 호출될 엔드포인트
-    private static final Logger logger = LoggerFactory.getLogger(CityController.class);
-
     @PutMapping("/batch-update")
     public ResponseEntity<?> batchUpdate(
             @RequestParam String lodName,
@@ -266,10 +264,12 @@ public class CityController {
             @RequestPart("roomUpdates") String roomUpdatesJson,
             @RequestParam(required = false) Map<String, MultipartFile> allRequestParams
     ) throws IOException {
-        logger.info("batchUpdate 호출 - lodName: {}", lodName);
-        logger.info("deletedRoomJson: {}", deletedRoomJson);
-        logger.info("roomUpdatesJson: {}", roomUpdatesJson);
-        logger.info("allRequestParams keys: {}", allRequestParams != null ? allRequestParams.keySet() : "없음");
+
+        System.out.println("=== batchUpdate() 호출됨 ===");
+        System.out.println("숙소명 (lodName): " + lodName);
+        System.out.println("삭제할 객실 ID들 (deletedRoomIds): " + deletedRoomJson);
+        System.out.println("객실 업데이트 데이터 (roomUpdates): " + roomUpdatesJson);
+        System.out.println("전송된 파일들 키: " + (allRequestParams != null ? allRequestParams.keySet() : "없음"));
 
         List<Long> deletedRoomIds = objectMapper.readValue(deletedRoomJson, new TypeReference<>() {});
         List<RoomUpdateDto> updates = objectMapper.readValue(roomUpdatesJson, new TypeReference<>() {});
@@ -281,6 +281,7 @@ public class CityController {
         roomService.processBatchUpdate(lodId, deletedRoomIds, updates, allRequestParams);
         return ResponseEntity.ok("객실 정보가 성공적으로 반영되었습니다.");
     }
+
 
     // 예약 ===========================================================================
     // 예약되어있는 날짜 확인
