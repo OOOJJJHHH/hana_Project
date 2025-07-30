@@ -108,30 +108,28 @@ public class RoomService {
         ClodContent clod = lodRepository.findById(lodId)
                 .orElseThrow(() -> new IllegalArgumentException("숙소 없음: " + lodId));
 
+        // === 삭제 처리 ===
         for (Long delId : deletedRoomIds) {
             roomRepository.findById(delId).ifPresent(room -> {
                 System.out.println(">> 객실 삭제 처리: ID = " + delId);
-
-                // 1. 관련 이미지 삭제
                 for (RoomImages img : room.getRoomImages()) {
                     System.out.println("   - 이미지 삭제: " + img.getImageKey());
                     s3Uploader.deleteFile(img.getImageKey());
                 }
-
-                // 2. 관련 위시리스트 삭제
                 wishListRepository.deleteByRoomId(delId);
-                System.out.println("   - 관련 WishList 삭제 완료");
-
-                // 3. 객실 삭제
                 roomRepository.delete(room);
-                System.out.println("   - 객실 삭제 완료");
             });
         }
 
+        // === 수정 또는 생성 처리 ===
         for (RoomUpdateDto dto : updates) {
-            MultipartFile file = roomImages != null ? roomImages.get(dto.getId()) : null;
+
+            // MultipartFile 키는 id 자체로 오므로,
+            // "new_0"와 같은 id가 전달됨에 유의
+            MultipartFile file = roomImages != null ? roomImages.get("roomImage_" + dto.getId()) : null;
 
             if (dto.isNew()) {
+                // 신규 생성 로직
                 Room newRoom = Room.builder()
                         .roomName(dto.getRoomName())
                         .price(dto.getPrice())
@@ -147,7 +145,13 @@ public class RoomService {
                 System.out.println(">> 새 객실 추가 완료: " + newRoom.getRoomName());
 
             } else {
+                // 기존 수정 로직
                 Long rid = dto.getParsedId();
+                if (rid == null) {
+                    System.out.println("⚠️ 잘못된 ID (null): " + dto.getId());
+                    continue;
+                }
+
                 roomRepository.findById(rid).ifPresent(room -> {
                     room.setRoomName(dto.getRoomName());
                     room.setPrice(dto.getPrice());
@@ -173,6 +177,7 @@ public class RoomService {
 
         System.out.println("=== processBatchUpdate() 완료 ===");
     }
+
 
 
 }
