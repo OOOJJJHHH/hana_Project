@@ -148,31 +148,32 @@ public class RoomService {
                         s3Uploader.deleteFile(img.getImageKey());
                     }
                     roomImagesRepository.deleteByRoomId(roomId);
+                    System.out.println("🧨 전체 이미지 삭제: roomId = " + roomId);
 
-                    String key = "roomImage_" + roomId;
-                    saveRoomImages(existingRoom, roomImageMap.get(key));
-                }
-                // ✅ 2-2. 부분 삭제 (removedImageUrls에 있는 이미지만 삭제)
-                else if (dto.getRemovedImageKeys() != null && !dto.getRemovedImageKeys().isEmpty()) {
+                    // ✅ 2-2. 부분 이미지 삭제
+                } else if (dto.getRemovedImageKeys() != null && !dto.getRemovedImageKeys().isEmpty()) {
                     for (String imageKey : dto.getRemovedImageKeys()) {
+                        System.out.println("👉 삭제 요청된 이미지 키: " + imageKey);
                         Optional<RoomImages> imgOpt = roomImagesRepository.findByImageKey(imageKey);
-                        imgOpt.ifPresent(img -> {
+                        if (imgOpt.isPresent()) {
                             s3Uploader.deleteFile(imageKey);
-                            roomImagesRepository.delete(img);
+                            roomImagesRepository.delete(imgOpt.get());
                             System.out.println("❌ 개별 이미지 삭제됨: " + imageKey);
-                        });
+                        } else {
+                            System.out.println("⚠️ DB에서 이미지 키 찾지 못함: " + imageKey);
+                        }
                     }
-
-                    String key = "roomImage_" + roomId;
-                    saveRoomImages(existingRoom, roomImageMap.get(key));
-                } else {
-                    System.out.println("✅ 기존 이미지 유지 (roomId=" + roomId + ")");
                 }
+
+                // ✅ 2-3. 항상 새로운 이미지 저장 시도
+                String key = "roomImage_" + roomId;
+                saveRoomImages(existingRoom, roomImageMap.get(key));
             }
         }
 
         System.out.println("✅ [END] processBatchUpdate()");
     }
+
 
 
 

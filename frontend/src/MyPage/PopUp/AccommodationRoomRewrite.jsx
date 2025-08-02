@@ -22,7 +22,8 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
                 previews: [],
                 isNew: false,
                 keepExistingImages: true,
-                removedImageKeys: [], // ✅ 변경된 필드
+                removedImageKeys: [],
+                roomImages: room.roomImages || [], // ✅ 기존 이미지 안전하게 초기화
             }));
             setRooms(prepared);
             setDeletedRoomIds([]);
@@ -61,6 +62,7 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
             isNew: true,
             keepExistingImages: false,
             removedImageKeys: [],
+            roomImages: [], // 새 객실도 빈 이미지 배열
         }]);
     };
 
@@ -73,21 +75,29 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
 
     // ✅ S3 URL에서 key 추출
     const extractImageKey = (url) => {
-        const parts = url.split('/');
-        return parts.slice(3).join('/'); // flexible extraction
+        try {
+            const { pathname } = new URL(url);
+            return decodeURIComponent(pathname).replace(/^\/+/, ""); // 슬래시 제거
+        } catch {
+            console.warn("Invalid URL for imageKey extraction:", url);
+            return url;
+        }
     };
+
 
     const handleRemoveExistingImage = (roomId, imageUrl) => {
         const key = extractImageKey(imageUrl);
-        setRooms(prev => prev.map(r => {
-            if (r.id !== roomId) return r;
+        setRooms(prev => prev.map(room => {
+            if (room.id !== roomId) return room;
             return {
-                ...r,
-                roomImages: r.roomImages.filter(url => url !== imageUrl),
-                removedImageKeys: [...(r.removedImageKeys || []), key],
+                ...room,
+                roomImages: (room.roomImages || []).filter(url => url !== imageUrl),
+                removedImageKeys: [...(room.removedImageKeys || []), key],
             };
         }));
     };
+
+    // ...생략: import 및 useEffect, 스타일 정의 등은 그대로 유지됩니다
 
     const handleSubmit = async () => {
         setLoading(true);
@@ -113,13 +123,18 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
                 });
             });
 
-            // 디버깅 로그
-            console.log("=== 📦 FormData Contents ===");
-            for (const pair of form.entries()) {
-                if (pair[1] instanceof File) {
-                    console.log(`${pair[0]}: ${pair[1].name} (size: ${pair[1].size} bytes)`);
+            // ✅ 콘솔 출력 추가
+            console.log("📦 [FormData 전송 데이터]");
+            for (let [key, value] of form.entries()) {
+                if (value instanceof File) {
+                    console.log(`📁 [파일] ${key}: ${value.name} (${value.size} bytes)`);
                 } else {
-                    console.log(`${pair[0]}: ${pair[1]}`);
+                    try {
+                        const parsed = JSON.parse(value);
+                        console.log(`📝 [JSON] ${key}:`, parsed);
+                    } catch {
+                        console.log(`🔤 [문자열] ${key}: ${value}`);
+                    }
                 }
             }
 
@@ -136,6 +151,7 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
         }
         setLoading(false);
     };
+
 
     return (
         <div style={overlayStyle} onClick={onClose}>
