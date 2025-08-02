@@ -153,17 +153,16 @@ public class RoomService {
                     saveRoomImages(existingRoom, roomImageMap.get(key));
                 }
                 // ✅ 2-2. 부분 삭제 (removedImageUrls에 있는 이미지만 삭제)
-                else if (dto.getRemovedImageUrls() != null && !dto.getRemovedImageUrls().isEmpty()) {
-                    for (String url : dto.getRemovedImageUrls()) {
-                        Optional<RoomImages> imgOpt = roomImagesRepository.findByImageUrl(url);
+                else if (dto.getRemovedImageKeys() != null && !dto.getRemovedImageKeys().isEmpty()) {
+                    for (String imageKey : dto.getRemovedImageKeys()) {
+                        Optional<RoomImages> imgOpt = roomImagesRepository.findByImageKey(imageKey);
                         imgOpt.ifPresent(img -> {
-                            s3Uploader.deleteFile(img.getImageKey());
+                            s3Uploader.deleteFile(imageKey);
                             roomImagesRepository.delete(img);
-                            System.out.println("❌ 개별 이미지 삭제됨: " + url);
+                            System.out.println("❌ 개별 이미지 삭제됨: " + imageKey);
                         });
                     }
 
-                    // 새 이미지 추가
                     String key = "roomImage_" + roomId;
                     saveRoomImages(existingRoom, roomImageMap.get(key));
                 } else {

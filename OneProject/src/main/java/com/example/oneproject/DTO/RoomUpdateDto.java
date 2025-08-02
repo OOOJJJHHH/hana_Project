@@ -6,8 +6,8 @@ public class RoomUpdateDto {
     private String id;
     private String roomName;
     private Integer price;
-    private Boolean keepExistingImages; // ✅ 기존 이미지 유지 여부
-    private List<String> removedImageUrls; // ✅ 삭제할 이미지 URL 목록
+    private Boolean keepExistingImages;
+    private List<String> removedImageKeys; // ✅ 변경됨
 
     public boolean isNew() {
         return id != null && id.startsWith("new_");
@@ -23,7 +23,6 @@ public class RoomUpdateDto {
     }
 
     // --- Getters & Setters ---
-
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -36,6 +35,6 @@ public class RoomUpdateDto {
     public Boolean getKeepExistingImages() { return keepExistingImages; }
     public void setKeepExistingImages(Boolean keepExistingImages) { this.keepExistingImages = keepExistingImages; }
 
-    public List<String> getRemovedImageUrls() { return removedImageUrls; }
-    public void setRemovedImageUrls(List<String> removedImageUrls) { this.removedImageUrls = removedImageUrls; }
+    public List<String> getRemovedImageKeys() { return removedImageKeys; }
+    public void setRemovedImageKeys(List<String> removedImageKeys) { this.removedImageKeys = removedImageKeys; }
 }

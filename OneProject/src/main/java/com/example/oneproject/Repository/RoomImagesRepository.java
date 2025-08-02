@@ -13,6 +13,7 @@ public interface RoomImagesRepository extends JpaRepository<RoomImages, Long> {
 
     void deleteByRoomId(Long roomId);
 
-    Optional<RoomImages> findByImageUrl(String imageUrl);
+    Optional<RoomImages> findByImageKey(String imageKey);
+
 
 }

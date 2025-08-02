@@ -22,7 +22,7 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
                 previews: [],
                 isNew: false,
                 keepExistingImages: true,
-                removedImageUrls: [], // ✅ 개별 삭제된 이미지 URL
+                removedImageKeys: [], // ✅ 변경된 필드
             }));
             setRooms(prepared);
             setDeletedRoomIds([]);
@@ -45,7 +45,7 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
             ...r,
             imageFiles: arr,
             previews,
-            keepExistingImages: false // ✅ 새로 선택 시 기존 이미지 유지 안함
+            keepExistingImages: false
         } : r));
     };
 
@@ -60,7 +60,7 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
             previews: [],
             isNew: true,
             keepExistingImages: false,
-            removedImageUrls: [],
+            removedImageKeys: [],
         }]);
     };
 
@@ -71,14 +71,20 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
         if (target && !target.isNew) setDeletedRoomIds(prev => [...prev, target.id]);
     };
 
-    // ✅ 기존 이미지 개별 삭제 핸들러
+    // ✅ S3 URL에서 key 추출
+    const extractImageKey = (url) => {
+        const parts = url.split('/');
+        return parts.slice(3).join('/'); // flexible extraction
+    };
+
     const handleRemoveExistingImage = (roomId, imageUrl) => {
+        const key = extractImageKey(imageUrl);
         setRooms(prev => prev.map(r => {
             if (r.id !== roomId) return r;
             return {
                 ...r,
                 roomImages: r.roomImages.filter(url => url !== imageUrl),
-                removedImageUrls: [...(r.removedImageUrls || []), imageUrl],
+                removedImageKeys: [...(r.removedImageKeys || []), key],
             };
         }));
     };
@@ -96,7 +102,7 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
                 id: r.id,
                 isNew: r.isNew,
                 keepExistingImages: r.keepExistingImages !== false,
-                removedImageUrls: r.removedImageUrls || [] // ✅ 제거된 기존 이미지 목록 전송
+                removedImageKeys: r.removedImageKeys || []
             }));
             form.append("roomUpdates", JSON.stringify(updates));
 
