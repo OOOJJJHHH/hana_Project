@@ -21,6 +21,8 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
                 imageFiles: [],
                 previews: [],
                 isNew: false,
+                keepExistingImages: true,
+                removedImageUrls: [], // ✅ 개별 삭제된 이미지 URL
             }));
             setRooms(prepared);
             setDeletedRoomIds([]);
@@ -39,13 +41,27 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
     const handleImageChange = (id, files) => {
         const arr = Array.from(files);
         const previews = arr.map(f => URL.createObjectURL(f));
-        setRooms(prev => prev.map(r => r.id === id ? { ...r, imageFiles: arr, previews } : r));
+        setRooms(prev => prev.map(r => r.id === id ? {
+            ...r,
+            imageFiles: arr,
+            previews,
+            keepExistingImages: false // ✅ 새로 선택 시 기존 이미지 유지 안함
+        } : r));
     };
 
     const handleAddRoom = () => {
         if (rooms.length >= 3) return alert("최대 3개");
         const id = `new_${nextNewRoomId.current++}`;
-        setRooms([...rooms, { id, roomName: "", price: "", imageFiles: [], previews: [], isNew: true }]);
+        setRooms([...rooms, {
+            id,
+            roomName: "",
+            price: "",
+            imageFiles: [],
+            previews: [],
+            isNew: true,
+            keepExistingImages: false,
+            removedImageUrls: [],
+        }]);
     };
 
     const handleDeleteRoom = (id) => {
@@ -55,6 +71,18 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
         if (target && !target.isNew) setDeletedRoomIds(prev => [...prev, target.id]);
     };
 
+    // ✅ 기존 이미지 개별 삭제 핸들러
+    const handleRemoveExistingImage = (roomId, imageUrl) => {
+        setRooms(prev => prev.map(r => {
+            if (r.id !== roomId) return r;
+            return {
+                ...r,
+                roomImages: r.roomImages.filter(url => url !== imageUrl),
+                removedImageUrls: [...(r.removedImageUrls || []), imageUrl],
+            };
+        }));
+    };
+
     const handleSubmit = async () => {
         setLoading(true);
         try {
@@ -62,25 +90,24 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
             form.append("lodName", lodName);
             form.append("deletedRoomIds", JSON.stringify(deletedRoomIds));
 
-            const updates = rooms.map(r => {
-                const data = {
-                    roomName: r.roomName,
-                    price: Number(r.price),
-                    isNew: r.isNew,
-                    id: r.id
-                };
-                return data;
-            });
+            const updates = rooms.map(r => ({
+                roomName: r.roomName,
+                price: Number(r.price),
+                id: r.id,
+                isNew: r.isNew,
+                keepExistingImages: r.keepExistingImages !== false,
+                removedImageUrls: r.removedImageUrls || [] // ✅ 제거된 기존 이미지 목록 전송
+            }));
             form.append("roomUpdates", JSON.stringify(updates));
 
             rooms.forEach(r => {
                 const key = `roomImage_${r.id}`;
                 r.imageFiles.forEach(file => {
-                    form.append(key, file); // index 제거
+                    form.append(key, file);
                 });
             });
 
-            // 디버깅: FormData 출력
+            // 디버깅 로그
             console.log("=== 📦 FormData Contents ===");
             for (const pair of form.entries()) {
                 if (pair[1] instanceof File) {
@@ -89,11 +116,11 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
                     console.log(`${pair[0]}: ${pair[1]}`);
                 }
             }
-            console.log("=============================");
 
             await axios.put(`${process.env.REACT_APP_API_URL}/batch-update`, form, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
+
             alert("저장 성공");
             onUpdate();
             onClose();
@@ -116,7 +143,7 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
                     + 객실 추가 ({rooms.length}/3)
                 </button>
 
-                {rooms.map((r, idx) => (
+                {rooms.map(r => (
                     <div key={r.id} style={roomCardStyle}>
                         <div style={roomHeaderStyle}>
                             <strong>{r.isNew ? "새로운 객실" : "기존 객실"}</strong>
@@ -147,12 +174,18 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
                         />
 
                         <div style={previewContainerStyle}>
-                            {r.previews.map((src, i) => (
-                                <img key={i} src={src} style={previewImgStyle} alt="선택 이미지" />
-                            ))}
-                            {!r.previews.length && r.roomImages?.map((src, i) => (
-                                <img key={i} src={src} style={existingImgStyle} alt="기존 이미지" />
-                            ))}
+                            {r.previews.length > 0 ? (
+                                r.previews.map((src, i) => (
+                                    <img key={i} src={src} style={previewImgStyle} alt="선택 이미지" />
+                                ))
+                            ) : (
+                                (r.roomImages || []).map((src, i) => (
+                                    <div key={i} style={existingImgBox}>
+                                        <img src={src} style={existingImgStyle} alt="기존 이미지" />
+                                        <button style={removeBtnStyle} onClick={() => handleRemoveExistingImage(r.id, src)}>×</button>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 ))}
@@ -168,7 +201,7 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
     );
 };
 
-// === 스타일 객체 정의 ===
+// === 스타일 ===
 const overlayStyle = {
     position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
     background: "rgba(0,0,0,0.6)", display: "flex",
@@ -189,7 +222,12 @@ const inputStyle = { width: "100%", padding: "10px", marginBottom: "10px", borde
 const fileInputStyle = { marginBottom: "10px" };
 const previewContainerStyle = { display: "flex", gap: "10px", flexWrap: "wrap" };
 const previewImgStyle = { width: "100px", height: "100px", objectFit: "cover", borderRadius: "4px", border: "2px solid #28a745" };
+const existingImgBox = { position: "relative" };
 const existingImgStyle = { width: "100px", height: "100px", objectFit: "cover", borderRadius: "4px", border: "2px solid #888" };
+const removeBtnStyle = {
+    position: "absolute", top: "-8px", right: "-8px",
+    background: "#ff5252", color: "#fff", border: "none", borderRadius: "50%", width: "20px", height: "20px", cursor: "pointer"
+};
 const footerStyle = { display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "20px" };
 const saveBtnStyle = { padding: "10px 20px", background: "#007bff", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" };
 const cancelBtnStyle = { padding: "10px 20px", background: "#6c757d", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer" };

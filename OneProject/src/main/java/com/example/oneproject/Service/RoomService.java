@@ -126,8 +126,9 @@ public class RoomService {
                 newRoom.setClodContent(clodContent);
                 roomRepository.save(newRoom);
 
-                String key = "roomImage_" + dto.getId(); // e.g., roomImage_new_0
+                String key = "roomImage_" + dto.getId();
                 saveRoomImages(newRoom, roomImageMap.get(key));
+
             } else {
                 // --- 기존 객실 수정 ---
                 Long roomId = dto.getParsedId();
@@ -140,21 +141,41 @@ public class RoomService {
                 existingRoom.setPrice(dto.getPrice());
                 roomRepository.save(existingRoom);
 
-                // 기존 이미지 삭제
-                List<RoomImages> oldImages = roomImagesRepository.findByRoomId(roomId);
-                for (RoomImages img : oldImages) {
-                    s3Uploader.deleteFile(img.getImageKey());
-                }
-                roomImagesRepository.deleteByRoomId(roomId);
+                // ✅ 2-1. 전체 이미지 삭제
+                if (Boolean.FALSE.equals(dto.getKeepExistingImages())) {
+                    List<RoomImages> oldImages = roomImagesRepository.findByRoomId(roomId);
+                    for (RoomImages img : oldImages) {
+                        s3Uploader.deleteFile(img.getImageKey());
+                    }
+                    roomImagesRepository.deleteByRoomId(roomId);
 
-                // 새 이미지 저장
-                String key = "roomImage_" + roomId;
-                saveRoomImages(existingRoom, roomImageMap.get(key));
+                    String key = "roomImage_" + roomId;
+                    saveRoomImages(existingRoom, roomImageMap.get(key));
+                }
+                // ✅ 2-2. 부분 삭제 (removedImageUrls에 있는 이미지만 삭제)
+                else if (dto.getRemovedImageUrls() != null && !dto.getRemovedImageUrls().isEmpty()) {
+                    for (String url : dto.getRemovedImageUrls()) {
+                        Optional<RoomImages> imgOpt = roomImagesRepository.findByImageUrl(url);
+                        imgOpt.ifPresent(img -> {
+                            s3Uploader.deleteFile(img.getImageKey());
+                            roomImagesRepository.delete(img);
+                            System.out.println("❌ 개별 이미지 삭제됨: " + url);
+                        });
+                    }
+
+                    // 새 이미지 추가
+                    String key = "roomImage_" + roomId;
+                    saveRoomImages(existingRoom, roomImageMap.get(key));
+                } else {
+                    System.out.println("✅ 기존 이미지 유지 (roomId=" + roomId + ")");
+                }
             }
         }
 
         System.out.println("✅ [END] processBatchUpdate()");
     }
+
+
 
 
 
