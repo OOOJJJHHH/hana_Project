@@ -61,34 +61,42 @@ const AccommodationRoomRewrite = ({ lodName, onClose, onUpdate }) => {
             const form = new FormData();
             form.append("lodName", lodName);
             form.append("deletedRoomIds", JSON.stringify(deletedRoomIds));
+
             const updates = rooms.map(r => {
-                const data = { roomName: r.roomName, price: Number(r.price), isNew: r.isNew };
-                if (!r.isNew) data.id = r.id;
+                const data = {
+                    roomName: r.roomName,
+                    price: Number(r.price),
+                    isNew: r.isNew,
+                    id: r.id
+                };
                 return data;
             });
             form.append("roomUpdates", JSON.stringify(updates));
+
             rooms.forEach(r => {
-                r.imageFiles.forEach((f, idx) => {
-                    form.append(`roomImage_${r.id}_${idx}`, f);
+                const key = `roomImage_${r.id}`;
+                r.imageFiles.forEach(file => {
+                    form.append(key, file); // index 제거
                 });
             });
 
-            // FormData 내용 출력하기
-            console.log("=== FormData Contents ===");
+            // 디버깅: FormData 출력
+            console.log("=== 📦 FormData Contents ===");
             for (const pair of form.entries()) {
                 if (pair[1] instanceof File) {
-                    console.log(pair[0], ": ", pair[1].name, `(File, size: ${pair[1].size} bytes)`);
+                    console.log(`${pair[0]}: ${pair[1].name} (size: ${pair[1].size} bytes)`);
                 } else {
-                    console.log(pair[0], ": ", pair[1]);
+                    console.log(`${pair[0]}: ${pair[1]}`);
                 }
             }
-            console.log("=========================");
+            console.log("=============================");
 
             await axios.put(`${process.env.REACT_APP_API_URL}/batch-update`, form, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
             alert("저장 성공");
-            onUpdate(); onClose();
+            onUpdate();
+            onClose();
         } catch (err) {
             console.error(err);
             alert("저장 실패");

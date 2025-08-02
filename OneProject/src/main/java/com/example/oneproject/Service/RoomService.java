@@ -101,17 +101,26 @@ public class RoomService {
                                    Map<String, List<MultipartFile>> roomImageMap) throws IOException {
 
         ClodContent clodContent = lodRepository.findById(lodId)
-                .orElseThrow(() -> new IllegalArgumentException("숙소 ID가 유효하지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("숙소 ID가 유효하지 않습니다. lodId = " + lodId));
+
+        System.out.println("🚀 [START] processBatchUpdate()");
+        System.out.println("숙소 ID: " + lodId);
+        System.out.println("삭제 대상 객실 수: " + (deletedRoomIds != null ? deletedRoomIds.size() : 0));
+        System.out.println("업데이트 대상 객실 수: " + (updates != null ? updates.size() : 0));
+        System.out.println("이미지 맵 수: " + (roomImageMap != null ? roomImageMap.size() : 0));
 
         // ✅ 삭제 처리
         if (deletedRoomIds != null) {
             for (Long roomId : deletedRoomIds) {
+                System.out.println("🗑️ 삭제할 객실 ID: " + roomId);
                 List<RoomImages> images = roomImagesRepository.findByRoomId(roomId);
                 for (RoomImages img : images) {
+                    System.out.println("🧼 삭제할 이미지 Key: " + img.getImageKey());
                     s3Uploader.deleteFile(img.getImageKey());
                 }
                 roomImagesRepository.deleteByRoomId(roomId);
                 roomRepository.deleteById(roomId);
+                System.out.println("✅ 객실 " + roomId + " 삭제 완료");
             }
         }
 
@@ -119,37 +128,54 @@ public class RoomService {
         for (RoomUpdateDto dto : updates) {
             if (dto.isNew()) {
                 // --- 새 객실 추가 ---
+                System.out.println("🆕 새 객실 추가: " + dto.getRoomName());
                 Room newRoom = new Room();
                 newRoom.setRoomName(dto.getRoomName());
                 newRoom.setPrice(dto.getPrice());
                 newRoom.setClodContent(clodContent);
                 roomRepository.save(newRoom);
+                System.out.println("✅ 객실 저장 완료 (ID: " + newRoom.getId() + ")");
 
-                // 이미지 저장
-                saveRoomImages(newRoom, roomImageMap.get(dto.getId()));
+                String key = "roomImage_" + dto.getId(); // e.g., roomImage_new_0
+                List<MultipartFile> files = roomImageMap.get(key);
+                System.out.println("📦 첨부 이미지 수 (" + key + "): " + (files != null ? files.size() : 0));
+                saveRoomImages(newRoom, files);
             } else {
+                // --- 기존 객실 수정 ---
                 Long roomId = dto.getParsedId();
-                if (roomId == null) continue; // 혹시라도 malformed id면 무시
+                if (roomId == null) {
+                    System.out.println("⚠️ 잘못된 roomId: " + dto.getId());
+                    continue;
+                }
 
+                System.out.println("✏️ 기존 객실 수정: ID = " + roomId);
                 Room existingRoom = roomRepository.findById(roomId)
                         .orElseThrow(() -> new IllegalArgumentException("Room not found: " + roomId));
 
                 existingRoom.setRoomName(dto.getRoomName());
                 existingRoom.setPrice(dto.getPrice());
                 roomRepository.save(existingRoom);
+                System.out.println("✅ 수정 저장 완료");
 
                 // 기존 이미지 삭제
                 List<RoomImages> oldImages = roomImagesRepository.findByRoomId(roomId);
                 for (RoomImages img : oldImages) {
+                    System.out.println("🧼 기존 이미지 삭제: " + img.getImageKey());
                     s3Uploader.deleteFile(img.getImageKey());
                 }
                 roomImagesRepository.deleteByRoomId(roomId);
 
                 // 새 이미지 저장
-                saveRoomImages(existingRoom, roomImageMap.get("roomImage_" + dto.getId()));
+                String key = "roomImage_" + roomId;
+                List<MultipartFile> files = roomImageMap.get(key);
+                System.out.println("📤 새 이미지 수 (" + key + "): " + (files != null ? files.size() : 0));
+                saveRoomImages(existingRoom, files);
             }
         }
+
+        System.out.println("✅ [END] processBatchUpdate()");
     }
+
 
     private void saveRoomImages(Room room, List<MultipartFile> files) throws IOException {
         if (files == null || files.isEmpty()) return;

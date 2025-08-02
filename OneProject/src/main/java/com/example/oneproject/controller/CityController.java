@@ -278,6 +278,9 @@ public class CityController {
         Map<String, List<MultipartFile>> roomImageMap = new HashMap<>();
         if (files != null) {
             for (MultipartFile file : files) {
+                System.out.println("📁 수신된 파일 name: " + file.getName() +
+                        ", 원본 이름: " + file.getOriginalFilename() +
+                        ", 크기: " + file.getSize() + " bytes");
                 String key = Objects.requireNonNull(file.getName()); // roomImage_new_0_0 형태
                 int lastUnderscore = key.lastIndexOf('_');
                 if (lastUnderscore == -1) continue;
