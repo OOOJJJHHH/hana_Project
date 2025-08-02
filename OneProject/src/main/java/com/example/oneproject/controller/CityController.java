@@ -34,6 +34,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -262,41 +263,38 @@ public class CityController {
             @RequestParam String lodName,
             @RequestPart("deletedRoomIds") String deletedRoomJson,
             @RequestPart("roomUpdates") String roomUpdatesJson,
-            @RequestPart(required = false) List<MultipartFile> files // ✅ 모든 이미지 파일들
+            MultipartHttpServletRequest request // ✅ 변경된 부분
     ) throws IOException {
 
         System.out.println("=== batchUpdate() 호출됨 ===");
         System.out.println("숙소명: " + lodName);
         System.out.println("삭제할 객실 ID들: " + deletedRoomJson);
         System.out.println("객실 업데이트 데이터: " + roomUpdatesJson);
-        System.out.println("전송된 파일 수: " + (files != null ? files.size() : 0));
 
+        // 1. JSON 디코딩
         List<Long> deletedRoomIds = objectMapper.readValue(deletedRoomJson, new TypeReference<>() {});
         List<RoomUpdateDto> updates = objectMapper.readValue(roomUpdatesJson, new TypeReference<>() {});
 
-        // ✅ roomId와 매칭된 파일 리스트를 분리 (roomImage_{roomId}_{index})
+        // 2. 이미지 키-파일 매핑 생성 (roomImage_35, roomImage_new_0 ...)
         Map<String, List<MultipartFile>> roomImageMap = new HashMap<>();
-        if (files != null) {
-            for (MultipartFile file : files) {
-                System.out.println("📁 수신된 파일 name: " + file.getName() +
-                        ", 원본 이름: " + file.getOriginalFilename() +
-                        ", 크기: " + file.getSize() + " bytes");
-                String key = Objects.requireNonNull(file.getName()); // roomImage_new_0_0 형태
-                int lastUnderscore = key.lastIndexOf('_');
-                if (lastUnderscore == -1) continue;
-                String roomKey = key.substring(0, lastUnderscore); // roomImage_new_0
-
-                roomImageMap.computeIfAbsent(roomKey, k -> new ArrayList<>()).add(file);
-            }
+        for (Iterator<String> it = request.getFileNames(); it.hasNext(); ) {
+            String key = it.next(); // e.g., roomImage_35
+            List<MultipartFile> files = request.getFiles(key);
+            roomImageMap.put(key, files);
+            System.out.println("📦 multipart key = " + key + " / 파일 수 = " + files.size());
         }
 
+        // 3. 숙소 엔티티 조회
         Long lodId = lodRepository.findByLodName(lodName)
                 .map(ClodContent::getId)
                 .orElseThrow(() -> new IllegalArgumentException("숙소 없음: " + lodName));
 
+        // 4. 서비스 호출
         roomService.processBatchUpdate(lodId, deletedRoomIds, updates, roomImageMap);
+
         return ResponseEntity.ok("객실 정보가 성공적으로 반영되었습니다.");
     }
+
 
 
 
