@@ -102,7 +102,7 @@ const User = () => {
     const renderContent = () => {
         switch (selectedMenu) {
             case 'info': return <Account />;
-            case 'image': return <Revation />;
+            case 'reservation': return <Revation />;
             case 'wishlist': return <Wishlist />;
             case 'recently': return <ReView />;
             case 'Reservation': return <Reservation />;
@@ -222,7 +222,7 @@ const User = () => {
     if (userInfo.uUser === 'tenant') {
         return renderUserPage([
             { key: 'info', label: '계정' },
-            { key: 'image', label: '예약 내역' },
+            { key: 'reservation', label: '예약 내역' },
             { key: 'wishlist', label: '위시리스트' },
             { key: 'recently', label: '최근 본' }
         ]);

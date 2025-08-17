@@ -63,6 +63,23 @@ public class ReservationService {
         return reservationRepository.save(reservation);
     }
 
+    //=============================================================
+    // 사용자 ID로 예약 내역 조회
+    public List<ReservationResponseDTO> getReservationsByUserUId(String uId) {
+        List<Reservation> reservations = reservationRepository.findByUser_UId(uId);
+        return reservations.stream()
+                .map(ReservationResponseDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    // 사용자 예약 상태 업데이트
+    public void updateReservationStatus(Long reservationId, ReservationStatus status) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new IllegalArgumentException("예약을 찾을 수 없습니다."));
+        reservation.setStatus(status);
+        reservationRepository.save(reservation);
+    }
+
     // ============================================================
     // 특정 숙소 주인의 예약 목록 중 PENDING 상태인 것만 조회
     public List<ReservationResponseDTO> findPendingReservationsByUId(String uId) {

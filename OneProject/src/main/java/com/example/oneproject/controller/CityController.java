@@ -3,6 +3,7 @@ package com.example.oneproject.controller;
 
 import com.example.oneproject.DTO.*;
 import com.example.oneproject.Entity.*;
+import com.example.oneproject.Enum.ReservationStatus;
 import com.example.oneproject.Repository.CLodRepository;
 import com.example.oneproject.Repository.UserRepository;
 import com.example.oneproject.Repository.WishListRepository;
@@ -322,6 +323,32 @@ public class CityController {
 
         return ResponseEntity.ok(response);  // 🔄 JSON으로 응답
     }
+
+
+    // 사용자의 예약 내역 조회
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<ReservationResponseDTO>> getReservations(@PathVariable String userId) {
+        List<ReservationResponseDTO> reservations = reservationService.getReservationsByUserId(userId);
+        return ResponseEntity.ok(reservations);
+    }
+
+    // 상태 업데이트
+    @PatchMapping("/{reservationId}/status")
+    public ResponseEntity<?> updateStatus(
+            @PathVariable Long reservationId,
+            @RequestBody Map<String, String> body
+    ) {
+        String statusStr = body.get("status");
+
+        try {
+            ReservationStatus status = ReservationStatus.valueOf(statusStr);
+            reservationService.updateReservationStatus(reservationId, status);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("유효하지 않은 상태입니다.");
+        }
+    }
+
 
     // 숙소 주인의 예약 목록 조회
     @GetMapping("/api/reservations/landlord/{lodOwnerId}")

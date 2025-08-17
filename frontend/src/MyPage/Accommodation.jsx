@@ -97,16 +97,17 @@ const Accommodation = ({ uId }) => {
     };
 
     return (
-        <div style={{
-            padding: "40px 0px",
-            maxWidth: "1000px", // ← 여기서 더 줄일 수도 있음
-            margin: "0 auto",   // ← 중앙 정렬
-            overflow: "hidden",
-            width: "100%",      // ← 추가
-            boxSizing: "border-box" // ← 패딩 포함한 너비 제어
-        }}>
-
-        <style>{`
+        <div
+            style={{
+                padding: "40px 0px",
+                maxWidth: "700px", // ← 여기서 더 줄일 수도 있음
+                margin: "0 auto", // ← 중앙 정렬
+                overflow: "hidden",
+                width: "100%", // ← 추가
+                boxSizing: "border-box", // ← 패딩 포함한 너비 제어
+            }}
+        >
+            <style>{`
         .modal-overlay {
           position: fixed; top: 0; left: 0; right: 0; bottom: 0;
           background: rgba(0,0,0,0.5); display: flex;
@@ -147,12 +148,23 @@ const Accommodation = ({ uId }) => {
           transform: scale(1.03);
           z-index: 100;
         }
-        .lodging-image {
+        /* 이미지 컨테이너를 flex로 중앙 정렬 */
+        .lodging-image-container {
           width: 100%;
-          height: 200px;
-          object-fit: cover;
+          height: 300px;
           border-top-left-radius: 10px;
           border-top-right-radius: 10px;
+          background-color: #f0f0f0; /* 배경색 지정 가능 */
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          overflow: hidden;
+        }
+        .lodging-image {
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: contain;
+          display: block;
         }
         .lodging-content {
           padding: 20px;
@@ -213,23 +225,32 @@ const Accommodation = ({ uId }) => {
         }
       `}</style>
 
-            <h1 style={{ fontSize: "32px", textAlign: "center", marginBottom: "40px", color: "#333" }}>
+            <h1
+                style={{
+                    fontSize: "32px",
+                    textAlign: "center",
+                    marginBottom: "40px",
+                    color: "#333",
+                }}
+            >
                 내가 등록한 숙소 목록
             </h1>
 
             {loading ? (
                 <p>로딩 중...</p>
             ) : lodgings.length === 0 ? (
-                <div style={{
-                    textAlign: "center",
-                    padding: "80px 20px",
-                    border: "1px solid #ddd",
-                    borderRadius: "10px",
-                    backgroundColor: "#f9f9f9",
-                    color: "#555",
-                    maxWidth: "600px",
-                    margin: "50px auto",
-                }}>
+                <div
+                    style={{
+                        textAlign: "center",
+                        padding: "80px 20px",
+                        border: "1px solid #ddd",
+                        borderRadius: "10px",
+                        backgroundColor: "#f9f9f9",
+                        color: "#555",
+                        maxWidth: "600px",
+                        margin: "50px auto",
+                    }}
+                >
                     <img
                         src="/no-results.png"
                         alt="No lodgings"
@@ -247,12 +268,13 @@ const Accommodation = ({ uId }) => {
                             onMouseLeave={() => setHoveredId(null)}
                         >
                             <div className="lodging-card">
-                                <img src={lod.lodImag} alt={`${lod.lodName} 이미지`} className="lodging-image" />
+                                <div className="lodging-image-container">
+                                    <img src={lod.lodImag} alt={`${lod.lodName} 이미지`} className="lodging-image" />
+                                </div>
                                 <div className="lodging-content">
                                     <Link to={`/hotel-detail?name=${lod.lodName}`} style={{ textDecoration: "none" }}>
                                         <h2 className="lodging-name">{lod.lodName}</h2>
                                     </Link>
-                                    {/* 여기서 p -> div로 변경 */}
                                     <div className="lodging-info">
                                         <strong>도시:</strong>{" "}
                                         <MarqueeText text={lod.lodCity} hovered={hoveredId === lod.id} />
@@ -267,14 +289,19 @@ const Accommodation = ({ uId }) => {
                                     </div>
                                 </div>
                                 <div className="lodging-actions">
-                                    <button className="btn btn-delete" onClick={() => handleDeleteLodging(lod.id)}>삭제</button>
-                                    <button className="btn btn-edit-lodging" onClick={() => handleEditLodging(lod)}>숙소 수정</button>
-                                    <button className="btn btn-edit-rooms" onClick={() => setEditingRooms(lod.lodName)}>객실 수정</button>
+                                    <button className="btn btn-delete" onClick={() => handleDeleteLodging(lod.id)}>
+                                        삭제
+                                    </button>
+                                    <button className="btn btn-edit-lodging" onClick={() => handleEditLodging(lod)}>
+                                        숙소 수정
+                                    </button>
+                                    <button className="btn btn-edit-rooms" onClick={() => setEditingRooms(lod.lodName)}>
+                                        객실 수정
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     ))}
-
                 </Slider>
             )}
 
@@ -294,14 +321,13 @@ const Accommodation = ({ uId }) => {
                 <div className="modal-overlay" onClick={handleCloseModal}>
                     <div onClick={(e) => e.stopPropagation()}>
                         <AccommodationRoomRewrite
-                            lodName={editingRooms}           // lodName만 전달
+                            lodName={editingRooms} // lodName만 전달
                             onClose={handleCloseModal}
                             onUpdate={fetchLodgings}
                         />
                     </div>
                 </div>
             )}
-
         </div>
     );
 };
