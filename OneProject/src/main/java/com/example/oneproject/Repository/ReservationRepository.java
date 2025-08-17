@@ -26,4 +26,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             ReservationStatus status
     );
 
+    List<Reservation> findByClodContent_LodOwnerAndStatus(String lodOwner, ReservationStatus status);
+
 }

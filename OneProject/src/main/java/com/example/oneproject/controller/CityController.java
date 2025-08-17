@@ -323,6 +323,27 @@ public class CityController {
         return ResponseEntity.ok(response);  // 🔄 JSON으로 응답
     }
 
+    // 숙소 주인의 예약 목록 조회
+    @GetMapping("/api/reservations/landlord/{lodOwnerId}")
+    public ResponseEntity<List<ReservationResponseDTO>> getPendingReservations(@PathVariable String lodOwnerId) {
+        List<ReservationResponseDTO> reservations = reservationService.findPendingReservationsByLodOwner(lodOwnerId);
+        return ResponseEntity.ok(reservations);
+    }
+
+    // 예약 수락
+    @PatchMapping("/api/reservations/{reservationId}/approve")
+    public ResponseEntity<Void> approveReservation(@PathVariable Long reservationId) {
+        reservationService.approveReservation(reservationId);
+        return ResponseEntity.ok().build();
+    }
+
+    // 예약 거절
+    @PatchMapping("/api/reservations/{reservationId}/reject")
+    public ResponseEntity<Void> rejectReservation(@PathVariable Long reservationId) {
+        reservationService.rejectReservation(reservationId);
+        return ResponseEntity.ok().build();
+    }
+
     // 리뷰 ==========================================================================
     // ✅ 리뷰 등록
     @PostMapping("/saveReview")

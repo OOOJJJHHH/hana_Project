@@ -2,10 +2,12 @@ package com.example.oneproject.Service;
 
 
 import com.example.oneproject.DTO.ReservationRequestDTO;
+import com.example.oneproject.DTO.ReservationResponseDTO;
 import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.Reservation;
 import com.example.oneproject.Entity.Room;
 import com.example.oneproject.Entity.UserContent;
+import com.example.oneproject.Enum.ReservationStatus;
 import com.example.oneproject.Repository.CLodRepository;
 import com.example.oneproject.Repository.ReservationRepository;
 import com.example.oneproject.Repository.RoomRepository;
@@ -13,6 +15,7 @@ import com.example.oneproject.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ReservationService {
@@ -57,5 +60,32 @@ public class ReservationService {
         );
 
         return reservationRepository.save(reservation);
+    }
+
+    // ============================================================
+    // 특정 숙소 주인의 예약 목록 중 PENDING 상태인 것만 조회
+    public List<ReservationResponseDTO> findPendingReservationsByLodOwner(String lodOwnerId) {
+        List<Reservation> reservations = reservationRepository.findByClodContent_LodOwnerAndStatus(
+                lodOwnerId, ReservationStatus.PENDING);
+
+        return reservations.stream()
+                .map(ReservationResponseDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    // 예약 수락 처리
+    public void approveReservation(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("해당 예약이 존재하지 않습니다."));
+        reservation.setStatus(ReservationStatus.APPROVED);
+        reservationRepository.save(reservation);
+    }
+
+    // 예약 거절 처리
+    public void rejectReservation(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("해당 예약이 존재하지 않습니다."));
+        reservation.setStatus(ReservationStatus.REJECTED);
+        reservationRepository.save(reservation);
     }
 }
