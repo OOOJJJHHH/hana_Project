@@ -44,7 +44,7 @@ public class Reservation {
     private boolean isPaid = false;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private ReservationStatus status;
 
     @Column(nullable = false, unique = true, updatable = false)

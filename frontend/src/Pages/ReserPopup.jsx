@@ -82,7 +82,7 @@ const ReserPopup = ({
             nights: getNightCount(),
             memo: specialRequest,
             paid: isPaid,
-            status: "RESERVED"
+            status: "PENDING"
         };
 
         onSubmitReservation(reservationData);
