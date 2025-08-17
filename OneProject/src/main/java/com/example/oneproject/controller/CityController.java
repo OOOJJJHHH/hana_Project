@@ -325,25 +325,25 @@ public class CityController {
     }
 
 
-    // 사용자의 예약 내역 조회
-    @GetMapping("/{userId}")
-    public ResponseEntity<List<ReservationResponseDTO>> getReservations(@PathVariable String userId) {
-        List<ReservationResponseDTO> reservations = reservationService.getReservationsByUserId(userId);
+    // 사용자 예약 내역 조회 (프론트에서 uId로 요청)
+    @GetMapping("/{userUId}")
+    public ResponseEntity<List<ReservationResponseDTO>> getReservations(@PathVariable String userUId) {
+        List<ReservationResponseDTO> reservations = reservationService.getReservationsByUserUId(userUId);
         return ResponseEntity.ok(reservations);
     }
 
-    // 상태 업데이트
+    // 사용자 예약 상태 변경 (프론트에서 예약 ID와 상태 전달)
     @PatchMapping("/{reservationId}/status")
-    public ResponseEntity<?> updateStatus(
+    public ResponseEntity<String> updateStatus(
             @PathVariable Long reservationId,
-            @RequestBody Map<String, String> body
+            @RequestBody Map<String, String> requestBody
     ) {
-        String statusStr = body.get("status");
+        String statusStr = requestBody.get("status");
 
         try {
             ReservationStatus status = ReservationStatus.valueOf(statusStr);
             reservationService.updateReservationStatus(reservationId, status);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok("상태가 성공적으로 변경되었습니다.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("유효하지 않은 상태입니다.");
         }
