@@ -14,6 +14,7 @@ import com.example.oneproject.Repository.RoomRepository;
 import com.example.oneproject.Repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,14 +65,49 @@ public class ReservationService {
 
     // ============================================================
     // 특정 숙소 주인의 예약 목록 중 PENDING 상태인 것만 조회
-    public List<ReservationResponseDTO> findPendingReservationsByLodOwner(String lodOwnerId) {
-        List<Reservation> reservations = reservationRepository.findByClodContent_LodOwnerAndStatus(
-                lodOwnerId, ReservationStatus.PENDING);
+    public List<ReservationResponseDTO> findPendingReservationsByUId(String uId) {
+        System.out.println("=========================================");
+        System.out.println("🔍 [예약 조회 요청] lodOwner uId: " + uId);
+        System.out.println("=========================================");
+
+        // 1. uId로 유저 조회
+        UserContent user = userRepository.findByUId(uId)
+                .orElseThrow(() -> {
+                    System.out.println("❌ 사용자를 찾을 수 없음 - uId: " + uId);
+                    return new IllegalArgumentException("해당 uId로 사용자를 찾을 수 없습니다: " + uId);
+                });
+
+        String uFirstName = user.getuFirstName();
+        System.out.println("✅ 사용자 조회 완료 - uFirstName: " + uFirstName);
+
+        // 2. uFirstName 으로 ClodContent 조회
+        List<ClodContent> clods = clodRepository.findByLodOwner(uFirstName);
+        System.out.println("🏠 사용자가 올린 숙소 수: " + clods.size());
+
+        List<Long> lodgingIds = clods.stream()
+                .map(ClodContent::getId)
+                .collect(Collectors.toList());
+
+        System.out.println("📦 숙소 ID 목록: " + lodgingIds);
+
+        if (lodgingIds.isEmpty()) {
+            System.out.println("⚠️ 등록된 숙소가 없어 예약 목록이 없습니다.");
+            return new ArrayList<>();
+        }
+
+        // 3. 예약 상태가 PENDING인 예약만 조회
+        List<Reservation> reservations = reservationRepository.findByClodContentIdInAndStatus(
+                lodgingIds, ReservationStatus.PENDING
+        );
+
+        System.out.println("📋 조회된 PENDING 예약 수: " + reservations.size());
+        System.out.println("=========================================");
 
         return reservations.stream()
                 .map(ReservationResponseDTO::new)
                 .collect(Collectors.toList());
     }
+
 
     // 예약 수락 처리
     public void approveReservation(Long reservationId) {

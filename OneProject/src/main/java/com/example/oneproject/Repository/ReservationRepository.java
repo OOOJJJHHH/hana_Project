@@ -26,6 +26,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             ReservationStatus status
     );
 
-    List<Reservation> findByClodContent_LodOwnerAndStatus(String lodOwner, ReservationStatus status);
 
+    // 숙소 ID 목록과 예약 상태를 기준으로 예약 조회
+    List<Reservation> findByClodContentIdInAndStatus(List<Long> clodContentIds, ReservationStatus status);
 }

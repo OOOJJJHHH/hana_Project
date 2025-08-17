@@ -25,6 +25,8 @@ const Reservation = () => {
     const fetchPendingReservations = async () => {
         try {
             setLoading(true);
+            console.log("프론트엔드에서 서버로 전달한 lodOwner:", lodOwner); // 🔍 로그 추가
+
             const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reservations/landlord/${lodOwner}`);
             // PENDING 상태의 예약만 필터링
             const filteredReservations = response.data.filter(

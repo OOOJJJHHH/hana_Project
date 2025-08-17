@@ -326,7 +326,7 @@ public class CityController {
     // 숙소 주인의 예약 목록 조회
     @GetMapping("/api/reservations/landlord/{lodOwnerId}")
     public ResponseEntity<List<ReservationResponseDTO>> getPendingReservations(@PathVariable String lodOwnerId) {
-        List<ReservationResponseDTO> reservations = reservationService.findPendingReservationsByLodOwner(lodOwnerId);
+        List<ReservationResponseDTO> reservations = reservationService.findPendingReservationsByUId(lodOwnerId);
         return ResponseEntity.ok(reservations);
     }
 
