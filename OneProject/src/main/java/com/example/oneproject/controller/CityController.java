@@ -326,14 +326,14 @@ public class CityController {
 
 
     // 사용자 예약 내역 조회 (프론트에서 uId로 요청)
-    @GetMapping("/{userUId}")
+    @GetMapping("/api/reservations/{userUId}")
     public ResponseEntity<List<ReservationResponseDTO>> getReservations(@PathVariable String userUId) {
         List<ReservationResponseDTO> reservations = reservationService.getReservationsByUserUId(userUId);
         return ResponseEntity.ok(reservations);
     }
 
     // 사용자 예약 상태 변경 (프론트에서 예약 ID와 상태 전달)
-    @PatchMapping("/{reservationId}/status")
+    @PatchMapping("/api/reservations/{reservationId}/status")
     public ResponseEntity<String> updateStatus(
             @PathVariable Long reservationId,
             @RequestBody Map<String, String> requestBody
