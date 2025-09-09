@@ -27,7 +27,7 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
                 }
             );
             setReviews(response.data);
-            console.log(response.data);
+            console.log("리뷰" + response.data);
             setError(null);
         } catch {
             setError("리뷰를 불러오는 중 오류가 발생했습니다.");

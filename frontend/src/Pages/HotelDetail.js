@@ -94,7 +94,7 @@ const HotelDetail = () => {
       }
 
       const result = await response.json();
-      alert("예약 성공! 서버 응답: " + JSON.stringify(result));
+      alert("예약 성공! 자세한 내용은 마이페이지에서 확인해주세요! ");
       setIsPopupOpen(false);
 
     } catch (error) {

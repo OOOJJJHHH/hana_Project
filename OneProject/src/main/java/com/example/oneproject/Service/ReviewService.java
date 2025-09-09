@@ -33,7 +33,7 @@ public class ReviewService {
                 user,
                 clod,
                 room,
-                ReservationStatus.RESERVED  // 또는 COMPLETED, 적절한 상태 사용
+                ReservationStatus.COMPLETED  // 또는 RESERVED, 적절한 상태 사용
         );
 
         if (!hasReservation) {
