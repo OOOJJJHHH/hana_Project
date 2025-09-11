@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // ✅ 상세보기 이동용
+import { useNavigate } from "react-router-dom";
 
 const statusMap = {
     PENDING: { label: "승인 대기 중", color: "#FFA500" },
@@ -14,7 +14,7 @@ const statusMap = {
 const Revation = () => {
     const [reservations, setReservations] = useState([]);
     const loginUser = JSON.parse(localStorage.getItem("loginUser"));
-    const navigate = useNavigate(); // ✅ 페이지 이동 함수
+    const navigate = useNavigate();
 
     const fetchReservations = async () => {
         try {
@@ -62,124 +62,138 @@ const Revation = () => {
         }
     };
 
-    // ✅ 상세 보기 페이지로 이동
     const goToHotelDetail = (lodName) => {
         navigate(`/hotel-detail?name=${encodeURIComponent(lodName)}`);
     };
 
     return (
-        <div style={{ maxWidth: "800px", margin: "2rem auto", padding: "1rem" }}>
-            <h2 style={{ marginBottom: "1rem" }}>📅 나의 예약 내역</h2>
+        <div style={styles.container}>
+            <h2 style={styles.heading}>📅 나의 예약 내역</h2>
 
             {reservations.length === 0 ? (
-                <p style={{ textAlign: "center", color: "#777" }}>
-                    예약 내역이 없습니다.
-                </p>
+                <p style={styles.noReservations}>예약 내역이 없습니다.</p>
             ) : (
-                reservations.map((r) => {
-                    const status = statusMap[r.status];
-                    return (
-                        <div
-                            key={r.reservationId}
-                            style={{
-                                position: "relative",
-                                border: `2px solid ${status.color}`,
-                                borderRadius: "12px",
-                                padding: "1.2rem",
-                                marginBottom: "1.2rem",
-                                backgroundColor: "#fff",
-                                boxShadow: "0 4px 10px rgba(0, 0, 0, 0.05)",
-                                transition: "all 0.3s ease",
-                            }}
-                        >
-                            <h3 style={{ marginBottom: "0.5rem" }}>{r.clodName}</h3>
-                            <p style={{ margin: "4px 0" }}>
-                                <strong>예약 기간:</strong>{" "}
-                                {r.startDate.slice(0, 10)} ~ {r.endDate.slice(0, 10)}
-                            </p>
+                <div style={styles.scrollArea}>
+                    {reservations.map((r) => {
+                        const status = statusMap[r.status];
+                        return (
                             <div
+                                key={r.reservationId}
                                 style={{
-                                    display: "inline-block",
-                                    padding: "0.3rem 0.7rem",
-                                    backgroundColor: status.color,
-                                    color: "#fff",
-                                    borderRadius: "999px",
-                                    fontSize: "0.85rem",
-                                    marginTop: "0.5rem",
+                                    ...styles.card,
+                                    border: `2px solid ${status.color}`,
                                 }}
                             >
-                                {status.label}
-                            </div>
-
-                            <div style={{ marginTop: "1rem" }}>
-                                {/* ✅ 상태 버튼들 */}
-                                {["REJECTED", "RESERVED", "APPROVED"].includes(r.status) && (
-                                    <button
-                                        onClick={() =>
-                                            updateStatus(r.reservationId, "COMPLETED")
-                                        }
-                                        style={buttonStyle("green")}
-                                    >
-                                        ✅ 완료 처리
-                                    </button>
-                                )}
-
-                                {!["COMPLETED", "CANCELED"].includes(r.status) && (
-                                    <button
-                                        onClick={() =>
-                                            updateStatus(r.reservationId, "CANCELED")
-                                        }
-                                        style={buttonStyle("red")}
-                                    >
-                                        ❌ 예약 취소
-                                    </button>
-                                )}
-
-                                {/* ✅ 상세 보기 버튼 */}
-                                <button
-                                    onClick={() => goToHotelDetail(r.clodName)}
-                                    style={buttonStyle("blue")}
-                                >
-                                    🔍 상세 보기
-                                </button>
-                            </div>
-
-                            {/* 삭제 버튼 (취소 상태일 때만 노출) */}
-                            {r.status === "CANCELED" && (
-                                <button
-                                    onClick={() => deleteReservation(r.reservationId)}
+                                <h3 style={styles.cardTitle}>{r.clodName}</h3>
+                                <p style={styles.text}>
+                                    <strong>예약 기간:</strong>{" "}
+                                    {r.startDate.slice(0, 10)} ~ {r.endDate.slice(0, 10)}
+                                </p>
+                                <div
                                     style={{
-                                        position: "absolute",
-                                        top: "10px",
-                                        right: "10px",
-                                        background: "none",
-                                        border: "none",
-                                        fontSize: "20px",
-                                        color: "#aaa",
-                                        cursor: "pointer",
+                                        ...styles.statusBadge,
+                                        backgroundColor: status.color,
                                     }}
-                                    title="예약 완전 삭제"
                                 >
-                                    🗑️
-                                </button>
-                            )}
-                        </div>
-                    );
-                })
+                                    {status.label}
+                                </div>
+
+                                <div style={styles.buttonGroup}>
+                                    {["REJECTED", "RESERVED", "APPROVED"].includes(r.status) && (
+                                        <button
+                                            onClick={() =>
+                                                updateStatus(r.reservationId, "COMPLETED")
+                                            }
+                                            style={styles.greenButton}
+                                        >
+                                            ✅ 완료 처리
+                                        </button>
+                                    )}
+
+                                    {!["COMPLETED", "CANCELED"].includes(r.status) && (
+                                        <button
+                                            onClick={() =>
+                                                updateStatus(r.reservationId, "CANCELED")
+                                            }
+                                            style={styles.redButton}
+                                        >
+                                            ❌ 예약 취소
+                                        </button>
+                                    )}
+
+                                    <button
+                                        onClick={() => goToHotelDetail(r.clodName)}
+                                        style={styles.blueButton}
+                                    >
+                                        🔍 상세 보기
+                                    </button>
+                                </div>
+
+                                {r.status === "CANCELED" && (
+                                    <button
+                                        onClick={() => deleteReservation(r.reservationId)}
+                                        style={styles.deleteButton}
+                                        title="예약 완전 삭제"
+                                    >
+                                        🗑️
+                                    </button>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
             )}
         </div>
     );
 };
 
-const buttonStyle = (type) => {
-    const colors = {
-        green: "#28a745",
-        red: "#dc3545",
-        blue: "#007bff",
-    };
-
-    return {
-        backgroundColor: colors[type] || "#007bff",
+const styles = {
+    container: {
+        maxWidth: "1000px",
+        margin: "2rem auto",
+        padding: "1rem",
+    },
+    heading: {
+        marginBottom: "1rem",
+    },
+    noReservations: {
+        textAlign: "center",
+        color: "#777",
+    },
+    scrollArea: {
+        maxHeight: "800px", // 👈 한 화면에 3개 정도만 보이도록 제한
+        overflowY: "auto",
+        display: "flex",
+        flexDirection: "column",
+        gap: "20px",
+        paddingRight: "8px",
+    },
+    card: {
+        borderRadius: "12px",
+        padding: "1.2rem",
+        backgroundColor: "#fff",
+        boxShadow: "0 4px 10px rgba(0, 0, 0, 0.05)",
+        position: "relative",
+    },
+    cardTitle: {
+        marginBottom: "0.5rem",
+    },
+    text: {
+        margin: "4px 0",
+    },
+    statusBadge: {
+        display: "inline-block",
+        padding: "0.3rem 0.7rem",
+        color: "#fff",
+        borderRadius: "999px",
+        fontSize: "0.85rem",
+        marginTop: "0.5rem",
+    },
+    buttonGroup: {
+        marginTop: "1rem",
+    },
+    greenButton: {
+        backgroundColor: "#28a745",
         color: "#fff",
         border: "none",
         padding: "0.5rem 1rem",
@@ -187,8 +201,37 @@ const buttonStyle = (type) => {
         borderRadius: "6px",
         cursor: "pointer",
         fontSize: "0.9rem",
-        transition: "background-color 0.2s ease",
-    };
+    },
+    redButton: {
+        backgroundColor: "#dc3545",
+        color: "#fff",
+        border: "none",
+        padding: "0.5rem 1rem",
+        marginRight: "0.5rem",
+        borderRadius: "6px",
+        cursor: "pointer",
+        fontSize: "0.9rem",
+    },
+    blueButton: {
+        backgroundColor: "#007bff",
+        color: "#fff",
+        border: "none",
+        padding: "0.5rem 1rem",
+        marginRight: "0.5rem",
+        borderRadius: "6px",
+        cursor: "pointer",
+        fontSize: "0.9rem",
+    },
+    deleteButton: {
+        position: "absolute",
+        top: "10px",
+        right: "10px",
+        background: "none",
+        border: "none",
+        fontSize: "20px",
+        color: "#aaa",
+        cursor: "pointer",
+    },
 };
 
 export default Revation;

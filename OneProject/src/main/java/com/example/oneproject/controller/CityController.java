@@ -522,7 +522,7 @@ public class CityController {
     @GetMapping("/getOneUser")
     public List<UserContent> getOneUser(HttpSession session) {
         UserDTO user = (UserDTO) session.getAttribute("loginUser");
-        System.out.println(user);
+        System.out.println("유저 내용 Get : " + user);
         String uId = user.getuId();
         return userService.getOneUsers(uId);
     }

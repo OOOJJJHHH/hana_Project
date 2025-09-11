@@ -17,7 +17,6 @@ const EditPop = ({ onClose }) => {
     };
 
     useEffect(() => {
-        // 세션 기반 유저 정보 조회
         axios.get(`${process.env.REACT_APP_API_URL}/user/info`, {
             withCredentials: true,
         })
@@ -33,7 +32,7 @@ const EditPop = ({ onClose }) => {
             .catch(error => {
                 console.error("유저 정보 불러오기 실패:", error);
             });
-    }, []);  // 빈 배열로 한번만 실행
+    }, []);
 
     const contentChange = (e) => {
         const { name, value } = e.target;
@@ -42,14 +41,12 @@ const EditPop = ({ onClose }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         try {
             await axios.put(`${process.env.REACT_APP_API_URL}/user/update`, formData, {
                 withCredentials: true,
             });
             alert("정보가 성공적으로 수정되었습니다.");
-
-            setUserInfo(formData);  // Context 업데이트 (필요시 조정)
+            setUserInfo(formData);
             localStorage.setItem("loginUser", JSON.stringify(formData));
             onClose();
         } catch (error) {
@@ -61,51 +58,30 @@ const EditPop = ({ onClose }) => {
     if (!userProfile) return <div>로딩 중...</div>;
 
     return (
-        <div style={{
-            position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            zIndex: 1000,
-        }}>
-            <div style={{
-                width: "500px",
-                padding: "20px",
-                background: "#fff",
-                borderRadius: "8px",
-                boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-            }}>
-                <h2>회원 정보 수정</h2>
+        <div style={styles.overlay}>
+            <div style={styles.modal}>
+                <h2 style={styles.title}>회원 정보 수정</h2>
                 <form onSubmit={handleSubmit}>
                     {Object.entries(formData).map(([key, value]) => (
-                        <div key={key} style={{ marginBottom: "10px", fontSize: "16px" }}>
-                            <label style={{ display: "inline-block", width: "80px" }}>
-                                {formContent[key]}:
-                            </label>
+                        <div key={key} style={styles.formGroup}>
+                            <label style={styles.label}>{formContent[key]}:</label>
                             <input
                                 type="text"
                                 name={key}
                                 value={value}
                                 onChange={contentChange}
                                 required
-                                style={{ height: "35px", padding: "0 8px", width: "300px" }}
+                                style={styles.input}
                             />
                         </div>
                     ))}
 
-                    <div style={{ marginTop: "20px" }}>
+                    <div style={styles.buttonGroup}>
                         <button
                             type="submit"
                             style={{
-                                padding: '8px 20px',
+                                ...styles.button,
                                 backgroundColor: hoveredButton === 'save' ? '#e9f679' : 'white',
-                                border: '1px solid #ccc',
-                                borderRadius: "5px",
-                                cursor: 'pointer',
-                                marginRight: '10px',
-                                transition: '0.3s'
                             }}
                             onMouseEnter={() => setHoveredButton('save')}
                             onMouseLeave={() => setHoveredButton(null)}
@@ -115,12 +91,8 @@ const EditPop = ({ onClose }) => {
                         <button
                             type="button"
                             style={{
-                                padding: '8px 20px',
+                                ...styles.button,
                                 backgroundColor: hoveredButton === 'cancel' ? '#e9f679' : 'white',
-                                border: '1px solid #ccc',
-                                borderRadius: "5px",
-                                cursor: 'pointer',
-                                transition: '0.3s'
                             }}
                             onClick={onClose}
                             onMouseEnter={() => setHoveredButton('cancel')}
@@ -133,6 +105,61 @@ const EditPop = ({ onClose }) => {
             </div>
         </div>
     );
+};
+
+// 🔧 스타일 객체
+const styles = {
+    overlay: {
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0, 0, 0, 0.5)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1000,
+    },
+    modal: {
+        width: "500px",
+        padding: "20px",
+        background: "#fff",
+        borderRadius: "8px",
+        boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+    },
+    title: {
+        marginBottom: "20px",
+    },
+    formGroup: {
+        marginBottom: "10px",
+        fontSize: "16px",
+        display: "flex",
+        alignItems: "center",
+    },
+    label: {
+        display: "inline-block",
+        width: "80px",
+    },
+    input: {
+        height: "35px",
+        padding: "0 8px",
+        width: "300px",
+    },
+    buttonGroup: {
+        marginTop: "20px",
+    },
+    button: {
+        padding: "8px 20px",
+        border: "1px solid #ccc",
+        borderRadius: "5px",
+        cursor: "pointer",
+        marginRight: "10px",
+        transition: "0.3s",
+    },
 };
 
 export default EditPop;

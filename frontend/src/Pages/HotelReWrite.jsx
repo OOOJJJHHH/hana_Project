@@ -88,7 +88,7 @@ const HotelReWrite = ({
             onClose();              // 모달 닫기
             refreshReviews();      // 리뷰 목록 새로고침
         } catch (error) {
-            alert("리뷰 저장에 실패했습니다.");
+            alert("숙소 예약이 완료된 이후에 리뷰 등록이 가능합니다.");
             console.error(error);
         } finally {
             setSubmitting(false);

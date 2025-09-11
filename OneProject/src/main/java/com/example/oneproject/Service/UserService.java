@@ -40,6 +40,7 @@ public class UserService {
 
     // 특정한 아이디 값에 해당하는 데이터를 get
     public List<UserContent> getOneUsers(String uId) {
+        System.out.println("uId 받아와서 서비스 실행 : "+uId);
         return userRepository.findByuId(uId);
     }
 
