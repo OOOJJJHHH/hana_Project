@@ -519,13 +519,6 @@ public class CityController {
         return userService.getUsers();
     }
 
-    @GetMapping("/getOneUser")
-    public List<UserContent> getOneUser(HttpSession session) {
-        UserDTO user = (UserDTO) session.getAttribute("loginUser");
-        System.out.println("유저 내용 Get : " + user);
-        String uId = user.getuId();
-        return userService.getOneUsers(uId);
-    }
 
     @GetMapping("/getLandlord")
     public List<UserContent> getLandlordList() {
@@ -542,22 +535,21 @@ public class CityController {
 
     // 회원정보 가져오기 ====================================================================
     // 로그인한 사용자의 정보 조회
-    @GetMapping("/user/info")
+    @GetMapping("/getOneUser")
     public ResponseEntity<?> getUserInfo(HttpSession session) {
-        String uId = (String) session.getAttribute("uId");
-        if (uId == null) {
-            return ResponseEntity.status(401).body("Unauthorized");
+        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+
+        if (loginUser == null) {
+            return ResponseEntity.status(401).body("로그인 정보 없음");
         }
 
-        Optional<UserContent> userOpt = userService.findByUId(uId);
+        String uId = loginUser.getuId();
 
-        if(userOpt.isPresent()) {
-            return ResponseEntity.ok(userOpt.get());
-        } else {
-            return ResponseEntity.status(404).body("User not found");
-        }
-
+        return userService.getUserByUId(uId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
+
 
     // 로그인한 사용자의 정보 수정
     @PutMapping("/user/update")

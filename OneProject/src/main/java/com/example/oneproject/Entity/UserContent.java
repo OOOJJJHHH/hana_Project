@@ -6,10 +6,11 @@ import jakarta.persistence.*;
 @Entity
 public class UserContent {
 
-    @Id  // 기본 키를 나타내는 애너테이션
-    @GeneratedValue(strategy= GenerationType.IDENTITY)    // 프로젝트에 연결된 DB의 numbering 전략을 따른다.
+    @Id  // 기본 키
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private long id;    // 시퀀스, auto_increment
 
+    //유저가 사용자인지 아니면 숙소 올리는 주인인지 구별
     @Column(nullable = false)
     private String uUser;
 
@@ -19,12 +20,15 @@ public class UserContent {
     @Column(length = 100, nullable = false)
     private String uFirstName;
 
+    // 사용자의 이메일
     @Column(length = 100, nullable = false)
     private String uIdEmail;
 
+    //로그인시 사용하는 아이디에 해당
     @Column(length = 100, nullable = false, unique = true)
     private String uId;
 
+    //로그인시 사용하는 비밀번호
     @Column(length = 100, nullable = false)
     private String uPassword;
 
