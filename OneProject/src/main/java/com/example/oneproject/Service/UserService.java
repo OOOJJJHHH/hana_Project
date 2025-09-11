@@ -48,7 +48,9 @@ public class UserService {
             user.setuFirstName(updatedUser.getuFirstName());
             user.setuLastName(updatedUser.getuLastName());
             user.setuIdEmail(updatedUser.getuIdEmail());
-            // uId, password 변경 불가로 고정
+            user.setuId(updatedUser.getuId());
+            user.setuPassword(updatedUser.getuPassword());
+
             userRepository.save(user);
             return true;
         }).orElse(false);
