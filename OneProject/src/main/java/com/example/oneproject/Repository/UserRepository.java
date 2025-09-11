@@ -16,8 +16,6 @@ public interface UserRepository extends JpaRepository<UserContent, Long> {
 
     Optional<UserContent> findByUFirstName(String userName);
 
-    List<UserContent> findByuId(String uId);
-
     List<UserContent> findByUUser(String uUser);
 
     Optional<UserContent> findByKakaoId(String kakaoId);  // kakaoId로 사용자 조회

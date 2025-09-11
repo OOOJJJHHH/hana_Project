@@ -43,10 +43,21 @@ public class UserService {
         return userRepository.findByUId(uId);
     }
 
+    public boolean updateUserInfo(String uId, UserContent updatedUser) {
+        return userRepository.findByUId(uId).map(user -> {
+            user.setuFirstName(updatedUser.getuFirstName());
+            user.setuLastName(updatedUser.getuLastName());
+            user.setuIdEmail(updatedUser.getuIdEmail());
+            // uId, password 변경 불가로 고정
+            userRepository.save(user);
+            return true;
+        }).orElse(false);
+    }
     // landlord인 사용자의 데이터 get
     public List<UserContent> getLandlord(){
         return userRepository.findByUUser("landlord");
     }
+
 
 
     public List<UserContent> getLandlordList() {

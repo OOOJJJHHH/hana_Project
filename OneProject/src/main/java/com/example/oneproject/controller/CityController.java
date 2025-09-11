@@ -525,29 +525,25 @@ public class CityController {
         return userService.getLandlordList();
     }
 
-    @GetMapping("/user/{uId}")
-    public ResponseEntity<UserContent> getUserByUId(@PathVariable String uId) {
-        return userRepository.findByUId(uId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
-    }
-
 
     // 회원정보 가져오기 ====================================================================
-    // 로그인한 사용자의 정보 조회
-    @GetMapping("/getOneUser")
-    public ResponseEntity<?> getUserInfo(HttpSession session) {
-        UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
-
-        if (loginUser == null) {
-            return ResponseEntity.status(401).body("로그인 정보 없음");
-        }
-
-        String uId = loginUser.getuId();
-
+    // ✅ 현재 로그인한 특정 사용자 정보 조회
+    @GetMapping("/user/{uId}")
+    public ResponseEntity<?> getUser(@PathVariable String uId) {
         return userService.getUserByUId(uId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    // ✅ 사용자 정보 수정
+    @PutMapping("/user/{uId}")
+    public ResponseEntity<?> updateUser(@PathVariable String uId, @RequestBody UserContent userData) {
+        boolean updated = userService.updateUserInfo(uId, userData);
+        if (updated) {
+            return ResponseEntity.ok("회원 정보가 수정되었습니다.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자를 찾을 수 없습니다.");
+        }
     }
 
 
