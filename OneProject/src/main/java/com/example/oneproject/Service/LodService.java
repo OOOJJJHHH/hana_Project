@@ -7,6 +7,7 @@ import com.example.oneproject.Entity.RoomImages;
 import com.example.oneproject.Repository.CLodRepository;
 import com.example.oneproject.Repository.RoomImagesRepository;
 import com.example.oneproject.Repository.RoomRepository;
+import com.example.oneproject.Repository.WishListRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,9 @@ public class LodService {
 
     @Autowired
     private RoomRepository roomRepository;
+
+    @Autowired
+    private WishListRepository wishListRepository;
 
     @Autowired
     private RoomImagesRepository roomImagesRepository;
@@ -365,6 +369,10 @@ public class LodService {
     public void deleteLodging(Long lodgingId) {
         ClodContent lodging = lodRepository.findById(lodgingId)
                 .orElseThrow(() -> new RuntimeException("숙소가 존재하지 않습니다."));
+
+        // 1. 찜목록에서 해당 숙소 관련 데이터 삭제
+        wishListRepository.deleteByClodContent(lodging);
+
         lodRepository.delete(lodging);
     }
 

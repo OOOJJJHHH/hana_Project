@@ -1,241 +1,187 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
-import CitySearch from "./CitySerch";
 
 function City() {
     const navigate = useNavigate();
-
     const [cityContents, setcityContents] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [userType, setUserType] = useState(null);
+    const [hoveredIndex, setHoveredIndex] = useState(null);
 
     const handleClick = (cityName) => {
         navigate('/cityLodging', {
-            state: {
-                cityName: cityName,
-                cityContents: cityContents
-            }
+            state: { cityName, cityContents }
         });
     };
 
-    const serchCity = () => {
-        navigate('/cityserch');
-    };
+    const makeCity = () => navigate('/cityform');
+    const makeLod = () => navigate('/owner', { state: { cityContents } });
 
-    const makeCity = () => {
-        navigate('/cityform');
-    };
-
-    const makeLod = () => {
-        navigate('/owner', {
-            state: {
-                cityContents: cityContents
-            }
-        });
-    };
-
-    // 로그인 정보 확인
     useEffect(() => {
         const loginUser = JSON.parse(localStorage.getItem("loginUser"));
         if (loginUser?.uUser) {
-            console.log("현재 로그인한 사용자 userType:", loginUser.uUser);  // 여기에 출력
             setUserType(loginUser.uUser);
-        } else {
-            console.log("로그인 정보 없음 또는 userType이 없습니다.");
         }
     }, []);
-
-    // 검색어 전달 함수
-    const handleSearch = (term) => {
-        setSearchTerm(term.toLowerCase());
-    };
 
     useEffect(() => {
         const fetchData = async () => {
             const res = await axios.get(`${process.env.REACT_APP_API_URL}/getCity`);
             setcityContents(res.data);
-            console.log("✅ 도시 응답:", res.data);
         };
         fetchData();
     }, []);
 
-    const citydiv_default = {
-        padding: '10px',
-        width: "75rem",
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
+    const container = {
+        padding: '40px',
+        maxWidth: '1200px',
+        margin: '0 auto',
+        fontFamily: "'Noto Sans KR', sans-serif",
     };
 
-    const cityStyle_default = {
+    const buttonArea = {
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '20px',
+        marginBottom: '10px',  // 멘트와 버튼 간격 위해 조금 줄임
+        flexWrap: 'wrap',
+    };
+
+    const alertMessage = {
+        width: '100%',
+        textAlign: 'center',
+        marginBottom: '20px',
+        color: '#ff5722',
+        fontWeight: '600',
+        fontSize: '16px',
+        fontFamily: "'Noto Sans KR', sans-serif",
+    };
+
+    const actionButton = {
+        backgroundColor: '#2196F3',
+        color: 'white',
+        border: 'none',
+        padding: '12px 24px',
+        borderRadius: '8px',
+        fontSize: '16px',
+        cursor: 'pointer',
+        transition: '0.3s',
+    };
+
+    const card = {
         position: 'relative',
         display: 'flex',
-        flexDirection: 'row',
-        borderRadius: "15px",
-        border: '1px solid #D8E1C47F',
-        margin: "10px",
-        width: "1200px",
-        height: "300px",
+        borderRadius: '16px',
+        width: "900px",
+        overflow: 'hidden',
+        marginBottom: '30px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        height: '260px',
     };
 
-    const city_content = {
-        position: "absolute",
-        width: "100%",
-        height: "100%",
+    const cardImage = {
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+    };
+
+    const cardContent = {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        padding: '30px',
+        background: 'linear-gradient(to right, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0.1) 100%)',
+        color: '#fff',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        marginLeft: "7%",
-        fontSize: "30px",
-        color: "white",
     };
 
-    const btn_content = {
+    const cityNameStyle = {
+        fontSize: '32px',
+        fontWeight: 'bold',
+        marginBottom: '10px',
+    };
+
+    const cityDetailStyle = {
+        fontSize: '16px',
+        color: '#ddd',
+        maxWidth: '60%',
+    };
+
+    const viewButton = {
         position: 'absolute',
-        bottom: '10px',
-        right: '10px',
+        bottom: '20px',
+        right: '20px',
+        padding: '10px 20px',
+        backgroundColor: '#ffffff',
+        color: '#333',
+        borderRadius: '6px',
+        border: '1px solid #ccc',
+        cursor: 'pointer',
+        fontSize: '14px',
+        transition: 'all 0.3s ease',
     };
 
-    const backImg = {
-        borderRadius: "15px",
-        width: "100%",
-        height: "auto",         // ✅ 자동 높이로 설정
-        objectFit: "cover",     // ✅ 꽉 채우되 비율 유지 (혹은 contain)
-        border: "1px solid #ccc"
+    const viewButtonHover = {
+        ...viewButton,
+        backgroundColor: '#f0f0f0',
+        color: '#000',
+        borderColor: '#999',
     };
 
-    const [hoveredButtonIndex, setHoveredButtonIndex] = useState(null);
-
-    const handleMouseEnter = (index) => {
-        setHoveredButtonIndex(index);
-    };
-
-    const handleMouseLeave = () => {
-        setHoveredButtonIndex(null);
-    };
-
-    const buttonStyle = {
-        position: "relative",
-        width: "130px",
-        height: "40px",
-        lineHeight: "42px",
-        padding: "0",
-        border: "1px solid #ccc",         // 구분되는 테두리
-        color: "#333",                     // 기본 글자색
-        cursor: "pointer",
-        borderRadius: '5px',
-        transition: "background-color 0.3s ease, color 0.3s ease",
-        backgroundColor: "#ffffff",       // ✅ 흰색 배경으로 명시
-    };
-
-
-    const beforeAfterStyle = {
-        content: '""',
-        position: "absolute",
-        background: "#000000FF",
-        boxShadow: "-1px -1px 5px 0px #fff, 7px 7px 20px 0px #0003, 4px 4px 5px 0px #0002",
-        transition: "400ms ease all",
-    };
-
-    const beforeStyle = {
-        ...beforeAfterStyle,
-        top: "0",
-        right: "0",
-        height: "2px",
-        width: hoveredButtonIndex !== null ? "100%" : "0",
-    };
-
-    const afterStyle = {
-        ...beforeAfterStyle,
-        left: "0",
-        bottom: "0",
-        height: "2.5px",
-        width: hoveredButtonIndex !== null ? "100%" : "0",
-    };
-
-    const buttonCommonStyle = {
-        color: "white",
-        backgroundColor: "gray",
-        borderRadius: "10px",
-        fontSize: "30px",
-        width: "200px",
-        height: "50px"
+    const noCity = {
+        textAlign: 'center',
+        marginTop: '60px',
+        fontSize: '18px',
+        color: '#888',
     };
 
     return (
-        <div style={citydiv_default}>
-            {/* 버튼 영역 */}
-            <div style={{ display: "flex", justifyContent: "center", gap: "60px", marginBottom: "20px" }}>
-                {userType === "admin" && (
-                    <>
-                        <button style={buttonCommonStyle} onClick={makeCity}>
-                            도시 추가
-                        </button>
-                        <button style={buttonCommonStyle} onClick={makeLod}>
-                            숙소 추가
-                        </button>
-                        <button style={buttonCommonStyle} onClick={makeLod}>
-                            숙소 삭제
-                        </button>
-                    </>
-                )}
+        <div style={container}>
+            {/* 알림 문구 */}
+            {(userType === "admin" || userType === "landlord") && (
+                <div style={alertMessage}>
+                    숙소 삭제는 마이페이지에서 가능합니다
+                </div>
+            )}
 
-                {userType === "landlord" && (
+            {/* 관리자/호스트 버튼 영역 */}
+            <div style={buttonArea}>
+                {(userType === "admin" || userType === "landlord") && (
                     <>
-                        <button style={buttonCommonStyle} onClick={makeLod}>
-                            숙소 추가
-                        </button>
-                        <button style={buttonCommonStyle} onClick={makeLod}>
-                            숙소 삭제
-                        </button>
+                        {userType === "admin" && (
+                            <button style={actionButton} onClick={makeCity}>도시 추가</button>
+                        )}
+                        <button style={actionButton} onClick={makeLod}>숙소 추가</button>
                     </>
                 )}
             </div>
 
-
             {/* 도시 리스트 */}
             {cityContents.length === 0 ? (
-                <div>
-                    <p>현재 추가되어있는 도시 없음</p>
-                </div>
+                <p style={noCity}>현재 추가되어 있는 도시가 없습니다.</p>
             ) : (
                 cityContents
-                    .filter((content) =>
-                        content.cityName.toLowerCase().includes(searchTerm)
-                    )
-                    .map((content, index) => (
-                        <div key={index} style={cityStyle_default}>
-                            <div style={city_content}>
-                                <strong>{content.cityName}</strong>
-                                <p style={{ fontSize: '15px' }}>{content.cityDetail}</p>
+                    .filter((c) => c.cityName.toLowerCase().includes(searchTerm))
+                    .map((c, index) => (
+                        <div key={index} style={card}>
+                            <img src={c.cityImageUrl} alt={c.cityName} style={cardImage} />
+                            <div style={cardContent}>
+                                <div style={cityNameStyle}>{c.cityName}</div>
+                                <p style={cityDetailStyle}>{c.cityDetail}</p>
                             </div>
-
-                            <img src={content.cityImageUrl} alt={`${content.cityName} 이미지`} style={backImg} />
-
-                            <div style={btn_content}>
-                                <button
-                                    style={{
-                                        ...buttonStyle,
-                                        backgroundColor: hoveredButtonIndex === index ? '#f0f0f0' : '#ffffff',
-                                        color: hoveredButtonIndex === index ? '#000' : '#333',
-                                    }}
-                                    onMouseEnter={() => handleMouseEnter(index)}
-                                    onMouseLeave={handleMouseLeave}
-                                    onClick={() => handleClick(content.cityName)}
-                                >
-                                    숙소 보러가기
-                                    <span style={{
-                                        ...beforeStyle,
-                                        width: hoveredButtonIndex === index ? '100%' : '0',
-                                    }}></span>
-                                    <span style={{
-                                        ...afterStyle,
-                                        width: hoveredButtonIndex === index ? '100%' : '0',
-                                    }}></span>
-                                </button>
-
-                            </div>
+                            <button
+                                style={hoveredIndex === index ? viewButtonHover : viewButton}
+                                onMouseEnter={() => setHoveredIndex(index)}
+                                onMouseLeave={() => setHoveredIndex(null)}
+                                onClick={() => handleClick(c.cityName)}
+                            >
+                                숙소 보러가기
+                            </button>
                         </div>
                     ))
             )}

@@ -164,6 +164,9 @@ const styles = {
         display: "flex",
         flexDirection: "column",
         gap: "20px",
+        maxHeight: "730px",   // 최대 높이 지정 (스크롤 영역 높이)
+        overflowY: "auto",   // 수직 스크롤 가능
+        paddingRight: "8px", // 스크롤바 공간 확보용 (필요시)
     },
     reservationCard: {
         border: "1px solid #ddd",
@@ -196,21 +199,13 @@ const styles = {
     },
     approveButton: {
         backgroundColor: "#28a745",
-        "&:hover": {
-            backgroundColor: "#218838",
-        },
+        // React inline style는 &:hover 지원 안 하므로 CSS로 추가해야 합니다.
     },
     rejectButton: {
         backgroundColor: "#dc3545",
-        "&:hover": {
-            backgroundColor: "#c82333",
-        },
     },
     consultButton: {
         backgroundColor: "#6c757d",
-        "&:hover": {
-            backgroundColor: "#5a6268",
-        },
     },
 };
 

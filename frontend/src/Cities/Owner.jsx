@@ -9,22 +9,85 @@ const Owner = () => {
     const navigate = useNavigate();
     const cityFromContentState = location.state?.cityContents || [];
 
+    // 기본 formData, 도시 별도 분리
     const [formData, setFormData] = useState({
         lodOwner: loginUser?.uFirstName || "",
-        lodCity: "",
         lodName: "",
-        lodLocation: "",
         lodCallNum: "",
         lodImag: [], // 배열로 초기화
         lodImagPreview: [],
     });
 
+    const [address, setAddress] = useState({
+        street: "",
+        postalCode: "",
+        country: "",
+    });
+
+    const [city, setCity] = useState("");
+
+    // 객실 리스트
     const [rooms, setRooms] = useState([]);
 
-    // 숙소 일반 텍스트 입력 처리
+    // 가격 통화 단위 (default 'KRW')
+    const [currency, setCurrency] = useState("KRW");
+
+    // 입력 이벤트
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    // 주소 입력 처리 (street, postalCode, country)
+    const handleAddressChange = (e) => {
+        const { name, value } = e.target;
+        setAddress((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    // 도시 select 변경
+    const handleCityChange = (e) => {
+        setCity(e.target.value);
+    };
+
+    // 전화번호 입력시 한국 전화번호 하이픈 자동 포맷팅
+    const formatPhoneNumber = (value) => {
+        const cleaned = value.replace(/\D/g, "");
+        let formatted = cleaned;
+
+        if (cleaned.length < 4) {
+            formatted = cleaned;
+        } else if (cleaned.length < 7) {
+            formatted = cleaned.slice(0, 3) + "-" + cleaned.slice(3);
+        } else if (cleaned.length < 11) {
+            formatted =
+                cleaned.slice(0, 3) +
+                "-" +
+                cleaned.slice(3, 6) +
+                "-" +
+                cleaned.slice(6);
+        } else {
+            formatted =
+                cleaned.slice(0, 3) +
+                "-" +
+                cleaned.slice(3, 7) +
+                "-" +
+                cleaned.slice(7, 11);
+        }
+        return formatted;
+    };
+
+    const handlePhoneChange = (e) => {
+        const formatted = formatPhoneNumber(e.target.value);
+        setFormData((prev) => ({
+            ...prev,
+            lodCallNum: formatted,
+        }));
     };
 
     // 숙소 이미지 선택 시 (다중 이미지)
@@ -48,7 +111,7 @@ const Owner = () => {
         });
     };
 
-    // 숙소 이미지 하나만 삭제하기 (index 기반)
+    // 숙소 이미지 하나만 삭제
     const removeLodImage = (index) => {
         const newFiles = [...formData.lodImag];
         const newPreviews = [...formData.lodImagPreview];
@@ -118,7 +181,14 @@ const Owner = () => {
         setRooms(updatedRooms);
     };
 
-    // 제출 처리
+    // 가격 통화 변경
+    const handleCurrencyChange = (index, e) => {
+        const updatedRooms = [...rooms];
+        updatedRooms[index].currency = e.target.value;
+        setRooms(updatedRooms);
+    };
+
+    // 저장 제출
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -127,14 +197,25 @@ const Owner = () => {
             return;
         }
 
+        if (!city) {
+            alert("도시를 선택해주세요.");
+            return;
+        }
+
         try {
             const form = new FormData();
 
             // 숙소 기본 정보
             form.append("lodOwner", formData.lodOwner);
-            form.append("lodCity", formData.lodCity);
+            form.append(
+                "lodCity",
+                city
+            ); /* city select 값 */
+            form.append(
+                "lodAddress",
+                `${address.street}, ${address.postalCode}, ${address.country}`
+            );
             form.append("lodName", formData.lodName);
-            form.append("lodLocation", formData.lodLocation);
             form.append("lodCallNum", formData.lodCallNum);
 
             // 숙소 이미지 여러개 업로드
@@ -144,11 +225,19 @@ const Owner = () => {
                 });
             }
 
-            // 객실 정보 JSON만 담기 (roomName, price)
-            const roomMeta = rooms.map((room) => ({
-                roomName: room.roomName,
-                price: room.price,
-            }));
+            // 객실 정보 JSON (가격 원화로 변환)
+            const roomMeta = rooms.map((room) => {
+                // 가격 환산: 만약 currency가 USD면 1300원 곱해서 저장 (예)
+                let priceKRW = room.price;
+                if (room.currency === "USD") {
+                    priceKRW = Math.round(room.price * 1300);
+                }
+                return {
+                    roomName: room.roomName,
+                    price: priceKRW,
+                };
+            });
+
             form.append("rooms", JSON.stringify(roomMeta));
 
             // 객실 이미지 여러개 업로드 (각 객실별로)
@@ -173,14 +262,14 @@ const Owner = () => {
 
             // 초기화
             setFormData({
-                lodOwner: "",
-                lodCity: "",
+                lodOwner: loginUser?.uFirstName || "",
                 lodName: "",
-                lodLocation: "",
                 lodCallNum: "",
                 lodImag: [],
                 lodImagPreview: [],
             });
+            setAddress({ street: "", postalCode: "", country: "" });
+            setCity("");
             setRooms([]);
             navigate("/some-path"); // 저장 후 이동할 경로 지정 (필요시)
         } catch (error) {
@@ -191,7 +280,7 @@ const Owner = () => {
 
     const styles = {
         form: {
-            maxWidth: "600px",
+            width: "900px",
             margin: "0 auto",
             padding: "24px",
             backgroundColor: "#f9f9f9",
@@ -212,6 +301,11 @@ const Owner = () => {
             border: "1px solid #ccc",
             borderRadius: "6px",
             boxSizing: "border-box",
+        },
+        label: {
+            fontWeight: "bold",
+            marginBottom: "6px",
+            display: "block",
         },
         roomBox: {
             padding: "16px",
@@ -263,156 +357,206 @@ const Owner = () => {
             cursor: "pointer",
             fontWeight: "bold",
         },
+        select: {
+            width: "100%",
+            padding: "10px",
+            marginBottom: "12px",
+            border: "1px solid #ccc",
+            borderRadius: "6px",
+            boxSizing: "border-box",
+            backgroundColor: "#fff",
+            appearance: "none",
+            WebkitAppearance: "none",
+            MozAppearance: "none",
+        },
     };
 
     return (
-        <div style={styles.form}>
-            <h2 style={styles.title}>숙소 정보</h2>
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: "12px", fontSize: "16px" }}>
-                    <strong>숙소 올리는 사람:</strong> {formData.lodOwner}
-                </div>
-                <input
-                    type="text"
-                    name="lodName"
-                    value={formData.lodName}
-                    onChange={handleChange}
-                    style={styles.input}
-                    placeholder="숙소명"
-                    required
-                />
-                <select
-                    name="lodCity"
-                    value={formData.lodCity}
-                    onChange={handleChange}
-                    style={styles.input}
-                    required
-                >
-                    <option value="">도시를 선택하세요</option>
-                    {cityFromContentState.map((city) => (
-                        <option key={city.id} value={city.cityName}>
-                            {city.cityName}
-                        </option>
-                    ))}
-                </select>
+        <form onSubmit={handleSubmit} style={styles.form}>
+            <h1 style={{ textAlign: "center" }}>숙소 등록</h1>
 
-                <input
-                    type="text"
-                    name="lodLocation"
-                    value={formData.lodLocation}
-                    onChange={handleChange}
-                    style={styles.input}
-                    placeholder="숙소 주소"
-                    required
-                />
-                <input
-                    type="text"
-                    name="lodCallNum"
-                    value={formData.lodCallNum}
-                    onChange={handleChange}
-                    style={styles.input}
-                    placeholder="숙소 전화번호"
-                    required
-                />
-                <input
-                    type="file"
-                    name="lodImag"
-                    onChange={handleLodImagChange}
-                    style={styles.input}
-                    accept="image/*"
-                    multiple
-                    required
-                />
-                {formData.lodImagPreview && formData.lodImagPreview.length > 0 && (
+            {/* 숙소 기본 정보 */}
+            <label style={styles.label}>숙소 이름</label>
+            <input
+                type="text"
+                name="lodName"
+                value={formData.lodName}
+                onChange={handleChange}
+                style={styles.input}
+                placeholder="숙소 이름을 입력하세요"
+                required
+            />
+
+            <label style={styles.label}>전화번호 (한국식 자동 하이픈)</label>
+            <input
+                type="tel"
+                name="lodCallNum"
+                value={formData.lodCallNum}
+                onChange={handlePhoneChange}
+                style={styles.input}
+                placeholder="010-1234-5678"
+                required
+            />
+
+            {/* 주소 입력 (거리, 우편번호, 도시 select, 국가) */}
+            <label style={styles.label}>거리 주소</label>
+            <input
+                type="text"
+                name="street"
+                value={address.street}
+                onChange={handleAddressChange}
+                style={styles.input}
+                placeholder="예: Unter den Linden 77"
+                required
+            />
+
+            <label style={styles.label}>우편번호</label>
+            <input
+                type="text"
+                name="postalCode"
+                value={address.postalCode}
+                onChange={handleAddressChange}
+                style={styles.input}
+                placeholder="예: 10117"
+                required
+            />
+
+            <label style={styles.label}>도시</label>
+            <select
+                name="city"
+                value={city}
+                onChange={handleCityChange}
+                style={styles.select}
+                required
+            >
+                <option value="" disabled>
+                    도시 선택
+                </option>
+                {cityFromContentState.map((cityItem) => (
+                    <option key={cityItem.id} value={cityItem.cityName}>
+                        {cityItem.cityName}
+                    </option>
+                ))}
+            </select>
+
+            <label style={styles.label}>국가</label>
+            <input
+                type="text"
+                name="country"
+                value={address.country}
+                onChange={handleAddressChange}
+                style={styles.input}
+                placeholder="예: Germany"
+                required
+            />
+
+            {/* 숙소 이미지 (다중) */}
+            <label style={styles.label}>숙소 이미지</label>
+            <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleLodImagChange}
+                style={{ marginBottom: "12px" }}
+            />
+            <div style={styles.imagePreview}>
+                {formData.lodImagPreview.map((src, index) => (
+                    <div key={index} style={styles.imageContainer}>
+                        <img src={src} alt={`숙소${index}`} style={styles.image} />
+                        <button
+                            type="button"
+                            style={styles.removeBtn}
+                            onClick={() => removeLodImage(index)}
+                        >
+                            ×
+                        </button>
+                    </div>
+                ))}
+            </div>
+
+            {/* 객실 목록 */}
+            <h2 style={styles.title}>객실 정보</h2>
+
+            {rooms.map((room, idx) => (
+                <div key={idx} style={styles.roomBox}>
+                    <label style={styles.label}>객실명</label>
+                    <input
+                        type="text"
+                        name="roomName"
+                        value={room.roomName}
+                        onChange={(e) => handleRoomChange(idx, e)}
+                        style={styles.input}
+                        required
+                    />
+
+                    <label style={styles.label}>가격</label>
+                    <input
+                        type="number"
+                        name="price"
+                        value={room.price}
+                        onChange={(e) => handleRoomChange(idx, e)}
+                        style={styles.input}
+                        min="0"
+                        required
+                    />
+
+                    <label style={styles.label}>통화 단위</label>
+                    <select
+                        name="currency"
+                        value={room.currency || "KRW"}
+                        onChange={(e) => handleCurrencyChange(idx, e)}
+                        style={styles.select}
+                    >
+                        <option value="KRW">원 (KRW)</option>
+                        <option value="USD">달러 (USD)</option>
+                    </select>
+
+                    {/* 객실 이미지 다중 */}
+                    <label style={styles.label}>객실 이미지</label>
+                    <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={(e) => handleRoomImageChange(idx, e)}
+                        style={{ marginBottom: "12px" }}
+                    />
                     <div style={styles.imagePreview}>
-                        {formData.lodImagPreview.map((src, idx) => (
-                            <div key={idx} style={styles.imageContainer}>
-                                <img src={src} alt={`lod-imag-preview-${idx}`} style={styles.image} />
+                        {room.roomImagPreview?.map((src, index) => (
+                            <div key={index} style={styles.imageContainer}>
+                                <img src={src} alt={`객실${index}`} style={styles.image} />
                                 <button
                                     type="button"
-                                    onClick={() => removeLodImage(idx)}
                                     style={styles.removeBtn}
+                                    onClick={() => removeRoomImage(idx, index)}
                                 >
                                     ×
                                 </button>
                             </div>
                         ))}
                     </div>
-                )}
 
-                <h3 style={styles.title}>객실 정보</h3>
-                {rooms.map((room, index) => (
-                    <div key={index} style={styles.roomBox}>
-                        <input
-                            type="text"
-                            name="roomName"
-                            value={room.roomName}
-                            onChange={(e) => handleRoomChange(index, e)}
-                            style={styles.input}
-                            placeholder="객실명"
-                            required
-                        />
-                        <input
-                            type="number"
-                            name="price"
-                            value={room.price}
-                            onChange={(e) => handleRoomChange(index, e)}
-                            style={styles.input}
-                            placeholder="객실 가격"
-                            required
-                        />
-                        <input
-                            type="file"
-                            name="roomImag"
-                            onChange={(e) => handleRoomImageChange(index, e)}
-                            style={styles.input}
-                            accept="image/*"
-                            multiple
-                            required
-                        />
-                        {room.roomImagPreview && room.roomImagPreview.length > 0 && (
-                            <div style={styles.imagePreview}>
-                                {room.roomImagPreview.map((image, imageIndex) => (
-                                    <div key={imageIndex} style={styles.imageContainer}>
-                                        <img
-                                            src={image}
-                                            alt={`room-image-${imageIndex}`}
-                                            style={styles.image}
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => removeRoomImage(index, imageIndex)}
-                                            style={styles.removeBtn}
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                        <button
-                            type="button"
-                            onClick={() => removeRoom(index)}
-                            style={styles.button}
-                        >
-                            객실 삭제
-                        </button>
-                    </div>
-                ))}
-
-                <button type="button" onClick={addRoom} style={styles.button}>
-                    객실 추가
-                </button>
-                <div>
                     <button
-                        type="submit"
-                        style={{ ...styles.button, ...styles.greenBtn }}
+                        type="button"
+                        onClick={() => removeRoom(idx)}
+                        style={{ ...styles.button, backgroundColor: "#e74c3c" }}
                     >
-                        저장
+                        객실 삭제
                     </button>
                 </div>
-            </form>
-        </div>
+            ))}
+
+            <button
+                type="button"
+                onClick={addRoom}
+                style={{ ...styles.button, ...styles.greenBtn }}
+            >
+                객실 추가
+            </button>
+
+            <button type="submit" style={{ ...styles.button, marginTop: "20px" }}>
+                저장
+            </button>
+        </form>
     );
 };
 

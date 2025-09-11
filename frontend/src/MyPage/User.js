@@ -228,7 +228,7 @@ const User = () => {
         ]);
     }
 
-    if (userInfo.uUser === 'landlord') {
+    if (userInfo.uUser === 'landlord' || userInfo.uUser === 'admin') {
         return renderUserPage([
             { key: 'info', label: '계정' },
             { key: 'Accommodation', label: '숙소 관리' },
