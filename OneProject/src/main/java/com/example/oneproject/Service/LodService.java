@@ -370,9 +370,6 @@ public class LodService {
         ClodContent lodging = lodRepository.findById(lodgingId)
                 .orElseThrow(() -> new RuntimeException("숙소가 존재하지 않습니다."));
 
-        // 1. 찜목록에서 해당 숙소 관련 데이터 삭제
-        wishListRepository.deleteByClodContent(lodging);
-
         lodRepository.delete(lodging);
     }
 

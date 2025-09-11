@@ -31,6 +31,19 @@ public class ClodContent {
     @BatchSize(size = 10)
     private List<Room> rooms;
 
+    // ✅ 추가: 예약과의 양방향 관계 설정
+    @OneToMany(mappedBy = "clodContent", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Reservation> reservations;
+
+    // ✅ 추가: 리뷰와의 양방향 관계 설정
+    @OneToMany(mappedBy = "clodContent", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Review> reviews;
+
+    // ✅ 추가: 찜 목록과의 양방향 관계 설정 (이미 있는 WishList 엔티티 활용)
+    @OneToMany(mappedBy = "clodContent", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<WishList> wishLists;
+    // ...
+
     // ✅ Getter / Setter
     public Long getId() {
         return id;

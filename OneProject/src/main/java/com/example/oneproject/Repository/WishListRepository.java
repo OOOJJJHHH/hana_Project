@@ -21,7 +21,5 @@ public interface WishListRepository extends JpaRepository<WishList, Long> {
     void deleteByRoomId(Long roomId);
 
     List<WishList> findByUser_Id(Long userId);
-
-    void deleteByClodContent(ClodContent clodContent);
 }
 
