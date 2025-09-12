@@ -26,6 +26,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             ReservationStatus status
     );
 
+    boolean existsByUserAndClodContentAndRoom(UserContent user, ClodContent clod, Room room);
+
+
     List<Reservation> findByUser_UId(String uId);
 
     // 숙소 ID 목록과 예약 상태를 기준으로 예약 조회

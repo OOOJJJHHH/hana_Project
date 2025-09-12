@@ -240,21 +240,3 @@ const Locals = () => {
 
 export default Locals;
 
-
-
-
-
-//
-// {contents.owners.length > 0 ? (
-//     <ul>
-//       {contents.owners.map((owner, index) => (
-//           <li key={owner.id || index}>
-//             ID: {owner.id || "N/A"}, 이름: {owner.uFirstName} {owner.uLastName}, Email: {owner.uIdEmail || "N/A"}, Uid: {owner.uId || "N/A"}, Profile: {owner.profileImage || "N/A"}
-//           </li>
-//       ))}
-//     </ul>
-// ) : (
-//     <p>No owner data available.</p>
-// )}
-//
-// <h3>--- Hotels Data (Raw) ---</h3>

@@ -28,16 +28,22 @@ public class ReviewService {
         ClodContent clod = clodRepository.findById(dto.getClodContentId()).orElseThrow();
         Room room = roomRepository.findById(dto.getRoomId()).orElseThrow();
 
-        // 🛑 예약 여부 확인 (완료 상태여야 리뷰 작성 허용)
-        boolean hasReservation = reservationRepository.existsByUserAndClodContentAndRoomAndStatus(
-                user,
-                clod,
-                room,
-                ReservationStatus.COMPLETED  // 또는 RESERVED, 적절한 상태 사용
+        // 예약 존재 여부 확인
+        boolean hasAnyReservation = reservationRepository.existsByUserAndClodContentAndRoom(
+                user, clod, room
         );
 
-        if (!hasReservation) {
+        if (!hasAnyReservation) {
             throw new RuntimeException("예약한 사용자만 리뷰를 작성할 수 있습니다.");
+        }
+
+        // 예약 상태가 완료(COMPLETED)인지 확인
+        boolean isCompleted = reservationRepository.existsByUserAndClodContentAndRoomAndStatus(
+                user, clod, room, ReservationStatus.COMPLETED
+        );
+
+        if (!isCompleted) {
+            throw new RuntimeException("아직 예약 승인이 되지 않았습니다.");  // ✅ 여기 메시지 변경
         }
 
         Review review = Review.builder()
@@ -50,6 +56,7 @@ public class ReviewService {
 
         return reviewRepository.save(review);
     }
+
 
 
 

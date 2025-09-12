@@ -76,24 +76,36 @@ const HotelReWrite = ({
 
         try {
             if (editingReview) {
-                // ✅ 수정 요청
                 await axios.put(`${process.env.REACT_APP_API_URL}/reviews/${editingReview.id}`, payload);
                 alert("리뷰가 수정되었습니다!");
             } else {
-                // ✅ 신규 작성
                 await axios.post(`${process.env.REACT_APP_API_URL}/saveReview`, payload);
                 alert("리뷰가 등록되었습니다!");
             }
 
-            onClose();              // 모달 닫기
-            refreshReviews();      // 리뷰 목록 새로고침
+            onClose();
+            refreshReviews();
         } catch (error) {
-            alert("숙소 예약이 완료된 이후에 리뷰 등록이 가능합니다.");
-            console.error(error);
+            console.error("리뷰 작성 실패:", error);
+
+            const message = error.response?.data;
+
+            if (typeof message === "string") {
+                if (message.includes("예약한 사용자만 리뷰를 작성할 수 있습니다")) {
+                    alert("리뷰를 작성하려면 해당 숙소를 먼저 예약해야 합니다.");
+                } else if (message.includes("아직 예약 승인이 되지 않았습니다")) {
+                    alert("아직 예약 승인이 완료되지 않았습니다. 체크아웃 후 리뷰를 작성할 수 있습니다.");
+                } else {
+                    alert("리뷰 등록 실패: " + message);
+                }
+            } else {
+                alert("리뷰 등록 중 오류가 발생했습니다.");
+            }
         } finally {
             setSubmitting(false);
         }
     };
+
 
     return (
         <div style={overlay}>
