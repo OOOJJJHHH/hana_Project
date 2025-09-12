@@ -36,6 +36,18 @@ public class Room {
     @BatchSize(size = 10)
     private List<RoomImages> roomImages = new ArrayList<>();
 
+    // ✅ 추가: 예약과의 양방향 관계
+    @OneToMany(mappedBy = "room", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Reservation> reservations = new ArrayList<>();
+
+    // ✅ 추가: 리뷰와의 양방향 관계
+    @OneToMany(mappedBy = "room", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Review> reviews = new ArrayList<>();
+
+    // ✅ 추가: 찜 목록과의 양방향 관계
+    @OneToMany(mappedBy = "room", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<WishList> wishLists = new ArrayList<>();
+
     // --- Getter / Setter (변경 없음) ---
     public Long getId() {
         return id;
