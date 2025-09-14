@@ -94,7 +94,7 @@ const HotelReWrite = ({
                 if (message.includes("예약한 사용자만 리뷰를 작성할 수 있습니다")) {
                     alert("리뷰를 작성하려면 해당 숙소를 먼저 예약해야 합니다.");
                 } else if (message.includes("아직 예약 승인이 되지 않았습니다")) {
-                    alert("아직 예약 승인이 완료되지 않았습니다. 체크아웃 후 리뷰를 작성할 수 있습니다.");
+                    alert("아직 예약 승인이 완료되지 않았습니다.\n예약 승인 후 리뷰를 작성할 수 있습니다.");
                 } else {
                     alert("리뷰 등록 실패: " + message);
                 }
