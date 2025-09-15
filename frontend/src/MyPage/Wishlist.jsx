@@ -10,7 +10,10 @@ const Wishlist = () => {
     // 찜 목록 불러오기
     useEffect(() => {
         const fetchWishlist = async () => {
-            if (!userInfo?.id) return;
+            if (!userInfo?.id) {
+                setLoading(false);
+                return;
+            }
 
             try {
                 const res = await axios.get(
@@ -27,33 +30,6 @@ const Wishlist = () => {
 
         fetchWishlist();
     }, [userInfo]);
-
-    // 찜 삭제 처리
-    const handleRemove = async (lodName, roomName) => {
-        if (!window.confirm(`'${lodName} - ${roomName}' 을(를) 찜 목록에서 삭제할까요?`)) return;
-
-        try {
-            const res = await axios.post("http://localhost:8080/api/wishlist/add", null, {
-                params: {
-                    userId: userInfo.uId,
-                    lodName: lodName,
-                    roomName: roomName
-                }
-            });
-
-            if (res.data.success) {
-                alert("찜 목록에서 삭제되었습니다.");
-                setWishlist(prev =>
-                    prev.filter(item => !(item.lodName === lodName && item.roomName === roomName))
-                );
-            } else {
-                alert(res.data.message || "삭제에 실패했습니다.");
-            }
-        } catch (err) {
-            console.error("삭제 실패:", err);
-            alert("찜 삭제 중 오류가 발생했습니다.");
-        }
-    };
 
     if (loading) return <p>불러오는 중...</p>;
 
@@ -82,21 +58,6 @@ const Wishlist = () => {
                             alt={`${item.roomName} 이미지`}
                             style={{ width: "300px", height: "auto", borderRadius: "8px" }}
                         />
-                        <br />
-                        <button
-                            onClick={() => handleRemove(item.lodName, item.roomName)}
-                            style={{
-                                marginTop: "10px",
-                                padding: "0.5rem 1rem",
-                                backgroundColor: "#f44336",
-                                color: "white",
-                                border: "none",
-                                borderRadius: "4px",
-                                cursor: "pointer",
-                            }}
-                        >
-                            ❌ 찜 삭제
-                        </button>
                     </div>
                 ))
             )}

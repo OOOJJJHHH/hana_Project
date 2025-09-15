@@ -27,7 +27,6 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
                 }
             );
             setReviews(response.data);
-            console.log("리뷰" + response.data);
             setError(null);
         } catch {
             setError("리뷰를 불러오는 중 오류가 발생했습니다.");
@@ -57,20 +56,6 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
         }
         setEditingReview(review); // 수정 모드
         setShowModal(true);
-    };
-
-    const handleDeleteClick = () => {
-        if (!userId) {
-            alert("로그인이 필요합니다.");
-            return;
-        }
-        if (!window.confirm("정말 모든 리뷰를 삭제하시겠습니까?")) return;
-        axios
-            .delete(`${process.env.REACT_APP_API_URL}/reviews`, {
-                data: { hotelId, roomId, userId },
-            })
-            .then(fetchReviews)
-            .catch(() => alert("리뷰 삭제에 실패했습니다."));
     };
 
     const renderStars = (rating) => {
@@ -143,12 +128,6 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
                         onClick={handleWriteClick}
                     >
                         작성
-                    </button>
-                    <button
-                        style={styles.button}
-                        onClick={handleDeleteClick}
-                    >
-                        삭제
                     </button>
                 </div>
             </div>

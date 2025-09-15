@@ -503,6 +503,15 @@ public class CityController {
         ));
     }
 
+    //마이페이지 위시리스트에서 찜 확인
+    @GetMapping("wishlist/{userId}")
+    public List<WishListDTO> getWishlist(@PathVariable String userId) {
+        UserContent user = userRepository.findByUId(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        return wishListService.getWishlistByUser(user);
+    }
+
+
     // 유저==============================================================================
     // 유저 정보 저장
     @PostMapping("/saveUser")
@@ -546,24 +555,24 @@ public class CityController {
         }
     }
 
-
-    // 로그인한 사용자의 정보 수정
-    @PutMapping("/user/update")
-    public ResponseEntity<?> updateUserInfo(@RequestBody UserContent updatedUser, HttpSession session) {
-        String uId = (String) session.getAttribute("uId");
-        if (uId == null) {
-            return ResponseEntity.status(401).body("Unauthorized");
-        }
-
-        // 보안: 요청에 포함된 uId가 아니라 세션의 uId를 기준으로 수정
-        try {
-            UserContent updated = userService.updateUser(uId, updatedUser);
-            return ResponseEntity.ok(updated);
-        } catch (Exception e) {
-            return ResponseEntity.status(404).body(e.getMessage());
-        }
-    }
-
+// -준희- 필요없는거 같아서 주석
+//    // 로그인한 사용자의 정보 수정
+//    @PutMapping("/user/update")
+//    public ResponseEntity<?> updateUserInfo(@RequestBody UserContent updatedUser, HttpSession session) {
+//        String uId = (String) session.getAttribute("uId");
+//        if (uId == null) {
+//            return ResponseEntity.status(401).body("Unauthorized");
+//        }
+//
+//        // 보안: 요청에 포함된 uId가 아니라 세션의 uId를 기준으로 수정
+//        try {
+//            UserContent updated = userService.updateUser(uId, updatedUser);
+//            return ResponseEntity.ok(updated);
+//        } catch (Exception e) {
+//            return ResponseEntity.status(404).body(e.getMessage());
+//        }
+//    }
+//
 
     // 로그인=============================================================================
     @PostMapping("/api/login")

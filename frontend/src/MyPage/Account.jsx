@@ -250,7 +250,7 @@ const Account = () => {
                     <h2 style={title}>SNS 연결 여부</h2>
                     <div style={switchGroup}>
                         <div style={switchContainer}>
-                            <span style={switchLabel}>카카오톡 연결</span>
+                            <span style={switchLabel}>google 연결</span>
                             <Switch checked={switches[2]} onChange={() => toggleSwitch(2)} />
                         </div>
                     </div>

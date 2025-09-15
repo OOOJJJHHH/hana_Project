@@ -161,8 +161,8 @@
   }
   
   .check-btn {
-    background-color: #94A0D1;     /* 버튼 배경색 */
-    color: black;                /* 글씨 색 */
+    background-color: #6366f1;     /* 버튼 배경색 */
+    color: #ffffff;                /* 글씨 색 */
     border: none;
     border-radius: 15px;       
     padding: 15px 20px;
@@ -196,8 +196,8 @@
   }
   
   .submit-btn {
-    background-color: #94A0D1;
-    color: black;
+    background-color: #6366f1;
+    color: #ffffff;
     border: none;
     padding: 12px;
     font-size: 16px;
