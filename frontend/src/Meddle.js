@@ -10,7 +10,6 @@ const Meddle = () => {
         <ImageSlider />
         <FanfareWithLowestPrice />
         <TopRatedHotels />
-        <UKWeather />
       </div>
   );
 };
