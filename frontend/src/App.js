@@ -6,6 +6,7 @@ import Footer from "./Footer";
 import FindAccountForm from "./Login/ID_pw_find"; 
 import "./App.css";
 import {UserProvider} from "./Session/UserContext";
+import UKWeather from "./Main/UKWeather";
 
 
 
@@ -50,7 +51,7 @@ function App() {
         <UserProvider>
             <Router>
                 <AppWrapper />
-
+                <UKWeather />
             </Router>
         </UserProvider>
     );

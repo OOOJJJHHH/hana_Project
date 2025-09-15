@@ -1,13 +1,36 @@
 import { useState } from "react";
+import axios from "axios";
+
+const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8080";
 
 export default function FindAccountForm() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [message, setMessage] = useState("");
   const [tab, setTab] = useState("id");
+  const [loading, setLoading] = useState(false);
 
-  const handleFindId = () => {
-    setMessage(`이메일(${email})로 등록된 아이디는 exampleUser입니다.`);
+  const handleFindId = async () => {
+    if (!email) {
+      setMessage("이메일을 입력하세요.");
+      return;
+    }
+    setLoading(true);
+    setMessage("");
+
+    try {
+      const res = await axios.post(`${API_BASE}/api/auth/find-id`, { email }, { withCredentials: true });
+      const userId = res.data.userId;
+      setMessage(`이메일(${email})로 등록된 아이디는 ${userId} 입니다.`);
+    } catch (e) {
+      if (e.response?.status === 404) {
+        setMessage("해당 이메일로 등록된 아이디가 없습니다.");
+      } else {
+        setMessage("아이디 조회 중 오류가 발생했습니다.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleFindPassword = () => {
@@ -50,7 +73,7 @@ export default function FindAccountForm() {
       fontWeight: "bold",
     },
     activeTab: {
-      background: "#007bff",
+      background: "#6366f1",
       color: "white",
     },
     form: {
@@ -66,7 +89,7 @@ export default function FindAccountForm() {
     },
     formButton: {
       padding: "10px",
-      background: "#007bff",
+      background: "#6366f1",
       color: "white",
       border: "none",
       borderRadius: "6px",
@@ -91,49 +114,54 @@ export default function FindAccountForm() {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h2 style={styles.heading}>아이디 / 비밀번호 찾기</h2>
-        <div style={styles.tabs}>
-          <button
-            style={tab === "id" ? { ...styles.tabButton, ...styles.activeTab } : styles.tabButton}
-            onClick={() => setTab("id")}
-          >
-            아이디 찾기
-          </button>
-          <button
-            style={tab === "password" ? { ...styles.tabButton, ...styles.activeTab } : styles.tabButton}
-            onClick={() => setTab("password")}
-          >
-            비밀번호 찾기
-          </button>
+      <div style={styles.container}>
+        <div style={styles.card}>
+          <h2 style={styles.heading}>아이디 & 비밀번호 찾기</h2>
+          <div style={styles.tabs}>
+            <button
+                style={tab === "id" ? { ...styles.tabButton, ...styles.activeTab } : styles.tabButton}
+                onClick={() => setTab("id")}
+            >
+              아이디 찾기
+            </button>
+            <button
+                style={tab === "password" ? { ...styles.tabButton, ...styles.activeTab } : styles.tabButton}
+                onClick={() => setTab("password")}
+            >
+              비밀번호 찾기
+            </button>
+          </div>
+
+          {tab === "id" && (
+              <div style={styles.form}>
+                <input
+                    type="email"
+                    placeholder="가입한 이메일을 입력하세요"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={styles.input}
+                />
+                <button onClick={handleFindId} style={styles.formButton} disabled={loading}>
+                  {loading ? "조회 중..." : "아이디 찾기"}
+                </button>
+              </div>
+          )}
+
+          {tab === "password" && (
+              <div style={styles.form}>
+                <input
+                    type="text"
+                    placeholder="아이디를 입력하세요"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    style={styles.input}
+                />
+                <button onClick={handleFindPassword} style={styles.formButton}>비밀번호 찾기</button>
+              </div>
+          )}
+
+          {message && <p style={styles.message}>{message}</p>}
         </div>
-        {tab === "id" && (
-          <div style={styles.form}>
-            <input
-              type="email"
-              placeholder="가입한 이메일을 입력하세요"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={styles.input}
-            />
-            <button onClick={handleFindId} style={styles.formButton}>아이디 찾기</button>
-          </div>
-        )}
-        {tab === "password" && (
-          <div style={styles.form}>
-            <input
-              type="text"
-              placeholder="아이디를 입력하세요"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              style={styles.input}
-            />
-            <button onClick={handleFindPassword} style={styles.formButton}>비밀번호 찾기</button>
-          </div>
-        )}
-        {message && <p style={styles.message}>{message}</p>}
       </div>
-    </div>
   );
 }
