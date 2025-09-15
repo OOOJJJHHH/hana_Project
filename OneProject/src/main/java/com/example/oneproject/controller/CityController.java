@@ -503,6 +503,15 @@ public class CityController {
         ));
     }
 
+    //마이페이지 위시리스트에서 찜 확인
+    @GetMapping("wishlist/{userId}")
+    public List<WishListDTO> getWishlist(@PathVariable String userId) {
+        UserContent user = userRepository.findByUId(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        return wishListService.getWishlistByUser(user);
+    }
+
+
     // 유저==============================================================================
     // 유저 정보 저장
     @PostMapping("/saveUser")

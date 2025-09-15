@@ -4,6 +4,7 @@ import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.Room;
 import com.example.oneproject.Entity.UserContent;
 import com.example.oneproject.Entity.WishList;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,12 +15,8 @@ import java.util.Optional;
 public interface WishListRepository extends JpaRepository<WishList, Long> {
     Optional<WishList> findByUserAndClodContentAndRoom(UserContent user, ClodContent clodContent, Room room);
 
-    boolean existsByUserAndClodContentAndRoom(UserContent user, ClodContent clod, Room room);
-
-    List<WishList> findByUser(UserContent userContent);
-
-    void deleteByRoomId(Long roomId);
-
-    List<WishList> findByUser_Id(Long userId);
+    // User 기준으로 WishList 조회, Room과 RoomImages를 join fetch
+    @EntityGraph(attributePaths = {"room", "room.roomImages", "clodContent"})
+    List<WishList> findByUser(UserContent user);
 }
 
