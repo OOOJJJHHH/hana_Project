@@ -42,7 +42,7 @@ public class ClodContent {
     // ✅ 추가: 찜 목록과의 양방향 관계 설정 (이미 있는 WishList 엔티티 활용)
     @OneToMany(mappedBy = "clodContent", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<WishList> wishLists;
-    // ...
+
 
     // ✅ Getter / Setter
     public Long getId() {

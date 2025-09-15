@@ -2,7 +2,9 @@ package com.example.oneproject.Service;
 
 import com.example.oneproject.DTO.UserDTO;
 import com.example.oneproject.DTO.UserUpdateDTO;
+import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.UserContent;
+import com.example.oneproject.Repository.CLodRepository;
 import com.example.oneproject.Repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private CLodRepository clodRepository;
 
     @Autowired
     private S3Uploader s3Uploader;
@@ -45,13 +50,24 @@ public class UserService {
 
     public boolean updateUserInfo(String uId, UserContent updatedUser) {
         return userRepository.findByUId(uId).map(user -> {
+
+            // 기존 이름 (lodOwner 와 비교할 기준)
+            String oldFirstName = user.getuFirstName();
+
             user.setuFirstName(updatedUser.getuFirstName());
             user.setuLastName(updatedUser.getuLastName());
             user.setuIdEmail(updatedUser.getuIdEmail());
             user.setuId(updatedUser.getuId());
             user.setuPassword(updatedUser.getuPassword());
-
             userRepository.save(user);
+
+            // ✅ ClodContent 동기화
+            List<ClodContent> clods = clodRepository.findByLodOwner(oldFirstName);
+            for (ClodContent clod : clods) {
+                clod.setLodOwner(updatedUser.getuFirstName());
+            }
+            clodRepository.saveAll(clods);
+
             return true;
         }).orElse(false);
     }

@@ -11,8 +11,6 @@ public class LodDTO {
         private String lodOwner;
         private String lodCallNum;
 
-        // 생성자, getter, setter (또는 @Data Lombok 사용)
-        // 예: 모든 필드 생성자
 
         public LodDTO(Long id, String lodName, String lodCity, String lodImag, String lodLocation,
                          String lodOwner, String lodCallNum) {
