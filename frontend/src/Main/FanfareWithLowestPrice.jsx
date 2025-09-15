@@ -7,6 +7,7 @@ import fan3 from '../image/3.jpg';
 
 const container = {
     display: 'flex',
+    boxShadow: '0 0 10px rgba(0,0,0,0.1)',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     width: '90%',
@@ -22,7 +23,6 @@ const fanfareContainer = {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 0 10px rgba(0,0,0,0.1)',
     borderRadius: '8px',
     backgroundColor: '#fff',
 };
@@ -52,7 +52,6 @@ const sliderContainer = {
     justifyContent: 'center',
     gap: '15px',
     padding: '20px',
-    boxShadow: '0 0 10px rgba(0,0,0,0.1)',
     borderRadius: '8px',
     backgroundColor: '#fff',
 };
