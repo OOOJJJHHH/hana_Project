@@ -215,17 +215,26 @@ const HotelDetail = () => {
           </div>
 
           <div className="action-buttons">
-            <button className="reserve-button" onClick={handleReservationClick}>
-              예약하기
-            </button>
-            <button
-                className="wishlist-button"
-                onClick={handleWishlistClick}
-                disabled={isWishlistLoading}
-            >
-              {isWishlistLoading ? "처리중..." : isWish ? "💖 찜취소" : "🤍 찜하기"}
-            </button>
+            {userInfo?.uUser === "landlord" ? (
+                <p style={{ color: "red", fontWeight: "bold" }}>
+                  계정 타입이 "숙소 게시자(landlord)" 일 경우에는 예약하지 못합니다
+                </p>
+            ) : (
+                <>
+                  <button className="reserve-button" onClick={handleReservationClick}>
+                    예약하기
+                  </button>
+                  <button
+                      className="wishlist-button"
+                      onClick={handleWishlistClick}
+                      disabled={isWishlistLoading}
+                  >
+                    {isWishlistLoading ? "처리중..." : isWish ? "💖 찜취소" : "🤍 찜하기"}
+                  </button>
+                </>
+            )}
           </div>
+
         </div>
 
         <HotelReviews
