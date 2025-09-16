@@ -8,10 +8,7 @@ import com.example.oneproject.Entity.Reservation;
 import com.example.oneproject.Entity.Room;
 import com.example.oneproject.Entity.UserContent;
 import com.example.oneproject.Enum.ReservationStatus;
-import com.example.oneproject.Repository.CLodRepository;
-import com.example.oneproject.Repository.ReservationRepository;
-import com.example.oneproject.Repository.RoomRepository;
-import com.example.oneproject.Repository.UserRepository;
+import com.example.oneproject.Repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -26,13 +23,15 @@ public class ReservationService {
     private final UserRepository userRepository;
     private final CLodRepository clodRepository;
     private final RoomRepository roomRepository;
+    private final ReviewRepository reviewRepository;
     private final ReservationRepository reservationRepository;
 
-    public ReservationService(UserRepository userRepository, CLodRepository clodRepository, RoomRepository roomRepository, ReservationRepository reservationRepository) {
+    public ReservationService(UserRepository userRepository, CLodRepository clodRepository, RoomRepository roomRepository, ReservationRepository reservationRepository, ReviewRepository reviewRepository) {
         this.userRepository = userRepository;
         this.clodRepository = clodRepository;
         this.roomRepository = roomRepository;
         this.reservationRepository = reservationRepository;
+        this.reviewRepository = reviewRepository;
     }
 
     // 예약 되어있는 날짜 확인 후 날짜 데이터 반환
@@ -70,6 +69,13 @@ public class ReservationService {
     public void deleteReservation(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 예약을 찾을 수 없습니다. id=" + reservationId));
+
+        // ✅ 예약과 관련된 리뷰 삭제
+        reviewRepository.deleteByUserAndClodContentAndRoom(
+                reservation.getUser(),
+                reservation.getClodContent(),
+                reservation.getRoom()
+        );
 
         reservationRepository.delete(reservation);
     }
