@@ -9,6 +9,7 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
 
     const [showModal, setShowModal] = useState(false);
     const [editingReview, setEditingReview] = useState(null); // ✅ 수정 모드 여부
+    const [showTip, setShowTip] = useState(false); // ✅ 팁창 표시 여부
 
     const fetchReviews = async () => {
         if (!hotelId || !roomId) {
@@ -20,10 +21,7 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
             const response = await axios.get(
                 `${process.env.REACT_APP_API_URL}/getReviews`,
                 {
-                    params: {
-                        clodContentId: hotelId,
-                        roomId,
-                    },
+                    params: { clodContentId: hotelId, roomId },
                 }
             );
             setReviews(response.data);
@@ -85,18 +83,46 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
         },
         buttonContainer: {
             display: "flex",
-            gap: 10,
+            gap: 16,
+            alignItems: "center",
+            position: "relative",
         },
         button: {
             backgroundColor: "#007bff",
             border: "none",
             color: "white",
             padding: "8px 16px",
-            borderRadius: 5,
+            borderRadius: 6,
             fontWeight: 600,
             cursor: "pointer",
             fontSize: "1rem",
-            transition: "background-color 0.3s ease",
+            transition: "background-color 0.2s ease",
+        },
+        tipText: {
+            fontSize: "0.8rem",
+            color: "#007bff",
+            cursor: "pointer",
+            position: "relative",
+            fontWeight: 400,
+        },
+        tooltip: {
+            position: "absolute",
+            top: "130%",
+            right: 0,
+            background: "#fff",
+            border: "1px solid #e0e0e0",
+            borderRadius: 8,
+            padding: "14px 16px",
+            boxShadow: "0 6px 16px rgba(0,0,0,0.15)",
+            width: "340px",
+            fontSize: "0.9rem",
+            lineHeight: "1.5",
+            zIndex: 20,
+            animation: "fadeIn 0.2s ease",
+        },
+        tooltipItem: {
+            marginBottom: "8px",
+            color: "#444",
         },
         reviewCardDeleteBtn: {
             color: "red",
@@ -123,12 +149,33 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
             <div style={styles.header}>
                 <h2 style={styles.title}>리뷰</h2>
                 <div style={styles.buttonContainer}>
-                    <button
-                        style={styles.button}
-                        onClick={handleWriteClick}
-                    >
+                    <button style={styles.button} onClick={handleWriteClick}>
                         작성
                     </button>
+
+                    {/* ✅ 작성 안될 시 (Tooltip) */}
+                    <span
+                        style={styles.tipText}
+                        onMouseEnter={() => setShowTip(true)}
+                        onMouseLeave={() => setShowTip(false)}
+                    >
+                        도움말
+                        {showTip && (
+                            <div style={styles.tooltip}>
+                                <div style={styles.tooltipItem}>
+                                    1. 예약한 숙소에 관해서 리뷰 작성이 가능합니다.
+                                </div>
+                                <div style={styles.tooltipItem}>
+                                    2. 숙소주인이 예약을 확인하고 승인한 후, <br />
+                                    마이페이지에서 확인을 누른 다음 리뷰 작성 가능합니다.
+                                </div>
+                                <div style={styles.tooltipItem}>
+                                    3. 자신이 예약한 숙소와 방 종류가 맞는지 <br />
+                                    마이페이지에서 확인 후 진행해주세요.
+                                </div>
+                            </div>
+                        )}
+                    </span>
                 </div>
             </div>
 
@@ -149,11 +196,13 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
             {!loading && !error && reviews.length === 0 && <p>아직 리뷰가 없습니다.</p>}
 
             {/* 리뷰 목록 */}
-            {!loading && !error &&
+            {!loading &&
+                !error &&
                 reviews.map((review) => (
                     <div key={review.id} className="review-card" style={{ marginBottom: 12 }}>
                         <p>
-                            <strong>{review.user}</strong> {renderStars(review.rating)} ({review.rating})
+                            <strong>{review.user}</strong> {renderStars(review.rating)} (
+                            {review.rating})
                         </p>
                         <p>{review.comment}</p>
                         {userId === review.userId && (
@@ -168,11 +217,14 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
                                     onClick={() => {
                                         if (window.confirm("이 리뷰를 삭제하시겠습니까?")) {
                                             axios
-                                                .delete(`${process.env.REACT_APP_API_URL}/deleteReview/${review.id}`, {
-                                                    data: { userId },
-                                                })
+                                                .delete(
+                                                    `${process.env.REACT_APP_API_URL}/deleteReview/${review.id}`,
+                                                    { data: { userId } }
+                                                )
                                                 .then(fetchReviews)
-                                                .catch(() => alert("리뷰 삭제에 실패했습니다."));
+                                                .catch(() =>
+                                                    alert("리뷰 삭제에 실패했습니다.")
+                                                );
                                         }
                                     }}
                                     style={styles.reviewCardDeleteBtn}

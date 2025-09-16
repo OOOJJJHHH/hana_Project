@@ -13,8 +13,18 @@ const statusMap = {
 
 const Revation = () => {
     const [reservations, setReservations] = useState([]);
+    const [hoveredId, setHoveredId] = useState(null); // ✅ hover 상태 관리
     const loginUser = JSON.parse(localStorage.getItem("loginUser"));
     const navigate = useNavigate();
+
+    const formatDate = (dateStr) => {
+        if (!dateStr) return "-";
+        return new Date(dateStr).toLocaleDateString("ko-KR", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+        });
+    };
 
     const fetchReservations = async () => {
         try {
@@ -23,8 +33,6 @@ const Revation = () => {
                 { withCredentials: true }
             );
             setReservations(data);
-
-            // ✅ 콘솔 출력 개선
             console.log("가져온 예약 내역:", data);
         } catch (err) {
             console.error("예약 내역 조회 실패", err);
@@ -69,6 +77,12 @@ const Revation = () => {
         navigate(`/hotel-detail?name=${encodeURIComponent(lodName)}`);
     };
 
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text).then(() => {
+            alert("예약 코드가 복사되었습니다!");
+        });
+    };
+
     return (
         <div style={styles.container}>
             <h2 style={styles.heading}>📅 나의 예약 내역</h2>
@@ -90,13 +104,40 @@ const Revation = () => {
                                     ...styles.card,
                                     border: `2px solid ${status.color}`,
                                 }}
+                                onMouseEnter={() => setHoveredId(r.reservationId)}
+                                onMouseLeave={() => setHoveredId(null)}
                             >
                                 <h3 style={styles.cardTitle}>{r.clodName || "이름 없음"}</h3>
+
                                 <p style={styles.text}>
                                     <strong>예약 기간:</strong>{" "}
-                                    {r.startDate ? r.startDate.slice(0, 10) : "-"} ~{" "}
-                                    {r.endDate ? r.endDate.slice(0, 10) : "-"}
+                                    {formatDate(r.startDate)} ~ {formatDate(r.endDate)}
                                 </p>
+
+                                <p style={styles.text}>
+                                    <strong>예약한 방:</strong> {r.roomName || "-"}
+                                </p>
+
+                                {/* 예약 코드 → hover 시만 보이기 */}
+                                <div style={styles.codeWrapper}>
+                                    <span style={styles.codeLabel}>예약 코드:</span>
+                                    {hoveredId === r.reservationId && (
+                                        <div style={styles.codeContainer}>
+                                            <span style={styles.codeText}>{r.reservationCode}</span>
+                                            <button
+                                                onClick={() => copyToClipboard(r.reservationCode)}
+                                                style={styles.copyButton}
+                                            >
+                                                📋 복사
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <p style={styles.text}>
+                                    <strong>비고:</strong> {r.memo || "-"}
+                                </p>
+
                                 <div
                                     style={{
                                         ...styles.statusBadge,
@@ -137,15 +178,13 @@ const Revation = () => {
                                     </button>
                                 </div>
 
-                                {r.status === "CANCELED" && (
-                                    <button
-                                        onClick={() => deleteReservation(r.reservationId)}
-                                        style={styles.deleteButton}
-                                        title="예약 완전 삭제"
-                                    >
-                                        🗑️
-                                    </button>
-                                )}
+                                <button
+                                    onClick={() => deleteReservation(r.reservationId)}
+                                    style={styles.deleteButton}
+                                    title="예약 완전 삭제"
+                                >
+                                    🗑️
+                                </button>
                             </div>
                         );
                     })}
@@ -156,18 +195,9 @@ const Revation = () => {
 };
 
 const styles = {
-    container: {
-        maxWidth: "1000px",
-        margin: "2rem auto",
-        padding: "1rem",
-    },
-    heading: {
-        marginBottom: "1rem",
-    },
-    noReservations: {
-        textAlign: "center",
-        color: "#777",
-    },
+    container: { maxWidth: "1000px", margin: "2rem auto", padding: "1rem" },
+    heading: { marginBottom: "1rem" },
+    noReservations: { textAlign: "center", color: "#777" },
     scrollArea: {
         maxHeight: "800px",
         overflowY: "auto",
@@ -183,11 +213,25 @@ const styles = {
         boxShadow: "0 4px 10px rgba(0, 0, 0, 0.05)",
         position: "relative",
     },
-    cardTitle: {
-        marginBottom: "0.5rem",
+    cardTitle: { marginBottom: "0.5rem" },
+    text: { margin: "4px 0" },
+    codeWrapper: { margin: "6px 0" },
+    codeLabel: { fontWeight: "bold", marginRight: "8px" },
+    codeContainer: { display: "inline-flex", alignItems: "center", gap: "6px" },
+    codeText: {
+        background: "#f4f4f4",
+        padding: "3px 6px",
+        borderRadius: "4px",
+        fontSize: "0.9rem",
     },
-    text: {
-        margin: "4px 0",
+    copyButton: {
+        border: "none",
+        background: "#007bff",
+        color: "#fff",
+        padding: "3px 6px",
+        borderRadius: "4px",
+        cursor: "pointer",
+        fontSize: "0.8rem",
     },
     statusBadge: {
         display: "inline-block",
@@ -197,9 +241,7 @@ const styles = {
         fontSize: "0.85rem",
         marginTop: "0.5rem",
     },
-    buttonGroup: {
-        marginTop: "1rem",
-    },
+    buttonGroup: { marginTop: "1rem" },
     greenButton: {
         backgroundColor: "#28a745",
         color: "#fff",
