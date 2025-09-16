@@ -332,6 +332,13 @@ public class CityController {
         return ResponseEntity.ok(reservations);
     }
 
+    // 마이페이지 특정 예약 삭제
+    @DeleteMapping("/api/reservations/{id}")
+    public ResponseEntity<String> deleteReservation(@PathVariable Long id) {
+        reservationService.deleteReservation(id);
+        return ResponseEntity.ok("예약이 삭제되었습니다. id=" + id);
+    }
+
     // 사용자 예약 상태 변경 (프론트에서 예약 ID와 상태 전달)
     @PatchMapping("/api/reservations/{reservationId}/status")
     public ResponseEntity<String> updateStatus(

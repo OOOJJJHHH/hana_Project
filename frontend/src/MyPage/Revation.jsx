@@ -23,6 +23,9 @@ const Revation = () => {
                 { withCredentials: true }
             );
             setReservations(data);
+
+            // ✅ 콘솔 출력 개선
+            console.log("가져온 예약 내역:", data);
         } catch (err) {
             console.error("예약 내역 조회 실패", err);
         }
@@ -46,8 +49,8 @@ const Revation = () => {
     };
 
     const deleteReservation = async (reservationId) => {
-        const confirm = window.confirm("정말로 이 예약을 삭제하시겠습니까?");
-        if (!confirm) return;
+        const confirmDelete = window.confirm("정말로 이 예약을 삭제하시겠습니까?");
+        if (!confirmDelete) return;
 
         try {
             await axios.delete(
@@ -75,7 +78,11 @@ const Revation = () => {
             ) : (
                 <div style={styles.scrollArea}>
                     {reservations.map((r) => {
-                        const status = statusMap[r.status];
+                        const status = statusMap[r.status] || {
+                            label: "알 수 없음",
+                            color: "#999",
+                        };
+
                         return (
                             <div
                                 key={r.reservationId}
@@ -84,10 +91,11 @@ const Revation = () => {
                                     border: `2px solid ${status.color}`,
                                 }}
                             >
-                                <h3 style={styles.cardTitle}>{r.clodName}</h3>
+                                <h3 style={styles.cardTitle}>{r.clodName || "이름 없음"}</h3>
                                 <p style={styles.text}>
                                     <strong>예약 기간:</strong>{" "}
-                                    {r.startDate.slice(0, 10)} ~ {r.endDate.slice(0, 10)}
+                                    {r.startDate ? r.startDate.slice(0, 10) : "-"} ~{" "}
+                                    {r.endDate ? r.endDate.slice(0, 10) : "-"}
                                 </p>
                                 <div
                                     style={{
@@ -161,7 +169,7 @@ const styles = {
         color: "#777",
     },
     scrollArea: {
-        maxHeight: "800px", // 👈 한 화면에 3개 정도만 보이도록 제한
+        maxHeight: "800px",
         overflowY: "auto",
         display: "flex",
         flexDirection: "column",

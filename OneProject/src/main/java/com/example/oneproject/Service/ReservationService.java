@@ -12,6 +12,8 @@ import com.example.oneproject.Repository.CLodRepository;
 import com.example.oneproject.Repository.ReservationRepository;
 import com.example.oneproject.Repository.RoomRepository;
 import com.example.oneproject.Repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -61,6 +63,15 @@ public class ReservationService {
         );
 
         return reservationRepository.save(reservation);
+    }
+
+    // 예약 삭제
+    @Transactional
+    public void deleteReservation(Long reservationId) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 예약을 찾을 수 없습니다. id=" + reservationId));
+
+        reservationRepository.delete(reservation);
     }
 
     //=============================================================
