@@ -1,5 +1,7 @@
 package com.example.oneproject.Service;
 
+import com.example.oneproject.DTO.CityHotelDTO;
+import com.example.oneproject.DTO.HotelRoomDTO;
 import com.example.oneproject.DTO.RoomUpdateDto;
 import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.Room;
@@ -21,6 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.Comparator;
+
 
 @Service
 @RequiredArgsConstructor
@@ -174,7 +179,36 @@ public class RoomService {
         System.out.println("✅ [END] processBatchUpdate()");
     }
 
+    // 검색해서 미리보기
+    public List<CityHotelDTO> searchRoomsByKeyword(String keyword) {
+        List<Room> rooms = roomRepository.findByRoomNameContaining(keyword);
 
+        // Room -> HotelRoomDTO 변환
+        List<HotelRoomDTO> hotelDTOs = rooms.stream()
+                .map(r -> new HotelRoomDTO(
+                        r.getId(),
+                        r.getRoomName(),
+                        r.getClodContent().getLodName(),
+                        r.getClodContent().getLodCity(),
+                        r.getClodContent().getLodImag()
+                ))
+                .collect(Collectors.toList());
+
+        // 도시별로 그룹핑
+        Map<String, List<HotelRoomDTO>> groupedByCity = hotelDTOs.stream()
+                .collect(Collectors.groupingBy(HotelRoomDTO::getLodCity));
+
+        // DTO 변환
+        List<CityHotelDTO> result = new ArrayList<>();
+        for (Map.Entry<String, List<HotelRoomDTO>> entry : groupedByCity.entrySet()) {
+            result.add(new CityHotelDTO(entry.getKey(), entry.getValue()));
+        }
+
+        // 도시 이름 기준 오름차순 정렬
+        result.sort(Comparator.comparing(CityHotelDTO::getCityName));
+
+        return result;
+    }
 
 
 
