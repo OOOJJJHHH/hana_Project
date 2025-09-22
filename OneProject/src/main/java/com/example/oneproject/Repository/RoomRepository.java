@@ -18,4 +18,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     @Query("SELECT ri FROM RoomImages ri WHERE ri.room.id IN :roomIds")
     List<RoomImages> findByRoomIds(@Param("roomIds") List<Long> roomIds);
 
+    // roomName 컬럼에 검색어가 포함된 Room 조회
+    @Query("SELECT r FROM Room r JOIN FETCH r.clodContent c WHERE r.roomName LIKE %:keyword%")
+    List<Room> findByRoomNameContaining(@Param("keyword") String keyword);
+
 }

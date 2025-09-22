@@ -31,7 +31,6 @@ function AppWrapper() {
 
     return (
         <>
-            {!isPopupRoute && <Header />}
             <div className="main-content">
                 <Routes>
                     {renderRoutes(routes)}
@@ -50,6 +49,7 @@ function App() {
     return (
         <UserProvider>
             <Router>
+                <Header />
                 <AppWrapper />
                 <UKWeather />
             </Router>

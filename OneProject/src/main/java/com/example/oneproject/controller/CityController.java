@@ -705,6 +705,14 @@ public class CityController {
                     .body("업로드 실패: " + e.getMessage());
         }
     }
+        @GetMapping("/checkId")
+        public Map<String, Boolean> checkId(@RequestParam("uId") String uId) {
+            boolean exists = userRepository.findByUId(uId).isPresent();
+            return Map.of("available", !exists);
+        }
+
+
+
 
 
 
