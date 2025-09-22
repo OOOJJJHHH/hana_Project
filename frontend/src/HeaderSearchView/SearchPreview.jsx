@@ -1,159 +1,226 @@
-import React from 'react';
-import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const SearchPreview = ({ searchResults, searchQuery }) => {
     const navigate = useNavigate();
 
+    const handleHotelClick = (hotelName) => {
+        navigate(`/hotel-detail?name=${encodeURIComponent(hotelName)}`);
+    };
+
+    // ===== 인라인 스타일 객체 =====
+    const styles = {
+        previewDropdown: {
+            position: "absolute",
+            top: "50px",
+            left: 0,
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            zIndex: 1000,
+        },
+        previewBox: {
+            width: "100%",
+            maxWidth: "1200px",
+            background: "#fafafa",
+            borderRadius: "12px",
+            padding: "20px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            maxHeight: "700px",
+            overflowY: "auto",
+        },
+        searchHeader: {
+            marginBottom: "15px",
+        },
+        searchTitle: {
+            fontSize: "1.2rem",
+            fontWeight: "bold",
+        },
+        highlight: {
+            color: "#ff5722",
+        },
+        noResult: {
+            textAlign: "center",
+            color: "red",
+            fontWeight: "bold",
+        },
+        resultContainer: {
+            display: "flex",
+            flexDirection: "column",
+            gap: "25px",
+        },
+        citySection: {
+            display: "flex",
+            flexDirection: "column",
+            gap: "15px",
+        },
+        cityName: {
+            fontSize: "1.2rem",
+            fontWeight: "700",
+            color: "#333",
+            borderBottom: "2px solid #ff5722",
+            paddingBottom: "5px",
+        },
+        hotelCard: {
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            padding: "12px",
+            background: "white",
+            borderRadius: "10px",
+            border: "1px solid #ddd",
+        },
+        hotelHeader: {
+            display: "flex",
+            alignItems: "center",
+            gap: "15px",
+            cursor: "pointer",
+        },
+        hotelImageWrapper: {
+            flex: "0 0 120px",
+            height: "100px",
+            overflow: "hidden",
+            borderRadius: "8px",
+        },
+        hotelImage: {
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+        },
+        hotelInfo: {
+            display: "flex",
+            flexDirection: "column",
+        },
+        hotelTitle: {
+            fontSize: "1rem",
+            fontWeight: 600,
+        },
+        roomsContainer: {
+            display: "flex",
+            gap: "15px",
+            flexWrap: "wrap",
+            marginTop: "10px",
+        },
+        roomCard: {
+            width: "180px",
+            background: "#fff",
+            borderRadius: "8px",
+            border: "1px solid #ccc",
+            padding: "8px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "6px",
+            cursor: "pointer",
+            transition: "transform 0.15s ease, box-shadow 0.15s ease",
+        },
+        roomCardHover: {
+            transform: "translateY(-3px)",
+            boxShadow: "0 6px 12px rgba(0,0,0,0.15)",
+        },
+        roomMainImageWrapper: {
+            width: "100%",
+            height: "100px",
+            overflow: "hidden",
+            borderRadius: "6px",
+        },
+        roomMainImage: {
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+        },
+        roomImagesScroll: {
+            display: "flex",
+            gap: "5px",
+            overflowX: "auto",
+        },
+        roomImageThumb: {
+            width: "50px",
+            height: "50px",
+            borderRadius: "4px",
+            objectFit: "cover",
+            flexShrink: 0,
+        },
+        roomName: {
+            fontWeight: 600,
+            fontSize: "0.9rem",
+        },
+        roomPrice: {
+            fontSize: "0.85rem",
+            color: "gray",
+        },
+    };
+
     return (
-        <PreviewDropdown>
-            <PreviewBox>
-                <Title>검색어 "{searchQuery}" 결과</Title>
+        <div style={styles.previewDropdown}>
+            <div style={styles.previewBox}>
+                <div style={styles.searchHeader}>
+                    <h3 style={styles.searchTitle}>
+                        현재 입력한 "<span style={styles.highlight}>{searchQuery}</span>"에 대한 검색 결과
+                    </h3>
+                </div>
 
                 {searchResults.length === 0 ? (
-                    <EmptyMessage>검색 결과가 없습니다.</EmptyMessage>
+                    <p style={styles.noResult}>검색 결과가 없습니다.</p>
                 ) : (
-                    searchResults.map((city) => (
-                        <CitySection key={city.cityName}>
-                            <CityName>{city.cityName}</CityName>
-
-                            {city.hotels.map((hotel, idx) => (
-                                <HotelCard key={idx}>
-                                    <HotelImage src={hotel.lodImag} alt={hotel.lodName} />
-                                    <HotelInfo>
-                                        <HotelName
-                                            onClick={() =>
-                                                navigate(`/hotelDetail?name=${encodeURIComponent(hotel.lodName)}`)
-                                            }
+                    <div style={styles.resultContainer}>
+                        {searchResults.map((city, idx) => (
+                            <div key={idx} style={styles.citySection}>
+                                <h4 style={styles.cityName}>{city.cityName}</h4>
+                                {city.hotels.map((hotel) => (
+                                    <div key={hotel.lodName} style={styles.hotelCard}>
+                                        <div
+                                            style={styles.hotelHeader}
+                                            onClick={() => handleHotelClick(hotel.lodName)}
                                         >
-                                            {hotel.lodName}
-                                        </HotelName>
-                                        <RoomsContainer>
-                                            {hotel.roomImages?.map((roomImg, i) => (
-                                                <RoomImage
-                                                    key={i}
-                                                    src={roomImg}
-                                                    alt={`${hotel.lodName} 방 이미지`}
-                                                />
+                                            <div style={styles.hotelImageWrapper}>
+                                                <img src={hotel.lodImag} alt={hotel.lodName} style={styles.hotelImage} />
+                                            </div>
+                                            <div style={styles.hotelInfo}>
+                                                <h5 style={styles.hotelTitle}>{hotel.lodName}</h5>
+                                                <p style={{ fontSize: "0.85rem", color: "gray" }}>
+                                                    객실 수: {hotel.rooms.length}개
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div style={styles.roomsContainer}>
+                                            {hotel.rooms.map((room) => (
+                                                <div
+                                                    key={room.roomId}
+                                                    style={styles.roomCard}
+                                                    onMouseOver={(e) => Object.assign(e.currentTarget.style, styles.roomCardHover)}
+                                                    onMouseOut={(e) => Object.assign(e.currentTarget.style, { transform: "none", boxShadow: "none" })}
+                                                >
+                                                    <div style={styles.roomMainImageWrapper}>
+                                                        {room.roomImages[0] && (
+                                                            <img
+                                                                src={room.roomImages[0].imageKey}
+                                                                alt={room.roomName}
+                                                                style={styles.roomMainImage}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                    <span style={styles.roomName}>{room.roomName}</span>
+                                                    {room.price && <span style={styles.roomPrice}>{room.price.toLocaleString()}원</span>}
+                                                    {/* 이미지 여러 장 수평 스크롤 */}
+                                                    {room.roomImages.length > 1 && (
+                                                        <div style={styles.roomImagesScroll}>
+                                                            {room.roomImages.slice(1).map((img, i) => (
+                                                                <img key={i} src={img.imageKey} alt={room.roomName} style={styles.roomImageThumb} />
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             ))}
-                                            <RoomName>
-                                                {hotel.roomName ? `방: ${hotel.roomName}` : ""}
-                                            </RoomName>
-                                        </RoomsContainer>
-                                    </HotelInfo>
-                                </HotelCard>
-                            ))}
-                        </CitySection>
-                    ))
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
                 )}
-            </PreviewBox>
-        </PreviewDropdown>
+            </div>
+        </div>
     );
 };
-
-// ===============================
-// 스타일
-// ===============================
-const PreviewDropdown = styled.div`
-    position: absolute;
-    top: 50px;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    z-index: 1000;
-`;
-
-const PreviewBox = styled.div`
-    width: 95%;
-    max-width: 1000px;
-    max-height: 600px;
-    overflow-y: auto;
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-`;
-
-const Title = styled.h3`
-    margin-bottom: 15px;
-`;
-
-const EmptyMessage = styled.p`
-    text-align: center;
-    color: #555;
-`;
-
-const CitySection = styled.div`
-    margin-bottom: 25px;
-`;
-
-const CityName = styled.h4`
-    font-size: 1.3rem;
-    font-weight: bold;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
-`;
-
-const HotelCard = styled.div`
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-    padding: 10px;
-    background: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    transition: transform 0.2s ease;
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-`;
-
-const HotelImage = styled.img`
-    width: 100px;
-    height: 100px;
-    object-fit: cover;
-    border-radius: 8px;
-    flex-shrink: 0;
-`;
-
-const HotelInfo = styled.div`
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-`;
-
-const HotelName = styled.h5`
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 5px;
-    cursor: pointer;
-    &:hover {
-        text-decoration: underline;
-        color: #ff5722;
-    }
-`;
-
-const RoomsContainer = styled.div`
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-top: 5px;
-`;
-
-const RoomImage = styled.img`
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 5px;
-`;
-
-const RoomName = styled.p`
-    font-size: 0.85rem;
-    color: #555;
-    margin-top: 5px;
-`;
 
 export default SearchPreview;
