@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/hotels")
 public class RoomSearchController {
 
     private final RoomService roomService;
@@ -17,8 +16,8 @@ public class RoomSearchController {
     }
 
     // GET /api/hotels/search?query=검색어
-    @GetMapping("/search")
-    public List<CityHotelDTO> searchHotels(@RequestParam String query) {
-        return roomService.searchRoomsByKeyword(query);
+    @GetMapping("/api/hotels/search")
+    public List<CityHotelDTO> searchHotels(@RequestParam("query") String query) {
+        return roomService.searchHotelsByName(query);
     }
 }

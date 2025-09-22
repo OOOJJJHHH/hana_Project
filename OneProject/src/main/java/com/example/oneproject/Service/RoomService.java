@@ -1,8 +1,6 @@
 package com.example.oneproject.Service;
 
-import com.example.oneproject.DTO.CityHotelDTO;
-import com.example.oneproject.DTO.HotelRoomDTO;
-import com.example.oneproject.DTO.RoomUpdateDto;
+import com.example.oneproject.DTO.*;
 import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.Room;
 import com.example.oneproject.Entity.RoomImages;
@@ -10,7 +8,7 @@ import com.example.oneproject.Repository.CLodRepository;
 import com.example.oneproject.Repository.RoomImagesRepository;
 import com.example.oneproject.Repository.RoomRepository;
 import com.example.oneproject.Repository.WishListRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -180,34 +178,47 @@ public class RoomService {
     }
 
     // 검색해서 미리보기
-    public List<CityHotelDTO> searchRoomsByKeyword(String keyword) {
-        List<Room> rooms = roomRepository.findByRoomNameContaining(keyword);
+    @Transactional(readOnly = true)
+    public List<CityHotelDTO> searchHotelsByName(String keyword) {
+        List<ClodContent> results = lodRepository.findByLodNameContainingIgnoreCase(keyword);
 
-        // Room -> HotelRoomDTO 변환
-        List<HotelRoomDTO> hotelDTOs = rooms.stream()
-                .map(r -> new HotelRoomDTO(
-                        r.getId(),
-                        r.getRoomName(),
-                        r.getClodContent().getLodName(),
-                        r.getClodContent().getLodCity(),
-                        r.getClodContent().getLodImag()
-                ))
+        // 도시별로 그룹화
+        Map<String, List<ClodContent>> groupedByCity = results.stream()
+                .collect(Collectors.groupingBy(ClodContent::getLodCity));
+
+        return groupedByCity.entrySet().stream()
+                .map(entry -> {
+                    List<HotelDTO> hotels = entry.getValue().stream()
+                            .map(hotel -> {
+                                // 숙소 이미지 Presigned URL 생성
+                                String presignedHotelImg = s3Service.generatePresignedUrl(hotel.getLodImag());
+
+                                List<String> roomNames = hotel.getRooms().stream()
+                                        .map(Room::getRoomName)
+                                        .collect(Collectors.toList());
+
+                                List<RoomDTO> roomDtos = hotel.getRooms().stream()
+                                        .map(room -> {
+                                            List<RoomImageDto> roomImageDtos = room.getRoomImages().stream()
+                                                    .map(img -> {
+                                                        RoomImageDto dto = new RoomImageDto();
+                                                        dto.setRoomId(room.getId());
+                                                        dto.setImageKey(s3Service.generatePresignedUrl(img.getImageKey()));
+                                                        return dto;
+                                                    })
+                                                    .collect(Collectors.toList());
+                                            return new RoomDTO(room.getId(), room.getRoomName(), roomImageDtos);
+                                        })
+                                        .collect(Collectors.toList());
+
+                                return new HotelDTO(hotel.getLodName(), hotel.getLodCity(),
+                                        presignedHotelImg, roomNames, roomDtos);
+                            })
+                            .collect(Collectors.toList());
+
+                    return new CityHotelDTO(entry.getKey(), hotels);
+                })
                 .collect(Collectors.toList());
-
-        // 도시별로 그룹핑
-        Map<String, List<HotelRoomDTO>> groupedByCity = hotelDTOs.stream()
-                .collect(Collectors.groupingBy(HotelRoomDTO::getLodCity));
-
-        // DTO 변환
-        List<CityHotelDTO> result = new ArrayList<>();
-        for (Map.Entry<String, List<HotelRoomDTO>> entry : groupedByCity.entrySet()) {
-            result.add(new CityHotelDTO(entry.getKey(), entry.getValue()));
-        }
-
-        // 도시 이름 기준 오름차순 정렬
-        result.sort(Comparator.comparing(CityHotelDTO::getCityName));
-
-        return result;
     }
 
 
