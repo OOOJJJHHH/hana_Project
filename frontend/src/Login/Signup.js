@@ -16,19 +16,21 @@ function Signup() {
   });
 
   const [isIdAvailable, setIsIdAvailable] = useState(null);
+  const [idCheckLoading, setIdCheckLoading] = useState(false);          // ✅ 로딩 상태
+  const [idCheckError, setIdCheckError] = useState('');                 // ✅ 에러 메시지
   const [selectedUserType, setSelectedUserType] = useState('');
   const [passwordStrength, setPasswordStrength] = useState('');
   const [passwordMatch, setPasswordMatch] = useState('');
-  const [cfPassword, setcfPassword] = useState('');
+  const [CfPassword, setCfPassword] = useState('');
   const [ToS, setToS] = useState('N');
 
   useEffect(() => {
-    if (cfPassword.length === 0) {
+    if (CfPassword.length === 0) {
       setPasswordMatch('');
       return;
     }
-    setPasswordMatch(formData.uPassword === cfPassword ? 'match' : 'mismatch');
-  }, [formData.uPassword, cfPassword]);
+    setPasswordMatch(formData.uPassword === CfPassword ? 'match' : 'mismatch');
+  }, [formData.uPassword, CfPassword]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,6 +38,12 @@ function Signup() {
       ...prev,
       [name]: value
     }));
+
+    // ✅ 아이디 입력이 바뀌면 중복확인 상태 초기화
+    if (name === 'uId') {
+      setIsIdAvailable(null);
+      setIdCheckError('');
+    }
   };
 
   const handlePasswordChange = (e) => {
@@ -58,14 +66,53 @@ function Signup() {
     setPasswordStrength(strength);
   };
 
-  const checkIdAvailability = () => {
-    const usedIds = ['testuser', 'guest'];
-    setIsIdAvailable(!usedIds.includes(formData.uId));
+  // ✅ (프론트) 아이디 유효성 간단 체크: 영문/숫자, 4~20자
+  const isValidUserId = (uid) => /^[a-zA-Z0-9]{3,20}$/.test(uid);
+
+  // ✅ (프론트→백엔드) 아이디 중복확인
+  const checkIdAvailability = async () => {
+    setIdCheckError('');
+    if (!formData.uId) {
+      setIsIdAvailable(null);
+      setIdCheckError('아이디를 입력해주세요.');
+      return;
+    }
+    if (!isValidUserId(formData.uId)) {
+      setIsIdAvailable(null);
+      setIdCheckError('아이디는 영문/숫자 3~20자로 입력하세요.');
+      return;
+    }
+
+    try {
+      setIdCheckLoading(true);
+      // 백엔드에서 { "available": true|false } 형태로 응답한다고 가정
+      const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/checkId`,
+          { params: { uId: formData.uId } }
+      );
+      setIsIdAvailable(Boolean(data?.available));
+    } catch (err) {
+      console.error('중복확인 오류:', err);
+      setIsIdAvailable(null);
+      setIdCheckError('중복확인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+    } finally {
+      setIdCheckLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.uPassword !== cfPassword) {
+
+    // ✅ 제출 전 마지막으로 아이디/비번 점검
+    if (!isValidUserId(formData.uId)) {
+      alert('아이디는 영문/숫자 3~20자로 입력하세요.');
+      return;
+    }
+    if (isIdAvailable !== true) {
+      alert('아이디 중복확인을 진행하고 사용 가능한 아이디인지 확인해주세요.');
+      return;
+    }
+    if (formData.uPassword !== CfPassword) {
       alert('비밀번호가 일치하지 않습니다.');
       return;
     }
@@ -83,6 +130,9 @@ function Signup() {
         uId: '',
         uPassword: '',
       });
+      // eslint-disable-next-line no-undef
+      setCfPassword('');
+      setIsIdAvailable(null);
     } catch (error) {
       console.error("Error saving user:", error);
       alert("데이터 저장에 실패하였습니다");
@@ -113,10 +163,7 @@ function Signup() {
                     onChange={(e) => {
                       const value = e.target.value;
                       setSelectedUserType(value);
-                      setFormData(prev => ({
-                        ...prev,
-                        uUser: value
-                      }));
+                      setFormData(prev => ({ ...prev, uUser: value }));
                     }}
                     checked={formData.uUser === 'tenant'}
                 />
@@ -130,10 +177,7 @@ function Signup() {
                     onChange={(e) => {
                       const value = e.target.value;
                       setSelectedUserType(value);
-                      setFormData(prev => ({
-                        ...prev,
-                        uUser: value
-                      }));
+                      setFormData(prev => ({ ...prev, uUser: value }));
                     }}
                     checked={formData.uUser === 'landlord'}
                 />
@@ -178,18 +222,24 @@ function Signup() {
                 type="text"
                 name="uId"
                 value={formData.uId}
-                onChange={(e) => {
-                  handleChange(e);
-                  setIsIdAvailable(null);
-                }}
+                onChange={handleChange}
                 placeholder="아이디"
                 className="input-field"
                 required
             />
-            <button type="button" onClick={checkIdAvailability} className="check-btn">
-              중복확인
+            <button
+                type="button"
+                onClick={checkIdAvailability}
+                className="check-btn"
+                disabled={idCheckLoading}
+                title={idCheckLoading ? '확인 중...' : '아이디 중복확인'}
+            >
+              {idCheckLoading ? '확인 중...' : '중복확인'}
             </button>
           </div>
+
+          {/* ✅ 아이디 중복확인 결과/에러 표시 */}
+          {idCheckError && <div className="id-error">{idCheckError}</div>}
           {isIdAvailable === true && <div className="id-available">사용 가능한 아이디입니다.</div>}
           {isIdAvailable === false && <div className="id-unavailable">이미 사용 중인 아이디입니다.</div>}
 
@@ -210,17 +260,20 @@ function Signup() {
 
           <input
               type="password"
-              name="cfPassword"
-              value={cfPassword}
-              onChange={(e) => setcfPassword(e.target.value)}
+              name="CfPassword"
+              value={CfPassword}
+              onChange={(e) => setCfPassword(e.target.value)}
               placeholder="비밀번호 확인"
               className="input-field"
               required
           />
-          <div className={`password-match ${passwordMatch}`}>
-            {formData.uPassword === cfPassword && '비밀번호가 일치합니다.'}
-            {formData.uPassword !== cfPassword && '비밀번호가 일치하지 않습니다.'}
-          </div>
+          {/* ✅ 확인 입력이 있을 때만 일치/불일치 문구 표시 */}
+          {CfPassword.length > 0 && (
+              <div className={`password-match ${passwordMatch}`}>
+                {passwordMatch === 'match' && '비밀번호가 일치합니다.'}
+                {passwordMatch === 'mismatch' && '비밀번호가 일치하지 않습니다.'}
+              </div>
+          )}
 
           <div className="Agree-box">
             <h4>개인정보 수집·이용에 대한 동의</h4>
@@ -249,12 +302,16 @@ function Signup() {
             />
           </div>
 
-          <button type="submit" className="submit-btn" disabled={ToS !== "Y"}>
+          <button
+              type="submit"
+              className="submit-btn"
+              disabled={ToS !== "Y" || isIdAvailable !== true}  // ✅ 중복확인 통과 전엔 비활성화
+          >
             회원가입
           </button>
         </form>
       </div>
   );
-};
+}
 
 export default Signup;
