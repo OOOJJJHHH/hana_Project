@@ -35,7 +35,7 @@ public interface CLodRepository extends JpaRepository<ClodContent, Long> {
             "LEFT JOIN FETCH r.roomImages")
     List<ClodContent> findAllWithRoomsAndImages();
 
-
+    List<ClodContent> findByLodNameContainingIgnoreCase(String keyword);
 
 
 }

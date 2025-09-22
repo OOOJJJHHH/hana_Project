@@ -1,53 +1,50 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 
-// props로 검색 결과, 현재 페이지, 페이지 변경 함수, itemsPerPage, 에러 메시지, 검색어를 받음
-const SearchPreview = ({
-                           searchResults,
-                           currentPage,
-                           setCurrentPage,
-                           itemsPerPage,
-                           errorMessage,
-                           searchQuery
-                       }) => {
-    // 페이지네이션 계산
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = searchResults.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(searchResults.length / itemsPerPage);
+const SearchPreview = ({ searchResults, searchQuery }) => {
+    const navigate = useNavigate();
 
     return (
         <PreviewDropdown>
             <PreviewBox>
-                <h3>현재 입력한 "{searchQuery}" 에 대한 검색 결과</h3>
-                {errorMessage ? (
-                    <ErrorMessage>{errorMessage}</ErrorMessage>
-                ) : (
-                    <>
-                        <CardGrid>
-                            {currentItems.map((hotel) => (
-                                <Card key={hotel.id}>
-                                    <img src={hotel.imageUrl} alt={hotel.name} />
-                                    <h4>{hotel.name}</h4>
-                                    <p>{hotel.location}</p>
-                                </Card>
-                            ))}
-                        </CardGrid>
+                <Title>검색어 "{searchQuery}" 결과</Title>
 
-                        {searchResults.length > 0 && (
-                            <Pagination>
-                                {Array.from({ length: totalPages }, (_, i) => (
-                                    <PageButton
-                                        key={i}
-                                        active={i + 1 === currentPage}
-                                        onClick={() => setCurrentPage(i + 1)}
-                                    >
-                                        {i + 1}
-                                    </PageButton>
-                                ))}
-                            </Pagination>
-                        )}
-                    </>
+                {searchResults.length === 0 ? (
+                    <EmptyMessage>검색 결과가 없습니다.</EmptyMessage>
+                ) : (
+                    searchResults.map((city) => (
+                        <CitySection key={city.cityName}>
+                            <CityName>{city.cityName}</CityName>
+
+                            {city.hotels.map((hotel, idx) => (
+                                <HotelCard key={idx}>
+                                    <HotelImage src={hotel.lodImag} alt={hotel.lodName} />
+                                    <HotelInfo>
+                                        <HotelName
+                                            onClick={() =>
+                                                navigate(`/hotelDetail?name=${encodeURIComponent(hotel.lodName)}`)
+                                            }
+                                        >
+                                            {hotel.lodName}
+                                        </HotelName>
+                                        <RoomsContainer>
+                                            {hotel.roomImages?.map((roomImg, i) => (
+                                                <RoomImage
+                                                    key={i}
+                                                    src={roomImg}
+                                                    alt={`${hotel.lodName} 방 이미지`}
+                                                />
+                                            ))}
+                                            <RoomName>
+                                                {hotel.roomName ? `방: ${hotel.roomName}` : ""}
+                                            </RoomName>
+                                        </RoomsContainer>
+                                    </HotelInfo>
+                                </HotelCard>
+                            ))}
+                        </CitySection>
+                    ))
                 )}
             </PreviewBox>
         </PreviewDropdown>
@@ -55,7 +52,7 @@ const SearchPreview = ({
 };
 
 // ===============================
-// 스타일 정의
+// 스타일
 // ===============================
 const PreviewDropdown = styled.div`
     position: absolute;
@@ -68,71 +65,95 @@ const PreviewDropdown = styled.div`
 `;
 
 const PreviewBox = styled.div`
-    width: 90%;
+    width: 95%;
     max-width: 1000px;
-    background: #fafafa;
+    max-height: 600px;
+    overflow-y: auto;
+    background: #ffffff;
     border-radius: 12px;
-    padding: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    padding: 20px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 `;
 
-const ErrorMessage = styled.p`
-    color: red;
+const Title = styled.h3`
+    margin-bottom: 15px;
+`;
+
+const EmptyMessage = styled.p`
+    text-align: center;
+    color: #555;
+`;
+
+const CitySection = styled.div`
+    margin-bottom: 25px;
+`;
+
+const CityName = styled.h4`
+    font-size: 1.3rem;
     font-weight: bold;
-    text-align: center;
-    margin-top: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
 `;
 
-const CardGrid = styled.div`
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin-top: 10px;
-`;
-
-const Card = styled.div`
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 10px;
-    text-align: center;
-
-    img {
-        width: 100%;
-        height: 100px;
-        object-fit: cover;
-        border-radius: 8px;
-    }
-
-    h4 {
-        margin: 10px 0 5px;
-    }
-
-    p {
-        font-size: 0.85rem;
-        color: gray;
-    }
-`;
-
-const Pagination = styled.div`
+const HotelCard = styled.div`
     display: flex;
-    justify-content: center;
-    margin-top: 10px;
-    gap: 6px;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease;
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
 `;
 
-const PageButton = styled.button`
-    padding: 5px 10px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    background: ${(props) => (props.active ? "#ff5722" : "white")};
-    color: ${(props) => (props.active ? "white" : "black")};
-    cursor: pointer;
+const HotelImage = styled.img`
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+`;
 
+const HotelInfo = styled.div`
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+`;
+
+const HotelName = styled.h5`
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    cursor: pointer;
     &:hover {
-        background: #ff5722;
-        color: white;
+        text-decoration: underline;
+        color: #ff5722;
     }
+`;
+
+const RoomsContainer = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 5px;
+`;
+
+const RoomImage = styled.img`
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 5px;
+`;
+
+const RoomName = styled.p`
+    font-size: 0.85rem;
+    color: #555;
+    margin-top: 5px;
 `;
 
 export default SearchPreview;

@@ -3,42 +3,41 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { UserContext, UserUpdateContext } from "./Session/UserContext";
 import axios from "axios";
-import SearchPreview from "./HeaderSearchView/SearchPreview"; // ✅ 검색 결과 미리보기 컴포넌트
+import SearchPreview from "./HeaderSearchView/SearchPreview"; // 검색 결과 미리보기 컴포넌트
 
 // ===============================
 // 1. Header 컴포넌트
 // ===============================
 const Header = () => {
-    const navigate = useNavigate(); // 페이지 이동 훅
+    const navigate = useNavigate();
 
     // ===============================
     // 2. 사용자 정보
     // ===============================
-    const userInfo = useContext(UserContext); // 로그인한 사용자 정보
-    const setUserInfo = useContext(UserUpdateContext); // 사용자 정보 갱신 함수
+    const userInfo = useContext(UserContext);
+    const setUserInfo = useContext(UserUpdateContext);
 
     // ===============================
-    // 3. 검색 관련 상태
+    // 3. 검색 상태 관리
     // ===============================
-    const [searchQuery, setSearchQuery] = useState(""); // 검색 입력값
-    const [searchResults, setSearchResults] = useState([]); // API 검색 결과 저장
+    const [searchQuery, setSearchQuery] = useState(""); // 검색어
+    const [searchResults, setSearchResults] = useState([]); // API 결과
     const [showPreview, setShowPreview] = useState(false); // 미리보기 창 표시 여부
-    const [currentPage, setCurrentPage] = useState(1); // 페이지네이션 현재 페이지
-    const [errorMessage, setErrorMessage] = useState(null); // 검색 오류 메시지
-    const itemsPerPage = 4; // 한 페이지에 보여줄 검색 결과 개수
+    const [currentPage, setCurrentPage] = useState(1); // 페이지네이션
+    const [errorMessage, setErrorMessage] = useState(null);
+    const itemsPerPage = 4;
 
-    // 검색창 + 버튼 영역 참조 (외부 클릭 시 미리보기 닫기 용)
-    const searchWrapperRef = useRef(null);
+    const searchWrapperRef = useRef(null); // 검색창 + 버튼 영역
 
     // ===============================
-    // 4. 로그아웃 함수
+    // 4. 로그아웃
     // ===============================
     const Logout = async () => {
         try {
             await axios.post(`${process.env.REACT_APP_API_URL}/api/logout`, {}, { withCredentials: true });
-            setUserInfo(null); // 사용자 상태 초기화
-            localStorage.removeItem('loginUser'); // 로컬스토리지 삭제
-            navigate("/login"); // 로그인 페이지 이동
+            setUserInfo(null);
+            localStorage.removeItem('loginUser');
+            navigate("/login");
         } catch (error) {
             console.error("로그아웃 실패:", error);
         }
@@ -52,19 +51,22 @@ const Header = () => {
             alert("숙소명을 입력해주세요!");
             return;
         }
+
         try {
-            // axios GET 요청, 쿼리파라미터로 searchQuery 전달
             const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/hotels/search`, {
                 params: { query: searchQuery },
             });
-            setSearchResults(res.data); // 검색 결과 저장
-            setShowPreview(true); // 미리보기 창 표시
-            setCurrentPage(1); // 페이지 초기화
-            setErrorMessage(null); // 오류 메시지 초기화
+
+            console.log("백엔드에서 받은 검색 결과:", res.data); // ✅ 백엔드 데이터 확인
+
+            setSearchResults(res.data);
+            setShowPreview(true);
+            setCurrentPage(1);
+            setErrorMessage(null);
         } catch (error) {
             console.error("검색 에러:", error);
             setErrorMessage("검색 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-            setShowPreview(true); // 오류 발생 시에도 창 표시
+            setShowPreview(true);
         }
     };
 
@@ -82,48 +84,39 @@ const Header = () => {
     }, []);
 
     // ===============================
-    // 7. Header JSX
+    // 7. JSX 반환
     // ===============================
     return (
         <HeaderContainer>
-            {/* ===============================
-                7-1. 상단 로고 + 검색창 + 로그인/마이페이지/로그아웃
-            =============================== */}
+            {/* 7-1. 상단 로고 + 검색창 + 로그인/마이페이지/로그아웃 */}
             <TopRow>
-                {/* 로고 버튼 */}
                 <LogoButton onClick={() => navigate("/")}>
                     <h1>여가</h1>
                 </LogoButton>
 
-                {/* ===============================
-                    7-2. 검색창 + 검색 버튼 + 미리보기
-                    SearchPreview 컴포넌트로 분리
-                =============================== */}
+                {/* 7-2. 검색창 + 검색 버튼 + 미리보기 */}
                 <SearchWrapper ref={searchWrapperRef}>
                     <SearchInput
                         type="text"
                         placeholder="숙소명을 입력해주세요!"
-                        value={searchQuery} // 상태 바인딩
-                        onChange={(e) => setSearchQuery(e.target.value)} // 입력값 변경 시 상태 업데이트
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                     />
                     <SearchButton onClick={handleSearch}>검색</SearchButton>
 
-                    {/* 검색 결과 미리보기 */}
                     {showPreview && (
                         <SearchPreview
-                            searchResults={searchResults} // 검색 결과 전달
+                            searchResults={searchResults} // 검색 결과
                             currentPage={currentPage} // 현재 페이지
                             setCurrentPage={setCurrentPage} // 페이지 변경 함수
                             itemsPerPage={itemsPerPage} // 한 페이지당 아이템 수
                             errorMessage={errorMessage} // 오류 메시지
-                            searchQuery={searchQuery} // 현재 검색어
+                            searchQuery={searchQuery} // 검색어
                         />
                     )}
                 </SearchWrapper>
 
-                {/* ===============================
-                    7-3. 로그인 / 마이페이지 / 로그아웃
-                =============================== */}
+                {/* 7-3. 로그인 / 마이페이지 / 로그아웃 */}
                 {userInfo == null ? (
                     <LoginText>
                         <button style={headMyLogButton} onClick={() => navigate("/login")}>Login</button>
@@ -139,9 +132,7 @@ const Header = () => {
                 )}
             </TopRow>
 
-            {/* ===============================
-                7-4. 네비게이션 메뉴
-            =============================== */}
+            {/* 7-4. 네비게이션 메뉴 */}
             <Nav>
                 <NavList>
                     <NavItem><NavLink href="/city">도시들</NavLink></NavItem>
@@ -154,7 +145,7 @@ const Header = () => {
 };
 
 // ===============================
-// 8. 스타일 및 버튼
+// 8. 스타일 정의
 // ===============================
 const headMyLogButton = {
     backgroundColor: "white",
@@ -189,11 +180,7 @@ const LogoButton = styled.button`
     background: transparent;
     border: none;
     cursor: pointer;
-    h1 {
-        font-size: 1.8rem;
-        font-weight: bold;
-        color: #333;
-    }
+    h1 { font-size: 1.8rem; font-weight: bold; color: #333; }
 `;
 
 const SearchWrapper = styled.div`
@@ -219,10 +206,7 @@ const SearchButton = styled.button`
     cursor: pointer;
     font-weight: 600;
     transition: background 0.2s ease;
-
-    &:hover {
-        background-color: #e64a19;
-    }
+    &:hover { background-color: #e64a19; }
 `;
 
 const LoginText = styled.span`
@@ -255,11 +239,7 @@ const NavLink = styled.a`
     text-decoration: none;
     font-size: 1.2rem;
     transition: color 0.3s ease;
-
-    &:hover {
-        text-decoration: underline;
-        color: #ff5722;
-    }
+    &:hover { text-decoration: underline; color: #ff5722; }
 `;
 
 export default Header;

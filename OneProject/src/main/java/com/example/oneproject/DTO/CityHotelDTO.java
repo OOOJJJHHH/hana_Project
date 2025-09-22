@@ -4,15 +4,17 @@ import java.util.List;
 
 // 도시별 숙소 그룹 DTO
 public class CityHotelDTO {
-    private String cityName; // 도시명
-    private List<HotelRoomDTO> hotels; // 해당 도시 내 숙소 리스트
+    private String cityName;
+    private List<HotelDTO> hotels;
 
-    public CityHotelDTO(String cityName, List<HotelRoomDTO> hotels) {
+    public CityHotelDTO() {
+    }
+
+    public CityHotelDTO(String cityName, List<HotelDTO> hotels) {
         this.cityName = cityName;
         this.hotels = hotels;
     }
 
-    // Getter / Setter
     public String getCityName() {
         return cityName;
     }
@@ -21,11 +23,11 @@ public class CityHotelDTO {
         this.cityName = cityName;
     }
 
-    public List<HotelRoomDTO> getHotels() {
+    public List<HotelDTO> getHotels() {
         return hotels;
     }
 
-    public void setHotels(List<HotelRoomDTO> hotels) {
+    public void setHotels(List<HotelDTO> hotels) {
         this.hotels = hotels;
     }
 }
