@@ -7,6 +7,7 @@ import FindAccountForm from "./Login/ID_pw_find";
 import "./App.css";
 import {UserProvider} from "./Session/UserContext";
 import UKWeather from "./Main/UKWeather";
+import {GoogleOAuthProvider} from "@react-oauth/google";
 
 
 
@@ -48,11 +49,13 @@ function AppWrapper() {
 function App() {
     return (
         <UserProvider>
-            <Router>
-                <Header />
-                <AppWrapper />
-                <UKWeather />
-            </Router>
+            <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+                <Router>
+                    <Header />
+                    <AppWrapper />
+                    <UKWeather />
+                </Router>
+            </GoogleOAuthProvider>
         </UserProvider>
     );
 }
