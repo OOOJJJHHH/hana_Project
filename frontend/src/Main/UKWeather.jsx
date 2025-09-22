@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import WeatherIcon from '../image/Weather_Icon.png'; // 최소화 아이콘 이미지
 
 const UKWeatherPopup = () => {
     const [forecast, setForecast] = useState(null);
@@ -9,8 +10,7 @@ const UKWeatherPopup = () => {
         try {
             const savedPosition = localStorage.getItem('weatherPopupPosition');
             return savedPosition ? JSON.parse(savedPosition) : { x: window.innerWidth - 240, y: 20 };
-        } catch (error) {
-            console.error("Failed to parse position from localStorage", error);
+        } catch {
             return { x: window.innerWidth - 240, y: 20 };
         }
     });
@@ -19,8 +19,7 @@ const UKWeatherPopup = () => {
         try {
             const savedIndex = localStorage.getItem('weatherPopupDateIndex');
             return savedIndex ? parseInt(savedIndex, 10) : 0;
-        } catch (error) {
-            console.error("Failed to parse date index from localStorage", error);
+        } catch {
             return 0;
         }
     });
@@ -29,8 +28,7 @@ const UKWeatherPopup = () => {
         try {
             const savedDimensions = localStorage.getItem('weatherPopupDimensions');
             return savedDimensions ? JSON.parse(savedDimensions) : { width: 220, height: 320 };
-        } catch (error) {
-            console.error("Failed to parse dimensions from localStorage", error);
+        } catch {
             return { width: 220, height: 320 };
         }
     });
@@ -39,6 +37,7 @@ const UKWeatherPopup = () => {
     const [isResizing, setIsResizing] = useState(false);
     const [resizeHandle, setResizeHandle] = useState(null);
     const [offset, setOffset] = useState({ x: 0, y: 0 });
+    const [isMinimized, setIsMinimized] = useState(false);
 
     const popupRef = useRef(null);
     const API_KEY = '76f59296790eca380cc7389d1bbe8877';
@@ -54,11 +53,8 @@ const UKWeatherPopup = () => {
                 if (!forecastRes.ok) throw new Error('Weather forecast API fetch error');
                 if (!currentRes.ok) throw new Error('Current weather API fetch error');
 
-                const forecastData = await forecastRes.json();
-                const currentData = await currentRes.json();
-
-                setForecast(forecastData);
-                setCurrentWeather(currentData);
+                setForecast(await forecastRes.json());
+                setCurrentWeather(await currentRes.json());
             } catch (err) {
                 setError(err.message);
             }
@@ -70,15 +66,11 @@ const UKWeatherPopup = () => {
     useEffect(() => {
         const handleMouseMove = (e) => {
             if (isDragging) {
-                setPosition({
-                    x: e.clientX - offset.x,
-                    y: e.clientY - offset.y,
-                });
+                setPosition({ x: e.clientX - offset.x, y: e.clientY - offset.y });
             } else if (isResizing) {
                 const { clientX, clientY } = e;
                 const newDimensions = { ...dimensions };
                 const newPosition = { ...position };
-
                 const minWidth = 220;
                 const minHeight = 320;
 
@@ -107,15 +99,14 @@ const UKWeatherPopup = () => {
                         newDimensions.height = Math.max(dimensions.height - dY, minHeight);
                         newPosition.y = position.y + (dimensions.height - newDimensions.height);
                         break;
-                    default:
-                        break;
+                    default: break;
                 }
                 setDimensions(newDimensions);
                 setPosition(newPosition);
             }
         };
 
-        const handleMouseUp = () => {
+        const handleMouseUp = (e) => {
             if (isDragging) {
                 setIsDragging(false);
                 localStorage.setItem('weatherPopupPosition', JSON.stringify(position));
@@ -140,14 +131,16 @@ const UKWeatherPopup = () => {
     }, [isDragging, isResizing, resizeHandle, offset, position, dimensions]);
 
     const handleMouseDown = (e) => {
-        if (e.target.className.includes('resizer')) {
+        // 더블 클릭 시 드래그가 시작되지 않도록 e.detail을 확인합니다.
+        if (e.target.className.includes('resizer') || e.detail === 2) {
             return;
         }
         setIsDragging(true);
-        setOffset({
-            x: e.clientX - popupRef.current.offsetLeft,
-            y: e.clientY - popupRef.current.offsetTop,
-        });
+        setOffset({ x: e.clientX - popupRef.current.offsetLeft, y: e.clientY - popupRef.current.offsetTop });
+    };
+
+    const handleDoubleClick = () => {
+        setIsMinimized(!isMinimized);
     };
 
     const handleResizeMouseDown = (e, handle) => {
@@ -170,24 +163,19 @@ const UKWeatherPopup = () => {
     const selectedDate = dates[selectedIndex];
     const selectedDayData = dailyData[selectedDate] || [];
 
-    // 팝업 너비에 따라 텍스트 크기를 동적으로 계산
     const calculateFontSize = (baseSize, scaleFactor) => {
         const newSize = baseSize + (dimensions.width - 220) * scaleFactor;
-        return Math.max(baseSize, Math.min(newSize, baseSize + 8)); // 최소/최대 크기 제한을 좀 더 늘렸습니다.
+        return Math.max(baseSize, Math.min(newSize, baseSize + 8));
     };
 
-    // 팝업 너비에 따라 이미지 크기를 동적으로 계산
     const calculateImageSize = (baseSize, scaleFactor) => {
         const newSize = baseSize + (dimensions.width - 220) * scaleFactor;
-        return Math.max(baseSize, Math.min(newSize, baseSize + 20)); // 최소 30px, 최대 50px 정도로 제한
+        return Math.max(baseSize, Math.min(newSize, baseSize + 20));
     };
 
-    // 계산된 글꼴 크기
     const timeFontSize = calculateFontSize(10, 0.02);
     const tempFontSize = calculateFontSize(12, 0.03);
-    // 계산된 이미지 크기
-    const cardImageSize = calculateImageSize(30, 0.08); // 기본 30px, 너비 증가에 따라 0.08 비율로 증가
-
+    const cardImageSize = calculateImageSize(30, 0.08);
 
     const timeCards = selectedDayData.map(item => {
         const time = item.dt_txt.split(' ')[1].slice(0, 5);
@@ -230,86 +218,96 @@ const UKWeatherPopup = () => {
                 position: 'fixed',
                 top: `${position.y}px`,
                 left: `${position.x}px`,
-                width: `${dimensions.width}px`,
-                height: `${dimensions.height}px`,
-                background: '#f0f4f8',
-                borderRadius: '12px',
-                padding: '10px',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+                width: isMinimized ? '50px' : `${dimensions.width}px`,
+                height: isMinimized ? '50px' : `${dimensions.height}px`,
+                background: isMinimized ? 'transparent' : '#f0f4f8',
+                borderRadius: isMinimized ? '50%' : '12px',
+                padding: isMinimized ? '0' : '10px',
+                boxShadow: isMinimized ? '0 2px 6px rgba(0,0,0,0.3)' : '0 4px 15px rgba(0,0,0,0.2)',
                 zIndex: 999,
-                cursor: isDragging ? 'grabbing' : 'grab',
+                cursor: isDragging ? 'grabbing' : (isMinimized ? 'pointer' : 'grab'),
                 display: 'flex',
                 flexDirection: 'column',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                overflow: 'hidden',
+                alignItems: 'center',
+                justifyContent: 'center',
             }}
             onMouseDown={handleMouseDown}
+            onDoubleClick={handleDoubleClick} // 팝업 전체에 더블 클릭 이벤트 적용
         >
-            {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map(handle => (
-                <div
-                    key={handle}
-                    className={`resizer resizer-${handle}`}
-                    onMouseDown={(e) => handleResizeMouseDown(e, handle)}
-                    style={{
-                        position: 'absolute',
-                        width: '15px',
-                        height: '15px',
-                        backgroundColor: 'transparent',
-                        ...(handle === 'top-left' && { top: 0, left: 0, cursor: 'nwse-resize' }),
-                        ...(handle === 'top-right' && { top: 0, right: 0, cursor: 'nesw-resize' }),
-                        ...(handle === 'bottom-left' && { bottom: 0, left: 0, cursor: 'nesw-resize' }),
-                        ...(handle === 'bottom-right' && { bottom: 0, right: 0, cursor: 'nwse-resize' }),
-                        borderRadius: handle.includes('bottom-right') ? '0 0 12px 0' :
-                            handle.includes('bottom-left') ? '0 0 0 12px' :
-                                handle.includes('top-right') ? '0 12px 0 0' :
-                                    '12px 0 0 0'
-                    }}
+            {isMinimized ? (
+                <img
+                    src={WeatherIcon}
+                    alt="weather-icon"
+                    style={{ width: '50px', height: '50px' }}
                 />
-            ))}
+            ) : (
+                <>
+                    {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map(handle => (
+                        <div
+                            key={handle}
+                            className={`resizer resizer-${handle}`}
+                            onMouseDown={(e) => handleResizeMouseDown(e, handle)}
+                            style={{
+                                position: 'absolute',
+                                width: '15px',
+                                height: '15px',
+                                backgroundColor: 'transparent',
+                                ...(handle === 'top-left' && { top: 0, left: 0, cursor: 'nwse-resize' }),
+                                ...(handle === 'top-right' && { top: 0, right: 0, cursor: 'nesw-resize' }),
+                                ...(handle === 'bottom-left' && { bottom: 0, left: 0, cursor: 'nesw-resize' }),
+                                ...(handle === 'bottom-right' && { bottom: 0, right: 0, cursor: 'nwse-resize' }),
+                            }}
+                        />
+                    ))}
 
-            <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                flexGrow: 1,
-                overflow: 'hidden'
-            }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <button onClick={prevDate} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '16px' }}>{'<'}</button>
-                    <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{selectedDate}</div>
-                    <button onClick={nextDate} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '16px' }}>{'>'}</button>
-                </div>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '10px', width: '100%' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <button onClick={prevDate} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '16px' }}>{'<'}</button>
+                            <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{selectedDate}</div>
+                            <button onClick={nextDate} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '16px' }}>{'>'}</button>
+                        </div>
+                        <button
+                            onClick={() => setIsMinimized(true)}
+                            style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', position: 'absolute', right: '10px' }}
+                        >—</button>
+                    </div>
 
-                <div style={{
-                    background: '#fff',
-                    borderRadius: '8px',
-                    padding: '8px',
-                    textAlign: 'center',
-                    marginBottom: '10px',
-                    boxShadow: '0 1px 5px rgba(0,0,0,0.1)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    flexGrow: 1
-                }}>
-                    {/* 현재 날씨 이미지 크기도 팝업 너비에 따라 조절되도록 수정 */}
-                    <img src={`https://openweathermap.org/img/wn/${currentWeather.weather[0].icon}@2x.png`}
-                         alt="current"
-                         style={{ width: `${calculateImageSize(50, 0.1)}px`, height: `${calculateImageSize(50, 0.1)}px` }} /> {/* 현재 날씨 이미지도 스케일링 */}
-                    <div style={{ fontSize: `${calculateFontSize(16, 0.04)}px`, fontWeight: 'bold' }}>{Math.round(currentWeather.main.temp)}°C</div>
-                    <div style={{ fontSize: `${calculateFontSize(12, 0.02)}px` }}>{currentWeather.weather[0].description}</div>
-                </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, overflow: 'hidden' }}>
+                        <div style={{
+                            background: '#fff',
+                            borderRadius: '8px',
+                            padding: '8px',
+                            textAlign: 'center',
+                            marginBottom: '10px',
+                            boxShadow: '0 1px 5px rgba(0,0,0,0.1)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            flexGrow: 1
+                        }}>
+                            <img src={`https://openweathermap.org/img/wn/${currentWeather.weather[0].icon}@2x.png`}
+                                 alt="current"
+                                 style={{ width: `${calculateImageSize(50, 0.1)}px`, height: `${calculateImageSize(50, 0.1)}px` }} />
+                            <div style={{ fontSize: `${calculateFontSize(16, 0.04)}px`, fontWeight: 'bold' }}>{Math.round(currentWeather.main.temp)}°C</div>
+                            <div style={{ fontSize: `${calculateFontSize(12, 0.02)}px` }}>{currentWeather.weather[0].description}</div>
+                        </div>
 
-                <div style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    overflowY: 'auto',
-                    padding: '5px 0',
-                    flexGrow: 1,
-                    justifyContent: 'center' // 카드들이 중앙에 오도록
-                }}>
-                    {timeCards}
-                </div>
-            </div>
+                        <div style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            overflowY: 'auto',
+                            padding: '5px 0',
+                            flexGrow: 1,
+                            justifyContent: 'center'
+                        }}>
+                            {timeCards}
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 };
