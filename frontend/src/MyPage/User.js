@@ -1,242 +1,185 @@
-import React, { useState, useRef, useContext, useEffect } from 'react';
-import axios from 'axios';
-import styled from 'styled-components';
-import ReView from "./ReView";
-import Wishlist from "./Wishlist";
-import Account from "./Account";
+import React, { useContext } from 'react';
+// Link 대신 useNavigate를 import 합니다.
+import { Link, useNavigate } from 'react-router-dom';
 import { UserContext } from '../Session/UserContext';
-import Accommodation from "./Accommodation";
-import Reservation from "./Reservation";
-import Revation from "./Revation";
+import springSaleImg from '../image/spring-sale.jpg';
+import wineDinnerImg from '../image/wine-dinner.jpg';
+import giftEventImg from '../image/gift-event.jpg';
 
-const User = () => {
+const About = () => {
     const userInfo = useContext(UserContext);
-    const [selectedImage, setSelectedImage] = useState(null);
-    const [selectedMenu, setSelectedMenu] = useState('info');
-    const fileInputRef = useRef(null);
-    const [uploading, setUploading] = useState(false);
-    const [uploadSuccess, setUploadSuccess] = useState(false);
+    // navigate 함수를 사용하기 위해 useNavigate 훅을 호출합니다.
+    const navigate = useNavigate();
 
-    const [userDetails, setUserDetails] = useState(null);
-
-    const getImageUrl = (profileImage) => {
-        console.log("🧪 getImageUrl() 입력값:", profileImage);
-        if (!profileImage) return null;
-
-        if (profileImage.startsWith("http")) {
-            return profileImage;
-        }
-
-        return `${process.env.REACT_APP_S3_URL}/${profileImage}`;
+    // 버튼 클릭 시 호출될 함수를 정의합니다.
+    const handleCreateEventClick = () => {
+        navigate('/create-event'); // '/create-event' 경로로 페이지를 이동시킵니다.
     };
 
-    useEffect(() => {
-        const fetchUserInfo = async () => {
-            if (!userInfo?.uId) return;
-            try {
-                const res = await axios.get(`${process.env.REACT_APP_API_URL}/user/${userInfo.uId}`);
-                console.log("📥 받아온 유저 데이터:", res.data);
-                setUserDetails(res.data);
-                setSelectedImage(getImageUrl(res.data.profileImage));
-                console.log("✅ 최종 이미지 URL:", getImageUrl(userDetails?.profileImage));
-            } catch (err) {
-                console.error("유저 정보 로딩 실패:", err);
-            }
-        };
-        fetchUserInfo();
-    }, [userInfo?.uId]);
+    const events = [
+        {
+            id: 1,
+            title: '봄맞이 스페셜 할인',
+            description: '전 객실 최대 30% 할인! 지금 예약하고 봄 여행을 떠나세요.',
+            image: springSaleImg,
+            date: '2025.05.01 ~ 2025.05.31',
+            link: '/spring-sale',
+        },
+        {
+            id: 2,
+            title: '와인 & 디너 패키지',
+            description: '로맨틱한 밤을 위한 와인과 디너가 포함된 특별한 패키지.',
+            image: wineDinnerImg,
+            date: '상시 진행',
+            link: '/wine-dinner',
+        },
+        {
+            id: 3,
+            title: '숙박 고객 경품 이벤트',
+            description: '숙박 고객 대상 추첨 이벤트! 푸짐한 선물을 드립니다.',
+            image: giftEventImg,
+            date: '2025.05.10 ~ 2025.06.10',
+            link: '/gift-event',
+        },
+    ];
 
-
-    const uploadImageToServer = async (file) => {
-        if (!userInfo?.uId) {
-            alert("로그인 정보가 없습니다. 다시 로그인해주세요.");
-            return null;
-        }
-
-        const formData = new FormData();
-        formData.append('userId', userInfo.uId);
-        formData.append('file', file);
-        console.log("📤 formData userId:", formData.get("userId"));
-
-        try {
-            setUploading(true);
-            const response = await axios.post(
-                `${process.env.REACT_APP_API_URL}/user/profile/upload`,
-                formData,
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                }
-            );
-            console.log("🪄 response.data (업로드 URL):", response.data);
-            const updatedUser = await axios.get(`${process.env.REACT_APP_API_URL}/user/${userInfo.uId}`);
-            console.log("🔁 updatedUser.data:", updatedUser.data); // ✅ 여기!
-            setUserDetails(updatedUser.data);
-            const res = await axios.get(`${process.env.REACT_APP_API_URL}/user/${userInfo.uId}`);
-            setSelectedImage(getImageUrl(res.data.profileImage)); // ✅ 여기
-            console.log("✅ 최종 이미지 URL:", getImageUrl(res.data.profileImage));
-            setUploading(false);
-            setUploadSuccess(true);
-            setTimeout(() => setUploadSuccess(false), 2000);
-        } catch (error) {
-            console.error("이미지 업로드 실패:", error);
-            setUploading(false);
-            alert("이미지 업로드에 실패했습니다.");
-        }
-    };
-
-    const handleImageChange = async (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            await uploadImageToServer(file);
-        }
-    };
-
-    const handleClickChangeImage = () => {
-        fileInputRef.current.click();
-    };
-
-    const handleMenuClick = (menu) => setSelectedMenu(menu);
-
-    const renderContent = () => {
-        switch (selectedMenu) {
-            case 'info': return <Account />;
-            case 'reservation': return <Revation />;
-            case 'wishlist': return <Wishlist />;
-            case 'recently': return <ReView />;
-            case 'Reservation': return <Reservation />;
-            case 'Accommodation': return <Accommodation uId={userInfo.uId} />;
-            default: return <div>선택된 메뉴가 없습니다.</div>;
-        }
-    };
-
-    if (!userInfo || !userInfo.uUser) {
-        return <div>사용자 정보를 불러올 수 없습니다. 다시 로그인 해주세요.</div>;
-    }
-
-    const renderSidebarButtons = (buttons) => (
-        <div style={{
-            border: '1px solid gray',
-            padding: '20px',
-            textAlign: 'center',
-            height: '580px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
-        }}>
-            {buttons.map(({ key, label }) => (
-                <button
-                    key={key}
-                    style={{
-                        fontSize: '20px',
-                        fontWeight: 'bold',
-                        padding: '10px',
-                        border: 'none',
-                        cursor: 'pointer',
-                        backgroundColor: selectedMenu === key ? '#f0f0f0' : 'white',
-                    }}
-                    onClick={() => handleMenuClick(key)}
-                >
-                    {label}
-                </button>
-            ))}
-        </div>
-    );
-
-    const renderUserPage = (buttons) => (
-        <div>
-            <span style={{ marginTop: '100px', display: 'block', fontSize: '35px' }}>
-                마이페이지
-            </span>
-
-            <div style={{ width: '1180px', display: 'flex', flexDirection: 'row', gap: '20px' }}>
-                <div style={{ width: '30%', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div style={{
-                        border: '1px solid gray',
-                        padding: '20px',
-                        height: '400px',
-                        textAlign: 'center',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        overflow: 'hidden',
-                    }}>
-                        <div
-                            style={{
-                                width: '80%',
-                                height: '65%',
-                                borderRadius: '50%',
-                                overflow: 'hidden',
-                                cursor: 'pointer',
-                            }}
-                            onClick={handleClickChangeImage}
-                        >
-                            {userDetails?.profileImage ? (
-                                <img
-                                    key={getImageUrl(userDetails.profileImage)+ Date.now()}
-                                    src={getImageUrl(userDetails.profileImage)}
-                                    alt="Profile"
-                                    onError={(e) => {
-                                        e.target.onerror = null; // 무한 루프 방지
-                                        e.target.src = "/default-profile.png";
-                                    }}
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'cover',
-                                    }}
-
-                                />
-                            ) : (
-                                <div style={{ marginTop: '100px' }}>이미지가 없습니다.</div>
-                            )}
-
+    return (
+        <div className="about-container">
+            <div className="about-header">
+                <h1 className="about-title">이벤트 안내</h1>
+                {/* admin 유저일 경우 '이벤트 생성' 버튼을 표시합니다. */}
+                {userInfo?.uUser === 'admin' && (
+                    // <Link>를 <button>으로 변경하고 onClick 이벤트를 연결합니다.
+                    <button onClick={handleCreateEventClick} className="create-event-button">
+                        이벤트 생성
+                    </button>
+                )}
+            </div>
+            <div className="event-container">
+                <div className="event-grid">
+                    {events.map((event) => (
+                        <div className="event-card" key={event.id}>
+                            <img src={event.image} alt={event.title} className="event-image" />
+                            <div className="event-content">
+                                <h2 className="event-title">{event.title}</h2>
+                                <p className="event-description">{event.description}</p>
+                                <p className="event-date">{event.date}</p>
+                                <Link to={event.link}>
+                                    <button className="event-button">이벤트 참여하기</button>
+                                </Link>
+                            </div>
                         </div>
-
-                        {uploadSuccess && <div style={{ marginTop: '10px', color: 'green' }}>✅ 프로필 이미지가 변경되었습니다!</div>}
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                            style={{ display: 'none' }}
-                            ref={fileInputRef}
-                        />
-                    </div>
-                    {renderSidebarButtons(buttons)}
-                </div>
-
-                <div style={{
-                    border: '1px solid gray',
-                    padding: '20px',
-                    height: '1000px',
-                    width: '70%',
-                }}>
-                    {renderContent()}
+                    ))}
                 </div>
             </div>
+            {/* 스타일 코드는 변경 없이 그대로 유지됩니다. */}
+            <style>{`
+                /* ... 기존 스타일 ... */
+                .about-container {
+                  padding: 60px 20px;
+                  font-family: 'Arial', sans-serif;
+                }
+                .about-header {
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  position: relative;
+                  margin-bottom: 40px;
+                  max-width: 1200px;
+                  margin-left: auto;
+                  margin-right: auto;
+                }
+                .about-title {
+                  text-align: center;
+                  font-size: 36px;
+                  font-weight: bold;
+                  color: #333;
+                }
+                .create-event-button {
+                  position: absolute;
+                  right: 0;
+                  background-color: #007bff;
+                  color: white;
+                  border: none;
+                  padding: 10px 20px;
+                  border-radius: 9999px;
+                  cursor: pointer;
+                  font-size: 16px;
+                  font-weight: bold;
+                  text-decoration: none;
+                  transition: background-color 0.2s ease;
+                }
+                .create-event-button:hover {
+                  background-color: #005dc1;
+                }
+                .event-container {
+                  background-color: #f5f5f5;
+                  padding: 40px 20px;
+                }
+                .event-grid {
+                  display: grid;
+                  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                  gap: 30px;
+                  max-width: 1200px;
+                  margin: 0 auto;
+                }
+                .event-card {
+                  background-color: #fff;
+                  border-radius: 16px;
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                  overflow: hidden;
+                  display: flex;
+                  flex-direction: column;
+                  transition: transform 0.3s ease, box-shadow 0.3s ease;
+                }
+                .event-card:hover {
+                  transform: translateY(-5px);
+                  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+                }
+                .event-image {
+                  height: 180px;
+                  object-fit: cover;
+                  width: 100%;
+                }
+                .event-content {
+                  padding: 20px;
+                  display: flex;
+                  flex-direction: column;
+                  flex-grow: 1;
+                }
+                .event-title {
+                  font-size: 20px;
+                  font-weight: bold;
+                  color: #222;
+                  margin-bottom: 10px;
+                }
+                .event-description {
+                  font-size: 14px;
+                  color: #555;
+                  flex-grow: 1;
+                  margin-bottom: 10px;
+                }
+                .event-date {
+                  font-size: 12px;
+                  color: #999;
+                  margin-bottom: 20px;
+                }
+                .event-button {
+                  align-self: center;
+                  background-color: #007bff;
+                  color: white;
+                  border: none;
+                  padding: 10px 20px;
+                  border-radius: 9999px;
+                  cursor: pointer;
+                  transition: background-color 0.2s ease;
+                }
+                .event-button:hover {
+                  background-color: #005dc1;
+                }
+            `}</style>
         </div>
     );
-
-    if (userInfo.uUser === 'tenant') {
-        return renderUserPage([
-            { key: 'info', label: '계정' },
-            { key: 'reservation', label: '예약 내역' },
-            { key: 'wishlist', label: '위시리스트' },
-            { key: 'recently', label: '최근 본' }
-        ]);
-    }
-
-    if (userInfo.uUser === 'landlord' || userInfo.uUser === 'admin') {
-        return renderUserPage([
-            { key: 'info', label: '계정' },
-            { key: 'Accommodation', label: '숙소 관리' },
-            { key: 'Reservation', label: '예약 확인' }
-        ]);
-    }
-
-    return null;
 };
 
-export default User;
+export default About;
