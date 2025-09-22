@@ -231,31 +231,7 @@ const Account = () => {
             </div>
 
             {/* 푸시 & SNS */}
-            <div style={sectionGroup}>
-                <div style={section}>
-                    <h2 style={title}>PUSH 알림 동의</h2>
-                    <div style={switchGroup}>
-                        <div style={switchContainer}>
-                            <span style={switchLabel}>메시지 알림 동의</span>
-                            <Switch checked={switches[0]} onChange={() => toggleSwitch(0)} />
-                        </div>
-                        <div style={switchContainer}>
-                            <span style={switchLabel}>이메일 알림 동의</span>
-                            <Switch checked={switches[1]} onChange={() => toggleSwitch(1)} />
-                        </div>
-                    </div>
-                </div>
 
-                <div style={section}>
-                    <h2 style={title}>SNS 연결 여부</h2>
-                    <div style={switchGroup}>
-                        <div style={switchContainer}>
-                            <span style={switchLabel}>google 연결</span>
-                            <Switch checked={switches[2]} onChange={() => toggleSwitch(2)} />
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     );
 };

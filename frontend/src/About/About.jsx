@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { UserContext } from '../Session/UserContext'; // UserContext 경로를 확인해주세요.
 import springSaleImg from '../image/spring-sale.jpg';
 import wineDinnerImg from '../image/wine-dinner.jpg';
 import giftEventImg from '../image/gift-event.jpg';
 
 const About = () => {
+    // UserContext에서 로그인한 사용자 정보를 가져옵니다.
+    const userInfo = useContext(UserContext);
+
     const events = [
         {
             id: 1,
@@ -12,7 +16,7 @@ const About = () => {
             description: '전 객실 최대 30% 할인! 지금 예약하고 봄 여행을 떠나세요.',
             image: springSaleImg,
             date: '2025.05.01 ~ 2025.05.31',
-            link: '/spring-sale', // 경로 수정
+            link: '/spring-sale',
         },
         {
             id: 2,
@@ -34,7 +38,14 @@ const About = () => {
 
     return (
         <div className="about-container">
-            <h1 className="about-title">이벤트 안내</h1>
+            <div className="about-header">
+                <h1 className="about-title">이벤트 안내</h1>
+                {userInfo?.uUser === 'admin' && (
+                    <Link to="/create-event" className="create-event-button">
+                        이벤트 생성
+                    </Link>
+                )}
+            </div>
             <div className="event-container">
                 <div className="event-grid">
                     {events.map((event) => (
@@ -57,12 +68,38 @@ const About = () => {
           padding: 60px 20px;
           font-family: 'Arial', sans-serif;
         }
+        .about-header {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+          margin-bottom: 40px;
+          max-width: 1200px;
+          margin-left: auto;
+          margin-right: auto;
+        }
         .about-title {
           text-align: center;
           font-size: 36px;
           font-weight: bold;
           color: #333;
-          margin-bottom: 40px;
+        }
+        .create-event-button {
+          position: absolute;
+          right: 0;
+          background-color: #007bff;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 9999px;
+          cursor: pointer;
+          font-size: 16px;
+          font-weight: bold;
+          text-decoration: none;
+          transition: background-color 0.2s ease;
+        }
+        .create-event-button:hover {
+          background-color: #005dc1;
         }
         .event-container {
           background-color: #f5f5f5;
