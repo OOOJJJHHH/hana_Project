@@ -67,7 +67,7 @@ const CityLodging = () => {
     const cardBaseStyle = {
         display: "flex",
         position: "relative",
-        width: "16rem",
+        width: "17rem",
         height: "26rem",
         border: "0.5px solid #D8E1C47F",
         borderRadius: "15px",

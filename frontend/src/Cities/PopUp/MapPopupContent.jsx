@@ -1,323 +1,197 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import {
+    GoogleMap,
+    Marker,
+    InfoWindow,
+    useJsApiLoader,
+} from "@react-google-maps/api";
 
-// window 전역에서 kakao 객체를 가져옴 (카카오 지도 API)
-const { kakao } = window;
+const MapPopupContent = ({ onClose, lodContents = [] }) => {
+    const [lodMarkers, setLodMarkers] = useState([]);
+    const [selectedLod, setSelectedLod] = useState(null);
+    const [mapCenter, setMapCenter] = useState({ lat: 37.5665, lng: 126.978 }); // 기본 중심
+    const mapRef = useRef(null);
 
-function MapPopupContent({ onClose, lodContents = [] }) {
-    // 주변 음식점 정보 상태
-    const [placesInfo, setPlacesInfo] = useState([]);
-    // 페이지 이동 함수 생성 (react-router-dom)
-    const navigate = useNavigate();
+    const { isLoaded } = useJsApiLoader({
+        id: "google-map-script",
+        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+    });
 
-    // 숙소 이미지가 없을 때 기본 이미지 URL
-    const defaultLodImage = "https://via.placeholder.com/250x150?text=No+Image";
-
+    // lodContents → 좌표 변환
     useEffect(() => {
-        // 지도 그릴 컨테이너 DOM 얻기
-        const container = document.getElementById("map");
-        if (!container) return;
+        if (!isLoaded || !window.google || lodContents.length === 0) return;
 
-        // 지도 생성 옵션: 서울 중심, 줌 레벨 7
-        const options = {
-            center: new kakao.maps.LatLng(37.5665, 126.978),
-            level: 7,
-        };
-
-        // 카카오 지도 생성
-        const map = new kakao.maps.Map(container, options);
-        // 지도에 표시할 좌표 범위 저장용 객체
-        const bounds = new kakao.maps.LatLngBounds();
-        // 주소-좌표 변환 서비스
-        const geocoder = new kakao.maps.services.Geocoder();
-        // 장소 검색 서비스
-        const ps = new kakao.maps.services.Places();
-
-        // 현재 열려있는 인포윈도우를 저장하기 위한 변수
-        let currentInfoWindow = null;
-
-        // 주어진 좌표 기준 반경 500m 이내 음식점 검색 (최대 5개)
-        const searchNearbyFoods = (coords) => {
-            ps.categorySearch(
-                "FD6", // 음식점 카테고리 코드
-                (data, status) => {
-                    if (status === kakao.maps.services.Status.OK) {
-                        const geometry = kakao.maps.geometry;
-
-                        // 좌표간 거리 계산 가능 여부 확인
-                        if (!geometry || !geometry.spherical) {
-                            // 거리 계산 못 하면 그냥 최대 5개만 보여줌
-                            setPlacesInfo(data.slice(0, 5));
-                            return;
-                        }
-
-                        // 반경 500m 이내 음식점 필터링
-                        const nearbyPlaces = data.filter((place) => {
-                            const placePos = new kakao.maps.LatLng(place.y, place.x);
-                            const distance = geometry.spherical.computeDistanceBetween(
-                                coords,
-                                placePos
-                            );
-                            return distance <= 500;
+        const geocoder = new window.google.maps.Geocoder();
+        const fetchCoords = async () => {
+            const results = [];
+            for (const lod of lodContents) {
+                if (!lod.lodLocation) continue;
+                try {
+                    const { results: geoResults, status } = await new Promise(
+                        (resolve) =>
+                            geocoder.geocode(
+                                { address: lod.lodLocation },
+                                (res, status) => resolve({ results: res, status })
+                            )
+                    );
+                    if (status === "OK" && geoResults.length > 0) {
+                        const location = geoResults[0].geometry.location;
+                        results.push({
+                            ...lod,
+                            lat: location.lat(),
+                            lng: location.lng(),
                         });
-
-                        // 최대 5개 음식점 상태 저장
-                        setPlacesInfo(nearbyPlaces.slice(0, 5));
                     } else {
-                        // 검색 실패 시 빈 배열로 초기화
-                        setPlacesInfo([]);
+                        console.warn(`❌ 주소 변환 실패: ${lod.lodLocation}, status: ${status}`);
                     }
-                },
-                {
-                    location: coords,
-                    radius: 500,
+                } catch (err) {
+                    console.error("Geocoding error:", err);
                 }
-            );
-        };
-
-        // lodContents 배열(숙소 목록) 순회하며 마커 및 인포윈도우 생성
-        lodContents.forEach((lod) => {
-            if (!lod.lodLocation) return; // 위치 정보 없으면 건너뜀
-
-            // 숙소 주소 -> 좌표 변환
-            geocoder.addressSearch(lod.lodLocation, (result, status) => {
-                if (status === kakao.maps.services.Status.OK) {
-                    const coords = new kakao.maps.LatLng(result[0].y, result[0].x);
-
-                    // 숙소 위치에 마커 생성
-                    const marker = new kakao.maps.Marker({
-                        map,
-                        position: coords,
-                    });
-
-                    // 인포윈도우 내용: 숙소명, 위치, 이미지(없으면 기본 이미지)
-                    const infowindow = new kakao.maps.InfoWindow({
-                        content: `
-              <div style="padding:10px;font-size:14px; max-width:250px;">
-                <a href="#" id="lod-name-${lod.lodId}" style="font-weight:bold; color:#0078ff; text-decoration:none;">
-                  ${lod.lodName}
-                </a><br/>
-                위치: ${lod.lodLocation}<br/>
-                <img src="${lod.lodImage || defaultLodImage}" alt="${lod.lodName}" style="width:100%; margin-top:8px; border-radius:4px;" />
-              </div>
-            `,
-                    });
-
-                    // 마커 클릭 이벤트
-                    kakao.maps.event.addListener(marker, "click", () => {
-                        // 기존 인포윈도우가 열려있으면 닫기
-                        if (currentInfoWindow) currentInfoWindow.close();
-                        // 클릭한 마커에 인포윈도우 열기
-                        infowindow.open(map, marker);
-                        currentInfoWindow = infowindow;
-
-                        // 인포윈도우 내 숙소명 링크 클릭 이벤트 등록 (비동기 처리)
-                        setTimeout(() => {
-                            const lodNameLink = document.getElementById(`lod-name-${lod.lodId}`);
-                            if (lodNameLink) {
-                                lodNameLink.onclick = (e) => {
-                                    e.preventDefault(); // 기본 링크 이동 막기
-                                    // 상세 페이지로 네비게이트
-                                    navigate(`/lodDetail/${lod.lodId}`);
-                                };
-                            }
-                        }, 100);
-
-                        // 클릭한 숙소 위치 기준 주변 음식점 검색
-                        searchNearbyFoods(coords);
-                    });
-
-                    // 지도 영역에 이 좌표 포함시키기
-                    bounds.extend(coords);
-                    map.setBounds(bounds);
-                } else {
-                    console.warn(`❌ 주소 변환 실패: ${lod.lodLocation}`);
-                }
-            });
-        });
-
-        // 지도 빈 공간 클릭 시 마커 찍고 주변 음식점 검색 처리
-        let clickMarker = null; // 클릭 마커 변수
-        let clickInfoWindow = null; // 클릭 인포윈도우 변수
-
-        kakao.maps.event.addListener(map, "click", function (mouseEvent) {
-            const clickPosition = mouseEvent.latLng;
-
-            // 기존 마커 위치 갱신 또는 새 마커 생성
-            if (clickMarker) {
-                clickMarker.setPosition(clickPosition);
-            } else {
-                clickMarker = new kakao.maps.Marker({
-                    map,
-                    position: clickPosition,
-                });
             }
+            setLodMarkers(results);
 
-            // 클릭 좌표 -> 주소 변환 (역지오코딩)
-            geocoder.coord2Address(
-                clickPosition.getLng(),
-                clickPosition.getLat(),
-                (result, status) => {
-                    if (status === kakao.maps.services.Status.OK) {
-                        // 주소 정보 및 지역 정보 얻기
-                        const address = result[0].address.address_name || "주소 정보 없음";
-                        const region =
-                            (result[0].region_1depth_name || "") +
-                            " " +
-                            (result[0].region_2depth_name || "");
+            // 첫 마커가 있으면 초기 중심으로 설정
+            if (results.length > 0) setMapCenter({ lat: results[0].lat, lng: results[0].lng });
+        };
+        fetchCoords();
+    }, [lodContents, isLoaded]);
 
-                        // 인포윈도우 내용
-                        const content = `
-              <div style="padding:10px; font-size:14px;">
-                <strong>클릭 위치 정보</strong><br/>
-                주소: ${address}<br/>
-                지역: ${region}
-              </div>
-            `;
+    const containerStyle = { width: "100%", height: "100%" };
 
-                        // 기존 인포윈도우 닫고 새로 열기
-                        if (clickInfoWindow) clickInfoWindow.close();
-                        clickInfoWindow = new kakao.maps.InfoWindow({ content });
-                        clickInfoWindow.open(map, clickMarker);
+    const modalStyle = {
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        backgroundColor: "rgba(0,0,0,0.6)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 1000,
+        padding: "20px",
+        boxSizing: "border-box",
+    };
 
-                        // 클릭 위치 주변 음식점 검색
-                        searchNearbyFoods(clickPosition);
-                    } else {
-                        console.warn("역지오코딩 실패");
-                        setPlacesInfo([]); // 음식점 목록 초기화
-                    }
-                }
-            );
+    const contentStyle = {
+        width: "100%",
+        maxWidth: "1000px",
+        height: "600px",
+        backgroundColor: "#fff",
+        borderRadius: "12px",
+        display: "flex",
+        overflow: "hidden",
+        boxShadow: "0 8px 20px rgba(0,0,0,0.25)",
+        position: "relative",
+    };
 
-            // 클릭 위치로 지도 중심 이동
-            map.panTo(clickPosition);
-        });
-    }, [lodContents, navigate]); // lodContents, navigate 바뀔 때마다 재실행
+    const menuStyle = {
+        width: "250px",
+        backgroundColor: "#f5f5f5",
+        padding: "16px",
+        overflowY: "auto",
+        borderRight: "1px solid #ddd",
+    };
+
+    const closeBtnStyle = {
+        position: "absolute",
+        top: "12px",
+        right: "12px",
+        backgroundColor: "#e74c3c",
+        color: "#fff",
+        border: "none",
+        borderRadius: "50%",
+        width: "36px",
+        height: "36px",
+        fontSize: "18px",
+        cursor: "pointer",
+        fontWeight: "bold",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1001,
+    };
+
+    // 메뉴 클릭 시
+    const handleMenuClick = (lod) => {
+        setSelectedLod(lod);
+        setMapCenter({ lat: lod.lat, lng: lod.lng }); // 중심 갱신
+        mapRef.current?.panTo({ lat: lod.lat, lng: lod.lng });
+        mapRef.current?.setZoom(15); // 확대
+    };
+
+    if (!isLoaded) return <div>구글 지도를 불러오는 중...</div>;
 
     return (
-        <div style={popupContentStyle}>
-            <div style={mapAndPlacesWrapper}>
-                {/* 지도 영역 */}
-                <div id="map" style={mapStyle}></div>
-
-                {/* 주변 음식점 목록 */}
-                <div style={placesListStyle}>
-                    <h4>클릭 위치 주변 음식점 (최대 5개)</h4>
-                    {placesInfo.length === 0 && <div>주변 음식점 정보가 없습니다.</div>}
-                    <ul style={{ paddingLeft: 20, marginTop: 8 }}>
-                        {placesInfo.map((place) => (
-                            <li
-                                key={place.id}
-                                style={{
-                                    marginBottom: 12,
-                                    display: "flex",
-                                    alignItems: "center",
-                                }}
-                            >
-                                {/* 음식점 썸네일 이미지 */}
-                                <img
-                                    src={
-                                        place.thumbnail ||
-                                        "https://via.placeholder.com/60x60?text=No+Image"
-                                    }
-                                    alt={place.place_name}
-                                    style={{
-                                        width: 60,
-                                        height: 60,
-                                        objectFit: "cover",
-                                        marginRight: 10,
-                                        borderRadius: 4,
-                                    }}
-                                />
-                                {/* 음식점 이름, 주소, 상세보기 링크 */}
-                                <div style={{ flex: 1 }}>
-                                    <strong>{place.place_name}</strong>
-                                    <br />
-                                    {place.road_address_name || place.address_name}
-                                    <br />
-                                    <a
-                                        href={place.place_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        style={{ fontSize: 12, color: "#0078ff" }}
-                                    >
-                                        상세보기
-                                    </a>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+        <div style={modalStyle}>
+            <div style={contentStyle}>
+                {/* 좌측 메뉴 */}
+                <div style={menuStyle}>
+                    <h3>숙소 목록</h3>
+                    {lodMarkers.length === 0 && <p>숙소가 없습니다.</p>}
+                    {lodMarkers.map((lod) => (
+                        <div
+                            key={lod.lodId}
+                            style={{
+                                padding: "8px",
+                                marginBottom: "8px",
+                                borderRadius: "6px",
+                                backgroundColor: selectedLod?.lodId === lod.lodId ? "#3498db" : "#fff",
+                                color: selectedLod?.lodId === lod.lodId ? "#fff" : "#333",
+                                cursor: "pointer",
+                                boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                            }}
+                            onClick={() => handleMenuClick(lod)}
+                        >
+                            {lod.lodName}
+                        </div>
+                    ))}
                 </div>
-            </div>
 
-            {/* 닫기 버튼 영역 */}
-            <div style={buttonWrapperStyle}>
-                <button onClick={onClose} style={closeButtonStyle}>
-                    닫기
-                </button>
+                {/* 구글 지도 */}
+                <div style={{ flex: 1, position: "relative" }}>
+                    <button onClick={onClose} style={closeBtnStyle}>×</button>
+                    <GoogleMap
+                        mapContainerStyle={containerStyle}
+                        center={mapCenter} // 항상 현재 중심 유지
+                        zoom={selectedLod ? 15 : 12}
+                        onLoad={(map) => (mapRef.current = map)}
+                    >
+                        {lodMarkers.map((lod) => (
+                            <Marker
+                                key={lod.lodId}
+                                position={{ lat: lod.lat, lng: lod.lng }}
+                                onClick={() => {
+                                    setSelectedLod(lod);
+                                    setMapCenter({ lat: lod.lat, lng: lod.lng }); // 클릭 시 중심 갱신
+                                    mapRef.current?.setZoom(15);
+                                }}
+                            />
+                        ))}
+
+                        {selectedLod && (
+                            <InfoWindow
+                                position={{ lat: selectedLod.lat, lng: selectedLod.lng }}
+                                onCloseClick={() => setSelectedLod(null)} // 닫아도 중심 유지
+                            >
+                                <div style={{ maxWidth: "220px" }}>
+                                    <strong>{selectedLod.lodName}</strong>
+                                    <br />
+                                    위치: {selectedLod.lodLocation}
+                                    <br />
+                                    <img
+                                        src={selectedLod.lodImage || "https://via.placeholder.com/200x100?text=No+Image"}
+                                        alt={selectedLod.lodName}
+                                        style={{ width: "100%", marginTop: "5px", borderRadius: "4px" }}
+                                    />
+                                </div>
+                            </InfoWindow>
+                        )}
+                    </GoogleMap>
+                </div>
             </div>
         </div>
     );
-}
-
-// 전체 팝업 스타일: 중앙 정렬, 흰 배경, 그림자, 최대 너비 70rem, 높이 90vh
-const popupContentStyle = {
-    position: "relative",
-    backgroundColor: "white",
-    padding: "20px",
-    borderRadius: "5px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    width: "100%",
-    maxWidth: "70rem",
-    height: "90vh",
-    display: "flex",
-    flexDirection: "column",
-    textAlign: "center",
-    overflow: "hidden",
-};
-
-// 지도와 음식점 리스트 묶음 스타일 - 세로 방향 플렉스박스, 공간 꽉 채움
-const mapAndPlacesWrapper = {
-    display: "flex",
-    flexDirection: "column",
-    flexGrow: 1,
-    overflow: "hidden",
-};
-
-// 지도 스타일 - 너비 100%, 높이 최소 250px, flexBasis 100% (부모 컨테이너 내 차지하는 높이)
-const mapStyle = {
-    width: "100%",
-    flexBasis: "100%", // 화면 높이 100% 차지 (필요시 조절 가능)
-    minHeight: "250px",
-};
-
-// 음식점 리스트 스타일 - 최대 높이 40%, 스크롤 가능, 왼쪽 정렬
-const placesListStyle = {
-    marginTop: 12,
-    maxHeight: "40%",
-    overflowY: "auto",
-    textAlign: "left",
-    fontSize: 14,
-    color: "#333",
-};
-
-// 버튼 래퍼 - 아래쪽 공간 띄우고 가운데 정렬
-const buttonWrapperStyle = {
-    marginTop: 15,
-    flexShrink: 0,
-    display: "flex",
-    justifyContent: "center",
-};
-
-// 닫기 버튼 스타일 - 검은 배경, 흰색 글자, 둥근 모서리, 포인터 커서
-const closeButtonStyle = {
-    padding: "8px 16px",
-    fontSize: "14px",
-    backgroundColor: "#333",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
 };
 
 export default MapPopupContent;
