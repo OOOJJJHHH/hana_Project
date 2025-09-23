@@ -7,6 +7,7 @@ import com.example.oneproject.Enum.ReservationStatus;
 import com.example.oneproject.Repository.CLodRepository;
 import com.example.oneproject.Repository.UserRepository;
 import com.example.oneproject.Repository.WishListRepository;
+import com.example.oneproject.Repository.EventRepository;
 import com.example.oneproject.Service.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +17,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.web.bind.annotation.GetMapping;
+import java.util.List;
+
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -56,6 +60,9 @@ public class CityController {
     private CityService cityService;
 
     @Autowired
+    private EventService eventService;
+
+    @Autowired
     private  WishListService wishListService;
 
     @Autowired
@@ -84,6 +91,47 @@ public class CityController {
 
     @Autowired
     private CLodRepository lodRepository;
+
+
+    // 이벤트 정보 저장
+    @PostMapping("/saveEvent")
+    public ResponseEntity<String> saveEvent(
+            @RequestParam("eventTitle") String eventTitle,
+            @RequestParam("eventDescription") String eventDescription,
+            @RequestParam("eventStartDate") String eventStartDate,
+            @RequestParam("eventEndDate") String eventEndDate,
+            @RequestParam(value = "eventImage", required = false) MultipartFile eventImage
+            ) {
+            try {
+
+                eventService.saveEvent(
+                    eventTitle,
+                    eventDescription,
+                    eventStartDate,
+                    eventEndDate,
+                    eventImage
+                );
+                return ResponseEntity.ok("저장 완료");
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("저장 실패: " + e.getMessage());
+            }
+    }
+
+    @GetMapping("/getEvents")
+    public ResponseEntity<List<EventDTO>> getEvents() {
+        try {
+            List<EventDTO> allEvents = eventService.getAllEvents();
+
+            return ResponseEntity.ok(allEvents);
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 
 
     // 도시 정보 저장
