@@ -12,7 +12,8 @@ const About = () => {
 
     // --- 삭제 관련 상태 ---
     const [deleteMode, setDeleteMode] = useState(false); // 삭제 모드 활성화 여부
-    const [checkedEvents, setCheckedEvents] = useState(new Set()); // 체크된 이벤트들의 Title을 저장
+    // ✅ 1. 체크된 이벤트들의 ID를 저장하도록 변경
+    const [checkedEvents, setCheckedEvents] = useState(new Set()); // 체크된 이벤트들의 ID를 저장
 
     // 이벤트 목록을 불러오는 useEffect
     useEffect(() => {
@@ -37,18 +38,18 @@ const About = () => {
         navigate('/create-event'); // EventAdd.js로 연결되는 라우트 경로
     };
 
-    // 체크박스 변경 핸들러 (이벤트 Title을 Set에 추가/제거)
-    const handleCheckboxChange = (eventTitle) => {
+    // ✅ 2. 체크박스 변경 핸들러 (이벤트 ID를 Set에 추가/제거)
+    const handleCheckboxChange = (eventId) => {
         const newCheckedEvents = new Set(checkedEvents);
-        if (newCheckedEvents.has(eventTitle)) {
-            newCheckedEvents.delete(eventTitle);
+        if (newCheckedEvents.has(eventId)) {
+            newCheckedEvents.delete(eventId);
         } else {
-            newCheckedEvents.add(eventTitle);
+            newCheckedEvents.add(eventId);
         }
         setCheckedEvents(newCheckedEvents);
     };
 
-    // 🔥 선택 항목 일괄 삭제 핸들러 (수정된 로직)
+    // 🔥 선택 항목 일괄 삭제 핸들러 (ID 기반 로직으로 수정)
     // 백엔드의 단일 삭제 API를 반복 호출하여 처리
     const handleBulkDelete = async () => {
         if (checkedEvents.size === 0) {
@@ -58,18 +59,19 @@ const About = () => {
 
         if (window.confirm(`${checkedEvents.size}개의 이벤트를 정말 삭제하시겠습니까?`)) {
             try {
-                const titlesToDelete = Array.from(checkedEvents);
+                // ID 목록을 배열로 변환
+                const IDsToDelete = Array.from(checkedEvents);
 
                 // 백엔드 단일 삭제 API를 각 항목에 대해 반복 호출
-                for (const title of titlesToDelete) {
+                for (const id of IDsToDelete) {
+                    // ⚠️ 백엔드 API 경로가 /deleteEventById/{id}로 수정되어야 합니다.
                     await axios.delete(
-                        // 백엔드: DELETE /deleteEventByTitle/{title} 호출
-                        `${process.env.REACT_APP_API_URL}/deleteEventByTitle/${encodeURIComponent(title)}`
+                        `${process.env.REACT_APP_API_URL}/deleteEventById/${id}`
                     );
                 }
 
-                // UI에서 삭제된 이벤트 제거 후 목록 갱신
-                setEvents(events.filter(event => !titlesToDelete.includes(event.title)));
+                // UI에서 삭제된 이벤트 제거 후 목록 갱신 (ID 기준)
+                setEvents(events.filter(event => !IDsToDelete.includes(event.id)));
                 alert('선택한 이벤트가 삭제되었습니다.');
             } catch (error) {
                 console.error("이벤트 삭제에 실패했습니다:", error);
@@ -125,13 +127,15 @@ const About = () => {
                 ) : events.length > 0 ? (
                     <div className="event-grid">
                         {events.map((event) => (
-                            <div className="event-card" key={event.title}>
+                            // ✅ 3. key 속성을 event.title 대신 event.id로 수정합니다. (key 중복 경고 해결)
+                            <div className="event-card" key={event.id}>
                                 {deleteMode && (
                                     <input
                                         type="checkbox"
                                         className="event-checkbox"
-                                        checked={checkedEvents.has(event.title)}
-                                        onChange={() => handleCheckboxChange(event.title)}
+                                        // ✅ 체크박스 상태 확인과 변경에 event.id를 사용합니다.
+                                        checked={checkedEvents.has(event.id)}
+                                        onChange={() => handleCheckboxChange(event.id)}
                                     />
                                 )}
                                 {/* imageUrl은 Presigned URL을 통해 이미지를 직접 표시 */}
@@ -141,7 +145,7 @@ const About = () => {
                                     <p className="event-description">{event.description}</p>
                                     <p className="event-date">{event.startDate} ~ {event.endDate}</p>
                                     <button
-                                        // EventDetail.js로 이동 (URL 인코딩 필수)
+                                        // EventDetail.js로 이동 (title이 URL에 사용되므로 그대로 유지)
                                         onClick={() => navigate(`/event/${encodeURIComponent(event.title)}`)}
                                         className="event-button"
                                         disabled={deleteMode} // 삭제 모드일 때 버튼 비활성화
