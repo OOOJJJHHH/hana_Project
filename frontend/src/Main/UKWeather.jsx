@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import WeatherIcon from '../image/Weather_Icon.png'; // 최소화 아이콘 이미지
 
 const UKWeatherPopup = () => {
@@ -6,9 +6,12 @@ const UKWeatherPopup = () => {
     const [currentWeather, setCurrentWeather] = useState(null);
     const [error, setError] = useState(null);
 
+    // --- 상태 관리: localStorage를 사용하여 페이지 이동 후에도 유지 ---
+
     const [position, setPosition] = useState(() => {
         try {
             const savedPosition = localStorage.getItem('weatherPopupPosition');
+            // 기본 위치: 우측 상단
             return savedPosition ? JSON.parse(savedPosition) : { x: window.innerWidth - 240, y: 20 };
         } catch {
             return { x: window.innerWidth - 240, y: 20 };
@@ -33,11 +36,22 @@ const UKWeatherPopup = () => {
         }
     });
 
+    // 💡 1. isMinimized 상태도 localStorage에서 불러오도록 수정
+    const [isMinimized, setIsMinimized] = useState(() => {
+        try {
+            const savedMinimized = localStorage.getItem('weatherPopupMinimized');
+            // 저장된 값이 'true' 문자열이면 true, 아니면 false (혹은 기본값 false)
+            return savedMinimized === 'true';
+        } catch {
+            return false;
+        }
+    });
+
+    // --- 드래그/리사이즈 상태 ---
     const [isDragging, setIsDragging] = useState(false);
     const [isResizing, setIsResizing] = useState(false);
     const [resizeHandle, setResizeHandle] = useState(null);
     const [offset, setOffset] = useState({ x: 0, y: 0 });
-    const [isMinimized, setIsMinimized] = useState(false);
 
     const popupRef = useRef(null);
     const API_KEY = '76f59296790eca380cc7389d1bbe8877';
@@ -63,6 +77,7 @@ const UKWeatherPopup = () => {
         fetchWeatherData();
     }, []);
 
+    // --- 드래그 및 리사이즈 로직 (변경 없음) ---
     useEffect(() => {
         const handleMouseMove = (e) => {
             if (isDragging) {
@@ -129,6 +144,8 @@ const UKWeatherPopup = () => {
             window.removeEventListener('mouseup', handleMouseUp);
         };
     }, [isDragging, isResizing, resizeHandle, offset, position, dimensions]);
+    // --- 드래그 및 리사이즈 로직 끝 ---
+
 
     const handleMouseDown = (e) => {
         // 더블 클릭 시 드래그가 시작되지 않도록 e.detail을 확인합니다.
@@ -139,8 +156,14 @@ const UKWeatherPopup = () => {
         setOffset({ x: e.clientX - popupRef.current.offsetLeft, y: e.clientY - popupRef.current.offsetTop });
     };
 
+    // 💡 2-1. 더블 클릭 시 isMinimized 상태를 토글하고 localStorage에 저장
+    const toggleMinimize = (minimized) => {
+        setIsMinimized(minimized);
+        localStorage.setItem('weatherPopupMinimized', minimized);
+    };
+
     const handleDoubleClick = () => {
-        setIsMinimized(!isMinimized);
+        toggleMinimize(!isMinimized);
     };
 
     const handleResizeMouseDown = (e, handle) => {
@@ -237,13 +260,16 @@ const UKWeatherPopup = () => {
             onDoubleClick={handleDoubleClick} // 팝업 전체에 더블 클릭 이벤트 적용
         >
             {isMinimized ? (
+                // 💡 3-1. 최소화 아이콘 클릭 시 isMinimized 상태를 false로 바꾸고 localStorage에 저장
                 <img
                     src={WeatherIcon}
                     alt="weather-icon"
-                    style={{ width: '50px', height: '50px' }}
+                    style={{ width: '70px', height: '70px' }}
+                    onClick={() => toggleMinimize(false)}
                 />
             ) : (
                 <>
+                    {/* 리사이저 핸들 (변경 없음) */}
                     {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map(handle => (
                         <div
                             key={handle}
@@ -268,8 +294,9 @@ const UKWeatherPopup = () => {
                             <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{selectedDate}</div>
                             <button onClick={nextDate} style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '16px' }}>{'>'}</button>
                         </div>
+                        {/* 💡 3-2. 최소화 버튼 클릭 시 isMinimized 상태를 true로 바꾸고 localStorage에 저장 */}
                         <button
-                            onClick={() => setIsMinimized(true)}
+                            onClick={() => toggleMinimize(true)}
                             style={{ border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '16px', fontWeight: 'bold', position: 'absolute', right: '10px' }}
                         >—</button>
                     </div>
