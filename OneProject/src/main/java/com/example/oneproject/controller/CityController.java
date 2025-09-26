@@ -113,18 +113,7 @@ public class CityController {
             }
     }
 
-    @GetMapping("/getEvents")
-    public ResponseEntity<List<EventDTO>> getEvents() {
-        try {
-            List<EventDTO> allEvents = eventService.getAllEvents();
 
-            return ResponseEntity.ok(allEvents);
-        } catch (Exception e) {
-            e.printStackTrace();
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
     @GetMapping("/getEvent/{id}")
     public ResponseEntity<EventDTO> getEvent(@PathVariable Long id) {
         try {

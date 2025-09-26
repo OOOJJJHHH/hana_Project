@@ -12,7 +12,9 @@ import CityLodging from "../Cities/CityLodging";
 import Owner from "../Cities/Owner";
 import CityForm from "../Cities/CityForm";
 import About from "../About/About";
-import EventAdd from '../About/Event/EventAdd'; // 새로 만든 파일 import
+import EventAdd from '../About/Event/EventAdd';
+import EventDetail from '../About/Event/EventDetail';
+
 const routes = [
     {
         path: '/',
@@ -80,7 +82,10 @@ const routes = [
         path: '/create-event',
         component: EventAdd,
     },
-
+    {
+        path: '/event/:id',
+        component: EventDetail,
+    },
 ];
 
 export default routes;
