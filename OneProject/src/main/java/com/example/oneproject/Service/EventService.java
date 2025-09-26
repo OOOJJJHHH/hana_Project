@@ -89,20 +89,21 @@ public class EventService {
         return eventDTO;
     }
 
-    // ✅ 제목으로 이벤트 삭제 (About.jsx, EventDetail.js 연동)
+    // ✅ ID로 이벤트 삭제 (About.jsx에서 호출됨)
     public boolean deleteEventById(Long eventId) {
-        // 1. ID로 이벤트 엔티티 조회
+        // 1. ID로 이벤트 엔티티 조회 (Optional에서 Event 객체를 꺼냅니다.)
+        // EventRepository는 JpaRepository를 상속하므로 findById를 사용할 수 있습니다.
         Event event = eventRepository.findById(eventId).orElse(null);
 
         if (event != null) {
-            // 💡 S3 이미지 삭제 로직 추가 (필수)
+            // 💡 S3 이미지 삭제 로직 추가 (누락되지 않도록 주의)
             String imageUrl = event.getImageUrl();
             if (imageUrl != null && !imageUrl.isEmpty()) {
                 try {
-                    // S3Uploader가 주입되어 있어야 함
+                    // S3Uploader 객체(s3Uploader)가 EventService에 주입되어 있어야 합니다.
                     s3Uploader.deleteFile(imageUrl);
                 } catch (Exception e) {
-                    // S3 삭제가 실패해도 로그를 남기고 DB 삭제를 진행합니다.
+                    // S3 삭제 실패는 로그로 남기고 DB 삭제는 계속 진행
                     System.err.println("S3 이미지 삭제 실패 (Key: " + imageUrl + "): " + e.getMessage());
                 }
             }

@@ -147,6 +147,7 @@ public class CityController {
     }
 
     // 4. 제목으로 이벤트 삭제 (DELETE)
+    // ✅ ID 기반 삭제 엔드포인트 추가 (프론트엔드 About.jsx와 경로 일치)
     @DeleteMapping("/deleteEventById/{eventId}")
     public ResponseEntity<String> deleteEventById(@PathVariable Long eventId) {
         try {
