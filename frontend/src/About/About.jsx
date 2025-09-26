@@ -129,9 +129,9 @@ const About = () => {
                                     <p className="event-description">{event.description}</p>
                                     <p className="event-date">{event.startDate} ~ {event.endDate}</p>
                                     <button
-                                        onClick={() => navigate(`/event/${event.id}`)}
+                                        onClick={() => navigate(`/event/${event.title}`)}
                                         className="event-button"
-                                        disabled={deleteMode} // 삭제 모드일 때 버튼 비활성화
+                                        disabled={deleteMode}
                                     >
                                         자세히 보기
                                     </button>

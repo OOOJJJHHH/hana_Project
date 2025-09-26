@@ -4,34 +4,29 @@ import axios from 'axios';
 
 const EventDetail = () => {
     // --- 1. 주소에서 정보 얻기 ---
-    // HotelDetail.js는 주소 뒤에 ?name=... 을 사용해서 useLocation을 썼지만,
-    // 우리는 /event/3 처럼 주소의 일부로 ID를 사용하기 때문에 useParams 훅을 사용하는 것이 더 정확하고 현대적인 방식입니다.
-    // { id } 변수에는 주소창의 숫자(예: 3)가 자동으로 담깁니다.
-    const { id } = useParams();
+    // 기존: const { id } = useParams();
+    // ⭐️ 수정: 주소의 일부로 ID 대신 '제목(title)'을 사용합니다.
+    const { title } = useParams();
     const navigate = useNavigate();
 
     // --- 2. 데이터 보관 상자 준비하기 (useState) ---
-    // HotelDetail.js의 'hotelInfo'처럼, 우리도 'eventInfo'라는 상자를 만듭니다.
-    // 처음에는 비어있으므로 null(없음) 상태입니다.
     const [eventInfo, setEventInfo] = useState(null);
-    const [isLoading, setIsLoading] = useState(true); // 로딩 상태를 관리합니다.
+    const [isLoading, setIsLoading] = useState(true);
 
     // --- 3. 백엔드에 데이터 요청하기 (useEffect) ---
-    // 이 페이지가 처음 화면에 나타날 때, 또는 주소의 id값이 바뀔 때 딱 한 번만 실행됩니다.
-    // HotelDetail.js의 fetchHotelInfo 함수와 똑같은 역할을 합니다.
     useEffect(() => {
-        // id 값이 없으면 아무것도 실행하지 않습니다.
-        if (!id) return;
+        // 기존: if (!id) return;
+        // ⭐️ 수정: title 값이 없으면 실행하지 않습니다.
+        if (!title) return;
 
         const fetchEventInfo = async () => {
             try {
-                // 백엔드에 "id에 해당하는 이벤트 정보를 주세요" 라고 GET 방식으로 요청합니다.
-                // HotelDetail.js가 호텔 이름을 주소에 담아 보낸 것처럼, 우리도 이벤트 id를 주소에 담아 보냅니다.
+                // ⭐️ 수정: 백엔드에 "제목에 해당하는 이벤트 정보를 주세요"라고 요청합니다.
+                // 경로가 /getEvent/:title 로 변경되었습니다.
                 const response = await axios.get(
-                    `${process.env.REACT_APP_API_URL}/getEvent/${id}`
+                    `${process.env.REACT_APP_API_URL}/getEvent/${title}`
                 );
 
-                // 성공적으로 데이터를 받으면, eventInfo 상자에 담습니다.
                 setEventInfo(response.data);
                 console.log("✅ 이벤트 상세 정보 수신 성공:", response.data);
 
@@ -39,13 +34,13 @@ const EventDetail = () => {
                 console.error("❌ 이벤트 상세 정보를 불러오는 데 실패했습니다:", error);
                 alert("이벤트 정보를 불러오는 데 실패했습니다.");
             } finally {
-                // 데이터 요청이 성공하든 실패하든, 로딩 상태를 종료합니다.
                 setIsLoading(false);
             }
         };
 
-        fetchEventInfo(); // 위에서 만든 함수를 실행합니다.
-    }, [id]); // id 값이 바뀔 때마다 이 함수를 다시 실행하라는 의미입니다.
+        fetchEventInfo();
+        // ⭐️ 수정: 의존성 배열을 [title]로 변경합니다. title 값이 바뀔 때마다 함수를 다시 실행합니다.
+    }, [title]);
 
     // --- 4. 화면 그리기 (return) ---
 

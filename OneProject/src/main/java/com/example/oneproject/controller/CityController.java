@@ -89,49 +89,38 @@ public class CityController {
 
     // 이벤트 정보 저장
     @PostMapping("/saveEvent")
-    public ResponseEntity<String> saveEvent(
-            @RequestParam("eventTitle") String eventTitle,
-            @RequestParam("eventDescription") String eventDescription,
-            @RequestParam("eventStartDate") String eventStartDate,
-            @RequestParam("eventEndDate") String eventEndDate,
-            @RequestParam(value = "eventImage", required = false) MultipartFile eventImage
-            ) {
-            try {
+    public Event saveEvent(@RequestParam("eventTitle") String eventTitle,
+                           @RequestParam("eventDescription") String eventDescription,
+                           @RequestParam("eventStartDate") String eventStartDate,
+                           @RequestParam("eventEndDate") String eventEndDate,
+                           @RequestParam("eventImage") MultipartFile eventImage) throws IOException { // 👈 반환 타입을 Event로 변경
 
-                eventService.saveEvent(
-                    eventTitle,
-                    eventDescription,
-                    eventStartDate,
-                    eventEndDate,
-                    eventImage
-                );
-                return ResponseEntity.ok("저장 완료");
-            } catch (Exception e) {
-                e.printStackTrace();
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("저장 실패: " + e.getMessage());
-            }
+
+        return eventService.saveEvent(eventTitle, eventDescription, eventStartDate, eventEndDate, eventImage);
     }
 
 
-    @GetMapping("/getEvent/{id}")
-    public ResponseEntity<EventDTO> getEvent(@PathVariable Long id) {
-        try {
-            // 1. 주방장(eventService)에게 "이 ID에 맞는 이벤트 요리해주세요" 라고 요청합니다.
-            EventDTO event = eventService.getEventById(id);
+    @GetMapping("/getEvents")
+    public List<EventDTO> getEvents() {
+        return eventService.getAllEvents();
+    }
 
-            // 2. 주방장이 요리를 가져왔다면 (null이 아니라면) 손님에게 성공적으로 전달합니다.
-            if (event != null) {
-                return ResponseEntity.ok(event);
-            } else {
-                // 3. 주방장이 요리를 찾지 못했다면(null이라면), 손님에게 "찾을 수 없습니다" 라고 알립니다. (404)
-                return ResponseEntity.notFound().build();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            // 4. 요리 중 문제가 생기면, 손님에게 에러가 발생했다고 알립니다. (500)
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    @GetMapping("/getEvent/{title}")
+    public ResponseEntity<EventDTO> getEvent(@PathVariable String title) {
+        // Service의 메서드 이름도 getEventByTitle로 변경되었다고 가정
+        EventDTO eventDTO = eventService.getEventByTitle(title); // 👈 제목으로 서비스 호출
+
+        if (eventDTO != null) {
+            return ResponseEntity.ok(eventDTO);
+        } else {
+            return ResponseEntity.notFound().build();
         }
+    }
+
+    @DeleteMapping("/deleteEvents")
+    public ResponseEntity<String> deleteEvents(@RequestBody List<Long> ids) {
+        eventService.deleteEvents(ids);
+        return ResponseEntity.ok("선택된 이벤트가 성공적으로 삭제되었습니다.");
     }
 
 
