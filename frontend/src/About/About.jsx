@@ -58,7 +58,7 @@ const About = () => {
                 });
 
                 // 화면에서도 즉시 반영
-                setEvents(events.filter(event => !idsToDelete.includes(event.id)));
+                setEvents(events.filter(event => !idsToDelete.includes(event.title)));
                 alert('선택한 이벤트가 삭제되었습니다.');
             } catch (error) {
                 console.error("이벤트 삭제에 실패했습니다:", error);
@@ -114,13 +114,13 @@ const About = () => {
                 ) : events.length > 0 ? (
                     <div className="event-grid">
                         {events.map((event) => (
-                            <div className="event-card" key={event.id}>
+                            <div className="event-card" key={event.title}>
                                 {deleteMode && (
                                     <input
                                         type="checkbox"
                                         className="event-checkbox"
-                                        checked={checkedEvents.has(event.id)}
-                                        onChange={() => handleCheckboxChange(event.id)}
+                                        checked={checkedEvents.has(event.title)}
+                                        onChange={() => handleCheckboxChange(event.title)}
                                     />
                                 )}
                                 <img src={event.imageUrl} alt={event.title} className="event-image" />
@@ -129,7 +129,7 @@ const About = () => {
                                     <p className="event-description">{event.description}</p>
                                     <p className="event-date">{event.startDate} ~ {event.endDate}</p>
                                     <button
-                                        onClick={() => navigate(`/event/${event.id}`)}
+                                        onClick={() => navigate(`/event/${event.title}`)}
                                         className="event-button"
                                         disabled={deleteMode} // 삭제 모드일 때 버튼 비활성화
                                     >
