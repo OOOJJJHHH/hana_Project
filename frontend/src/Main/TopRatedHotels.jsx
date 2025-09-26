@@ -1,6 +1,7 @@
 // src/components/Main/TopRatedHotels.jsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const container = {
     width: '90%',
@@ -18,9 +19,8 @@ const hotelList = {
     display: 'flex',
     gap: '20px',
     flexWrap: 'wrap',
-    justifyContent: 'center',  // 이 부분 추가
+    justifyContent: 'center',
 };
-
 
 const card = {
     width: '200px',
@@ -54,6 +54,7 @@ const ratingStyle = {
     color: '#555',
 };
 
+// ⭐ 평점 숫자 → 별 표시
 const renderStars = (rating) => {
     const stars = [];
     const fullStars = Math.floor(rating);
@@ -68,29 +69,28 @@ const renderStars = (rating) => {
 
 const TopRatedHotels = () => {
     const navigate = useNavigate();
+    const [rooms, setRooms] = useState([]);
 
-    const topHotels = [
-        { name: '어진 카스텔', rating: 4.5 },
-        { name: '백볼리', rating: 4.7 },
-        { name: '호텔Z', rating: 4.9 },
-        { name: '준희비에토', rating: 4.3 },
-        { name: '석현치아노', rating: 4.2 },
-    ];
+    useEffect(() => {
+        axios.get(`${process.env.REACT_APP_API_URL}/api/rooms/top5-reviews`)
+            .then(res => setRooms(res.data))
+            .catch(err => console.error(err));
+    }, []);
 
     return (
         <div style={container}>
             <div style={title}>평점순 숙소</div>
             <div style={hotelList}>
-                {topHotels.map((hotel, index) => (
+                {rooms.map((room, index) => (
                     <div
                         key={index}
                         style={card}
-                        onClick={() => navigate(`/hotel-detail?name=${encodeURIComponent(hotel.name)}`)}
+                        onClick={() => navigate(`/hotel-detail?name=${encodeURIComponent(room.roomName)}`)}
                     >
                         <div style={placeholderImage}></div>
-                        <div style={hotelName}>{hotel.name}</div>
+                        <div style={hotelName}>{room.roomName} ({room.clodName})</div>
                         <div style={ratingStyle}>
-                            {renderStars(hotel.rating)} ({hotel.rating})
+                            {renderStars(room.averageRating)} ({room.averageRating.toFixed(1)}, {room.reviewCount}개 리뷰)
                         </div>
                     </div>
                 ))}

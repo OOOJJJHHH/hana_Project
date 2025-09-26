@@ -1,6 +1,7 @@
 package com.example.oneproject.Service;
 
 import com.example.oneproject.DTO.ReviewDTO;
+import com.example.oneproject.DTO.RoomReviewSummaryDTO;
 import com.example.oneproject.Entity.*;
 import com.example.oneproject.Repository.*;
 import jakarta.transaction.Transactional;
@@ -97,5 +98,10 @@ public class ReviewService {
 
     public void deleteAllUserReviews(Long clodContentId, Long roomId, Long userId) {
         reviewRepository.deleteByClodContentIdAndRoomIdAndUserId(clodContentId, roomId, userId);
+    }
+
+    public List<RoomReviewSummaryDTO> getTop5RoomsByReview() {
+        return reviewRepository.findTop5RoomsByAverageRating()
+                .stream().limit(5).toList(); // 혹시 5개 이상 나오는 경우 대비
     }
 }
