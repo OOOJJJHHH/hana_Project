@@ -3,21 +3,20 @@ package com.example.oneproject.DTO;
 import java.util.List;
 
 public class RoomReviewSummaryDTO {
+
     private Long roomId;
     private String roomName;
     private String clodName; // 숙소 이름
     private double averageRating;
     private long reviewCount;
-    private List<String> roomImages; // S3 Presigned URL 포함
+    private List<String> roomImages; // S3 Presigned URL
 
-    public RoomReviewSummaryDTO(Long roomId, String roomName, String clodName,
-                                double averageRating, long reviewCount, List<String> roomImages) {
+    public RoomReviewSummaryDTO(Long roomId, String roomName, String clodName, double averageRating, long reviewCount) {
         this.roomId = roomId;
         this.roomName = roomName;
         this.clodName = clodName;
         this.averageRating = averageRating;
         this.reviewCount = reviewCount;
-        this.roomImages = roomImages;
     }
 
     // Getter / Setter

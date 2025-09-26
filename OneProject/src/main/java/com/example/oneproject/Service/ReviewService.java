@@ -104,27 +104,28 @@ public class ReviewService {
     }
 
     public List<RoomReviewSummaryDTO> getTop5RoomsByReviews() {
-        List<Object[]> results = roomRepository.findTopRoomsByAverageRating(PageRequest.of(0, 5));
+        List<Object[]> results = reviewRepository.findTopRoomsByAverageRating(PageRequest.of(0, 5));
 
         return results.stream().map(obj -> {
             Room room = (Room) obj[0];
-            double avgRating = obj[1] != null ? ((Number)obj[1]).doubleValue() : 0.0;
-            long reviewCount = obj[2] != null ? ((Number)obj[2]).longValue() : 0L;
+            double avgRating = obj[1] != null ? (Double) obj[1] : 0.0;
+            long reviewCount = obj[2] != null ? (Long) obj[2] : 0L;
 
-            List<String> presignedUrls = room.getRoomImages() != null ?
-                    room.getRoomImages().stream()
-                            .map(img -> s3Service.generatePresignedUrl(img.getImageKey()))
-                            .collect(Collectors.toList())
-                    : List.of();
+            // S3 Presigned URL 변환
+            List<String> presignedUrls = room.getRoomImages().stream()
+                    .map(img -> s3Service.generatePresignedUrl(img.getImageKey()))
+                    .collect(Collectors.toList());
 
-            return new RoomReviewSummaryDTO(
+            RoomReviewSummaryDTO dto = new RoomReviewSummaryDTO(
                     room.getId(),
                     room.getRoomName(),
                     room.getClodContent().getLodName(),
                     avgRating,
-                    reviewCount,
-                    presignedUrls
+                    reviewCount
             );
+
+            dto.setRoomImages(presignedUrls);
+            return dto;
         }).collect(Collectors.toList());
     }
 }
