@@ -19,6 +19,6 @@ public class ReviewController {
     // 상위 5개 객실 리뷰 요약
     @GetMapping("/api/rooms/top5-reviews")
     public List<RoomReviewSummaryDTO> getTop5RoomsByReviews() {
-        return reviewService.getTop5RoomsByReview();
+        return reviewService.getTop5RoomsByReviews();
     }
 }
