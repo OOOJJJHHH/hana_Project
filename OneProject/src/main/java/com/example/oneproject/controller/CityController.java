@@ -147,26 +147,27 @@ public class CityController {
     }
 
     // 4. 제목으로 이벤트 삭제 (DELETE)
-    // ✅ ID 기반 삭제 엔드포인트 추가 (프론트엔드 About.jsx와 경로 일치)
-    @DeleteMapping("/deleteEventById/{eventId}")
-    public ResponseEntity<String> deleteEventById(@PathVariable Long eventId) {
+    @DeleteMapping("/deleteEventByTitle/{title}")
+    public ResponseEntity<String> deleteEventByTitle(@PathVariable String title) {
         try {
-            // EventService의 ID 기반 삭제 메소드 호출
-            boolean success = eventService.deleteEventById(eventId);
+            // URL 디코딩
+            String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8.toString());
+            boolean success = eventService.deleteEventByTitle(decodedTitle);
 
             if (success) {
-                return ResponseEntity.ok("이벤트가 성공적으로 삭제되었습니다. ID: " + eventId);
+                return ResponseEntity.ok("삭제 완료");
             } else {
-                // 해당 ID의 이벤트를 찾지 못한 경우
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("삭제 실패: 해당 ID의 이벤트가 없습니다.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 제목의 이벤트가 없습니다.");
             }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("잘못된 제목 인코딩입니다.");
         } catch (Exception e) {
-            // 삭제 과정 중 DB나 S3에서 예외가 발생한 경우 (Foreign Key 오류 등)
-            System.err.println("이벤트 삭제 오류: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("삭제 실패: 서버 내부 오류가 발생했습니다.");
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("삭제 실패: " + e.getMessage());
         }
     }
+
 
 
     // 도시 정보 저장
