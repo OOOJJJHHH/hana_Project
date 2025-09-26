@@ -87,7 +87,6 @@ public class CityController {
     private CLodRepository lodRepository;
 
 
-    // 이벤트 정보 저장
     @PostMapping("/saveEvent")
     public ResponseEntity<String> saveEvent(
             @RequestParam("eventTitle") String eventTitle,
@@ -112,7 +111,7 @@ public class CityController {
         }
     }
 
-    // ✅ 전체 이벤트 조회
+    // 2. 전체 이벤트 조회 (GET)
     @GetMapping("/getEvents")
     public ResponseEntity<List<EventDTO>> getEvents() {
         try {
@@ -120,39 +119,52 @@ public class CityController {
             return ResponseEntity.ok(allEvents);
         } catch (Exception e) {
             e.printStackTrace();
+            // S3 Presigned URL 생성 실패 등 Service 로직에서 오류 발생 시 500 반환
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    // ✅ 제목으로 이벤트 단건 조회
+    // 3. 제목으로 이벤트 단건 조회 (GET)
     @GetMapping("/getEventByTitle/{title}")
     public ResponseEntity<EventDTO> getEventByTitle(@PathVariable String title) {
         try {
-            String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8);
-            Event event = eventService.getEventByTitle(decodedTitle);
-            if (event == null) {
-                return ResponseEntity.notFound().build();
+            // URL 디코딩
+            String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8.toString());
+            EventDTO eventDTO = eventService.getEventDTOByTitle(decodedTitle); // Service 메서드 이름 변경 필요
+
+            if (eventDTO != null) {
+                return ResponseEntity.ok(eventDTO);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
-            return ResponseEntity.ok(new EventDTO(event));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-    // ✅ 제목으로 이벤트 삭제
+    // 4. 제목으로 이벤트 삭제 (DELETE)
     @DeleteMapping("/deleteEventByTitle/{title}")
     public ResponseEntity<String> deleteEventByTitle(@PathVariable String title) {
         try {
-            String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8);
-            boolean deleted = eventService.deleteEventByTitle(decodedTitle);
-            if (deleted) {
-                return ResponseEntity.ok("이벤트 삭제 완료");
+            // URL 디코딩
+            String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8.toString());
+            boolean success = eventService.deleteEventByTitle(decodedTitle);
+
+            if (success) {
+                return ResponseEntity.ok("삭제 완료");
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 제목의 이벤트 없음");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 제목의 이벤트가 없습니다.");
             }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("잘못된 제목 인코딩입니다.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("삭제 실패: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("삭제 실패: " + e.getMessage());
         }
     }
 

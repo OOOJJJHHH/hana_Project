@@ -4,22 +4,27 @@ import axios from 'axios';
 import { UserContext } from '../Session/UserContext'; // UserContext 경로를 확인해주세요.
 
 const About = () => {
+    // UserContext에서 사용자 정보(관리자 여부 판단용)를 가져옵니다.
     const userInfo = useContext(UserContext);
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // --- 삭제 관련 상태 추가 ---
+    // --- 삭제 관련 상태 ---
     const [deleteMode, setDeleteMode] = useState(false); // 삭제 모드 활성화 여부
-    const [checkedEvents, setCheckedEvents] = useState(new Set()); // 체크된 이벤트들의 ID를 저장
+    const [checkedEvents, setCheckedEvents] = useState(new Set()); // 체크된 이벤트들의 Title을 저장
 
+    // 이벤트 목록을 불러오는 useEffect
     useEffect(() => {
         const fetchEvents = async () => {
             try {
+                // 백엔드: GET /getEvents 호출
                 const response = await axios.get(`${process.env.REACT_APP_API_URL}/getEvents`);
                 setEvents(response.data);
             } catch (error) {
                 console.error("이벤트 목록을 불러오는 데 실패했습니다:", error);
+                // 오류 발생 시 사용자에게 알림 (예: 서버 연결 오류)
+                // alert('이벤트 목록을 불러오는 데 실패했습니다. 서버 상태를 확인해주세요.');
             } finally {
                 setLoading(false);
             }
@@ -27,22 +32,24 @@ const About = () => {
         fetchEvents();
     }, []);
 
+    // '이벤트 생성' 버튼 클릭 핸들러
     const handleCreateEventClick = () => {
-        navigate('/create-event');
+        navigate('/create-event'); // EventAdd.js로 연결되는 라우트 경로
     };
 
-    // --- 체크박스 변경 핸들러 ---
-    const handleCheckboxChange = (eventId) => {
+    // 체크박스 변경 핸들러 (이벤트 Title을 Set에 추가/제거)
+    const handleCheckboxChange = (eventTitle) => {
         const newCheckedEvents = new Set(checkedEvents);
-        if (newCheckedEvents.has(eventId)) {
-            newCheckedEvents.delete(eventId);
+        if (newCheckedEvents.has(eventTitle)) {
+            newCheckedEvents.delete(eventTitle);
         } else {
-            newCheckedEvents.add(eventId);
+            newCheckedEvents.add(eventTitle);
         }
         setCheckedEvents(newCheckedEvents);
     };
 
-    // --- 선택 항목 일괄 삭제 핸들러 ---
+    // 🔥 선택 항목 일괄 삭제 핸들러 (수정된 로직)
+    // 백엔드의 단일 삭제 API를 반복 호출하여 처리
     const handleBulkDelete = async () => {
         if (checkedEvents.size === 0) {
             alert('삭제할 이벤트를 하나 이상 선택해주세요.');
@@ -51,20 +58,24 @@ const About = () => {
 
         if (window.confirm(`${checkedEvents.size}개의 이벤트를 정말 삭제하시겠습니까?`)) {
             try {
-                const idsToDelete = Array.from(checkedEvents); // Set을 배열로 변환
-                // 서버에 선택된 ID 배열을 보내 삭제 요청 (실제 API 주소로 수정 필요)
-                await axios.delete(`${process.env.REACT_APP_API_URL}/deleteEvents`, {
-                    data: { ids: idsToDelete },
-                });
+                const titlesToDelete = Array.from(checkedEvents);
 
-                // 화면에서도 즉시 반영
-                setEvents(events.filter(event => !idsToDelete.includes(event.title)));
+                // 백엔드 단일 삭제 API를 각 항목에 대해 반복 호출
+                for (const title of titlesToDelete) {
+                    await axios.delete(
+                        // 백엔드: DELETE /deleteEventByTitle/{title} 호출
+                        `${process.env.REACT_APP_API_URL}/deleteEventByTitle/${encodeURIComponent(title)}`
+                    );
+                }
+
+                // UI에서 삭제된 이벤트 제거 후 목록 갱신
+                setEvents(events.filter(event => !titlesToDelete.includes(event.title)));
                 alert('선택한 이벤트가 삭제되었습니다.');
             } catch (error) {
                 console.error("이벤트 삭제에 실패했습니다:", error);
-                alert('이벤트 삭제 중 오류가 발생했습니다.');
+                alert('이벤트 삭제 중 오류가 발생했습니다. 서버 또는 권한을 확인해주세요.');
             } finally {
-                // 삭제 모드 종료 및 초기화
+                // 삭제 모드 종료 및 상태 초기화
                 setDeleteMode(false);
                 setCheckedEvents(new Set());
             }
@@ -83,7 +94,7 @@ const About = () => {
                 <h1 className="about-title">이벤트 안내</h1>
             </div>
 
-            {/* 관리자 버튼 영역 */}
+            {/* 관리자 버튼 영역 (userInfo?.uUser가 'admin'일 때만 표시) */}
             {userInfo?.uUser === 'admin' && (
                 <div className="admin-button-group">
                     {deleteMode ? (
@@ -123,13 +134,15 @@ const About = () => {
                                         onChange={() => handleCheckboxChange(event.title)}
                                     />
                                 )}
+                                {/* imageUrl은 Presigned URL을 통해 이미지를 직접 표시 */}
                                 <img src={event.imageUrl} alt={event.title} className="event-image" />
                                 <div className="event-content">
                                     <h2 className="event-title">{event.title}</h2>
                                     <p className="event-description">{event.description}</p>
                                     <p className="event-date">{event.startDate} ~ {event.endDate}</p>
                                     <button
-                                        onClick={() => navigate(`/event/${event.title}`)}
+                                        // EventDetail.js로 이동 (URL 인코딩 필수)
+                                        onClick={() => navigate(`/event/${encodeURIComponent(event.title)}`)}
                                         className="event-button"
                                         disabled={deleteMode} // 삭제 모드일 때 버튼 비활성화
                                     >
@@ -146,6 +159,7 @@ const About = () => {
                 )}
             </div>
 
+            {/* 인라인 스타일은 유지 */}
             <style>{`
                 .about-container {
                   padding: 60px 20px;
