@@ -91,14 +91,30 @@ public class EventService {
 
     // ✅ 제목으로 이벤트 삭제 (About.jsx, EventDetail.js 연동)
     public boolean deleteEventByTitle(String title) {
-        Event event = eventRepository.findByTitle(title);
-        if (event != null) {
-            // (선택 사항) S3Uploader를 사용하여 S3의 이미지도 삭제하는 로직을 추가할 수 있습니다.
-            // s3Uploader.deleteFile(event.getImageUrl());
+        // 1. 제목으로 이벤트 엔티티 조회
+        Event event = eventRepository.findByTitle(title); //
 
-            eventRepository.delete(event);
+        if (event != null) {
+            // 💡 누락된 S3 이미지 삭제 로직 추가 💡
+            String imageUrl = event.getImageUrl();
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                // imageUrl에는 S3 key(경로)가 저장되어 있음.
+                // S3Uploader 서비스의 deleteFile 메소드를 사용하여 S3에서 파일을 삭제합니다.
+                try {
+                    s3Uploader.deleteFile(imageUrl);
+                } catch (Exception e) {
+                    // S3 삭제가 실패해도 DB 삭제를 계속 진행할지 결정해야 합니다.
+                    // 여기서는 로그를 남기고 DB 삭제를 진행하도록 처리합니다.
+                    System.err.println("S3 이미지 삭제 실패 (Key: " + imageUrl + "): " + e.getMessage());
+                    // 오류를 throw하지 않고 진행합니다.
+                }
+            }
+
+            // 2. DB에서 엔티티 삭제
+            eventRepository.delete(event); //
             return true;
+        } else {
+            return false; // 해당 제목의 이벤트가 DB에 없음
         }
-        return false;
     }
 }
