@@ -125,6 +125,25 @@ public class CityController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+    @GetMapping("/getEvent/{id}")
+    public ResponseEntity<EventDTO> getEvent(@PathVariable Long id) {
+        try {
+            // 1. 주방장(eventService)에게 "이 ID에 맞는 이벤트 요리해주세요" 라고 요청합니다.
+            EventDTO event = eventService.getEventById(id);
+
+            // 2. 주방장이 요리를 가져왔다면 (null이 아니라면) 손님에게 성공적으로 전달합니다.
+            if (event != null) {
+                return ResponseEntity.ok(event);
+            } else {
+                // 3. 주방장이 요리를 찾지 못했다면(null이라면), 손님에게 "찾을 수 없습니다" 라고 알립니다. (404)
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // 4. 요리 중 문제가 생기면, 손님에게 에러가 발생했다고 알립니다. (500)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
 
 
