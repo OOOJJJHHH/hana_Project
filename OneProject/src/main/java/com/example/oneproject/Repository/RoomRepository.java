@@ -22,4 +22,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     @Query("SELECT r FROM Room r JOIN FETCH r.clodContent c WHERE r.roomName LIKE %:keyword%")
     List<Room> findByRoomNameContaining(@Param("keyword") String keyword);
 
+    // 전체 방 중에서 가격이 낮은 순서대로 상위 6개 가져오기
+    @Query("SELECT r FROM Room r ORDER BY r.price ASC")
+    List<Room> findTop6ByPrice();
+
 }

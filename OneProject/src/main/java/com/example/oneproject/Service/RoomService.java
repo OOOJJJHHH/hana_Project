@@ -238,6 +238,29 @@ public class RoomService {
         roomImagesRepository.saveAll(imageEntities);
     }
 
+    // 가격이 저렴한 순으로 숙소 보여줌
+    // 상위 6개의 가장 저렴한 방 가져오기
+    public List<CheapestRoomWithImagesDTO> getTop6CheapestRooms() {
+        List<Room> rooms = roomRepository.findTop6ByPrice();
+
+        return rooms.stream().map(room -> {
+            List<String> imageUrls = room.getRoomImages()
+                    .stream()
+                    .map(RoomImages::getImageKey)
+                    .map(s3Service::generatePresignedUrl)
+                    .collect(Collectors.toList());
+
+            return new CheapestRoomWithImagesDTO(
+                    room.getId(),
+                    room.getRoomName(),
+                    room.getPrice(),
+                    room.getClodContent().getId(),
+                    room.getClodContent().getLodName(),
+                    imageUrls
+            );
+        }).collect(Collectors.toList());
+    }
+
 
 
 }

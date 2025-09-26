@@ -15,6 +15,7 @@ public class RoomSearchController {
         this.roomService = roomService;
     }
 
+    // 헤더에서 검색을 위한 컨트롤러
     // GET /api/hotels/search?query=검색어
     @GetMapping("/api/hotels/search")
     public List<CityHotelDTO> searchHotels(@RequestParam("query") String query) {

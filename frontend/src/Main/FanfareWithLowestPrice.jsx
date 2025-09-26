@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import fanfare from '../image/fanfare.png';
-import fan1 from '../image/1.jpg';
-import fan2 from '../image/2.jpg';
-import fan3 from '../image/3.jpg';
+import axios from 'axios';
 
 const container = {
     display: 'flex',
@@ -87,27 +85,25 @@ const buttonStyle = {
 
 const FanfareWithLowestPrice = () => {
     const navigate = useNavigate();
+    const [rooms, setRooms] = useState([]);
     const [startIndex, setStartIndex] = useState(0);
 
-    const topHotels = [
-        { name: '어진 카스텔', image: fan1 },
-        { name: '백볼리', image: fan2 },
-        { name: '호텔Z', image: fan3 },
-    ];
-
-    const hotelsToShow = topHotels.slice(startIndex, startIndex + 3);
+    // API 호출하여 가장 저렴한 6개 객실 가져오기
+    useEffect(() => {
+        axios.get(`${process.env.REACT_APP_API_URL}/api/rooms/cheapest-top6`)
+            .then(res => setRooms(res.data))
+            .catch(err => console.error(err));
+    }, []);
 
     const handleNext = () => {
-        if (startIndex + 3 < topHotels.length) {
-            setStartIndex(startIndex + 3);
-        }
+        if (startIndex + 3 < rooms.length) setStartIndex(startIndex + 3);
     };
 
     const handlePrev = () => {
-        if (startIndex - 3 >= 0) {
-            setStartIndex(startIndex - 3);
-        }
+        if (startIndex - 3 >= 0) setStartIndex(startIndex - 3);
     };
+
+    const roomsToShow = rooms.slice(startIndex, startIndex + 3);
 
     return (
         <div style={container}>
@@ -125,22 +121,19 @@ const FanfareWithLowestPrice = () => {
 
             {/* Right: Lowest Price Slider */}
             <div style={sliderContainer}>
-                <button onClick={handlePrev} style={buttonStyle}>
-                    &lt;
-                </button>
-                {hotelsToShow.map((hotel, index) => (
+                <button onClick={handlePrev} style={buttonStyle}>&lt;</button>
+                {roomsToShow.map((room, index) => (
                     <div
                         key={index}
                         style={box}
-                        onClick={() => navigate(`/hotel-detail?name=${encodeURIComponent(hotel.name)}`)}
+                        onClick={() => navigate(`/hotel-detail?name=${encodeURIComponent(room.clodName)}`)}
                     >
-                        <img src={hotel.image} alt={hotel.name} style={imageStyle} />
-                        <span>{hotel.name}</span>
+                        {room.roomImages[0] && <img src={room.roomImages[0]} alt={room.roomName} style={imageStyle} />}
+                        <span>{room.roomName}</span>
+                        <span style={{ fontWeight: 'bold', color: 'red' }}>{room.price.toLocaleString()}원</span>
                     </div>
                 ))}
-                <button onClick={handleNext} style={buttonStyle}>
-                    &gt;
-                </button>
+                <button onClick={handleNext} style={buttonStyle}>&gt;</button>
             </div>
         </div>
     );
