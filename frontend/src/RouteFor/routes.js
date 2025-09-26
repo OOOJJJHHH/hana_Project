@@ -13,6 +13,8 @@ import Owner from "../Cities/Owner";
 import CityForm from "../Cities/CityForm";
 import About from "../About/About";
 import EventAdd from '../About/Event/EventAdd'; // 새로 만든 파일 import
+import EventDetail from '../About/Event/EventDetail';
+
 const routes = [
     {
         path: '/',
@@ -78,6 +80,10 @@ const routes = [
     {  //도시 추가하는 컴포넌트
         path: '/create-event',
         component: EventAdd,
+    },
+    {
+        path: '/event/:title',   // id → title 로 변경
+        component: EventDetail,
     },
 
 ];

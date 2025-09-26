@@ -89,40 +89,72 @@ public class CityController {
 
     // 이벤트 정보 저장
     @PostMapping("/saveEvent")
-    public Event saveEvent(@RequestParam("eventTitle") String eventTitle,
-                           @RequestParam("eventDescription") String eventDescription,
-                           @RequestParam("eventStartDate") String eventStartDate,
-                           @RequestParam("eventEndDate") String eventEndDate,
-                           @RequestParam("eventImage") MultipartFile eventImage) throws IOException { // 👈 반환 타입을 Event로 변경
-
-
-        return eventService.saveEvent(eventTitle, eventDescription, eventStartDate, eventEndDate, eventImage);
-    }
-
-
-    @GetMapping("/getEvents")
-    public List<EventDTO> getEvents() {
-        return eventService.getAllEvents();
-    }
-
-    @GetMapping("/getEvent/{title}")
-    public ResponseEntity<EventDTO> getEvent(@PathVariable String title) {
-        // Service의 메서드 이름도 getEventByTitle로 변경되었다고 가정
-        EventDTO eventDTO = eventService.getEventByTitle(title); // 👈 제목으로 서비스 호출
-
-        if (eventDTO != null) {
-            return ResponseEntity.ok(eventDTO);
-        } else {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<String> saveEvent(
+            @RequestParam("eventTitle") String eventTitle,
+            @RequestParam("eventDescription") String eventDescription,
+            @RequestParam("eventStartDate") String eventStartDate,
+            @RequestParam("eventEndDate") String eventEndDate,
+            @RequestParam(value = "eventImage", required = false) MultipartFile eventImage
+    ) {
+        try {
+            eventService.saveEvent(
+                    eventTitle,
+                    eventDescription,
+                    eventStartDate,
+                    eventEndDate,
+                    eventImage
+            );
+            return ResponseEntity.ok("저장 완료");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("저장 실패: " + e.getMessage());
         }
     }
 
-    @DeleteMapping("/deleteEvents")
-    public ResponseEntity<String> deleteEvents(@RequestBody List<Long> ids) {
-        eventService.deleteEvents(ids);
-        return ResponseEntity.ok("선택된 이벤트가 성공적으로 삭제되었습니다.");
+    // ✅ 전체 이벤트 조회
+    @GetMapping("/getEvents")
+    public ResponseEntity<List<EventDTO>> getEvents() {
+        try {
+            List<EventDTO> allEvents = eventService.getAllEvents();
+            return ResponseEntity.ok(allEvents);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
+    // ✅ 제목으로 이벤트 단건 조회
+    @GetMapping("/getEventByTitle/{title}")
+    public ResponseEntity<EventDTO> getEventByTitle(@PathVariable String title) {
+        try {
+            String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8);
+            Event event = eventService.getEventByTitle(decodedTitle);
+            if (event == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(new EventDTO(event));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // ✅ 제목으로 이벤트 삭제
+    @DeleteMapping("/deleteEventByTitle/{title}")
+    public ResponseEntity<String> deleteEventByTitle(@PathVariable String title) {
+        try {
+            String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8);
+            boolean deleted = eventService.deleteEventByTitle(decodedTitle);
+            if (deleted) {
+                return ResponseEntity.ok("이벤트 삭제 완료");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 제목의 이벤트 없음");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("삭제 실패: " + e.getMessage());
+        }
+    }
 
 
     // 도시 정보 저장
