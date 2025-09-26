@@ -14,7 +14,7 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // ID 값을 데이터베이스가 알아서 1씩 자동 증가시킵니다.
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false) // "이 칸은 비어있으면 안돼!" 라는 규칙
     private String title;
 
     @Column(columnDefinition = "TEXT", nullable = false) // 긴 텍스트를 저장할 수 있는 칸

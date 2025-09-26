@@ -43,65 +43,49 @@ const EventAdd = () => {
         formData.append('eventDescription', eventData.description);
         formData.append('eventStartDate', eventData.startDate);
         formData.append('eventEndDate', eventData.endDate);
-        formData.append('eventImage', imageFile); // 파일 자체를 'eventImage' 이름으로 추가
+        formData.append('eventImage', imageFile);
+
+        console.log('🎉 전송될 이벤트 데이터:');
+        for (let [key, value] of formData.entries()) {
+            console.log(`${key}:`, value);
+        }
 
         try {
-            // 서버로 FormData 전송. 백엔드에서 Event 객체 (ID 포함)를 반환하도록 수정했습니다.
-            const response = await axios.post(`${process.env.REACT_APP_API_URL}/saveEvent`, formData, {
+            // 서버로 FormData 전송 (API URL은 실제 엔드포인트에 맞게 수정 필요)
+            await axios.post(`${process.env.REACT_APP_API_URL}/saveEvent`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
 
             alert('이벤트가 성공적으로 등록되었습니다!');
-
-            // ⭐️ 수정된 부분: 서버 응답에서 새로 생성된 ID를 추출합니다.
-            const newEventId = response.data.id;
-
-            // ⭐️ 수정된 부분: 새로 받은 ID를 사용하여 이벤트 상세 페이지로 즉시 이동합니다.
-            // 이로써 목록 새로고침에 의존하지 않아 데이터 로딩 실패 문제를 해결합니다.
-            navigate(`/event/${newEventId}`);
+            navigate('/about'); // 등록 완료 후 이벤트 목록 페이지로 이동
 
         } catch (error) {
-            console.error('이벤트 등록 중 오류 발생:', error);
-            alert('이벤트 등록에 실패했습니다. 서버 상태를 확인해주세요.');
+            console.error('이벤트 등록 실패:', error);
+            alert('이벤트 등록에 실패했습니다. 서버 오류를 확인해주세요.');
         }
     };
 
     return (
         <div className="event-add-container">
-            <h2 className="add-event-title">새 이벤트 등록</h2>
-            <form onSubmit={handleSubmit} className="event-form">
-
-                {/* 제목 입력 */}
+            <h1 className="event-add-title">새 이벤트 등록</h1>
+            <form onSubmit={handleSubmit} className="event-add-form">
                 <div className="form-group">
-                    <label htmlFor="title">제목</label>
+                    <label htmlFor="title">이벤트 제목</label>
                     <input
                         type="text"
                         id="title"
                         name="title"
                         value={eventData.title}
                         onChange={handleInputChange}
+                        placeholder="이벤트의 주제를 입력하세요"
                         required
                     />
                 </div>
 
-                {/* 설명 입력 */}
-                <div className="form-group">
-                    <label htmlFor="description">상세 설명</label>
-                    <textarea
-                        id="description"
-                        name="description"
-                        value={eventData.description}
-                        onChange={handleInputChange}
-                        rows="6"
-                        required
-                    />
-                </div>
-
-                {/* 날짜 입력 */}
-                <div className="date-group">
-                    <div className="form-group date-item">
+                <div className="form-group-row">
+                    <div className="form-group">
                         <label htmlFor="startDate">시작일</label>
                         <input
                             type="date"
@@ -112,7 +96,7 @@ const EventAdd = () => {
                             required
                         />
                     </div>
-                    <div className="form-group date-item">
+                    <div className="form-group">
                         <label htmlFor="endDate">종료일</label>
                         <input
                             type="date"
@@ -125,99 +109,106 @@ const EventAdd = () => {
                     </div>
                 </div>
 
-                {/* 이미지 파일 입력 */}
-                <div className="form-group image-upload-group">
-                    <label htmlFor="eventImage" className="image-label">
-                        대표 이미지 (필수)
-                    </label>
+                <div className="form-group">
+                    <label htmlFor="description">이벤트 설명</label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        rows="8"
+                        value={eventData.description}
+                        onChange={handleInputChange}
+                        placeholder="이벤트에 대한 상세한 설명을 작성해주세요"
+                        required
+                    ></textarea>
+                </div>
+
+                <div className="form-group">
+                    <label htmlFor="image">대표 이미지</label>
                     <input
                         type="file"
-                        id="eventImage"
-                        name="eventImage"
+                        id="image"
+                        name="image"
                         accept="image/*"
                         onChange={handleImageChange}
+                        required
                     />
                 </div>
 
-                {/* 이미지 미리보기 */}
                 {imagePreview && (
                     <div className="image-preview-container">
+                        <p>이미지 미리보기</p>
                         <img src={imagePreview} alt="이벤트 이미지 미리보기" className="image-preview" />
                     </div>
                 )}
 
-                {/* 버튼 */}
                 <div className="form-actions">
-                    <button type="submit" className="submit-btn">
-                        이벤트 등록
-                    </button>
-                    <button type="button" onClick={() => navigate('/about')} className="cancel-btn">
-                        취소
-                    </button>
+                    <button type="submit" className="submit-btn">등록하기</button>
+                    <button type="button" onClick={() => navigate('/about')} className="cancel-btn">취소</button>
                 </div>
             </form>
 
-            {/* CSS 스타일링 (React에서는 일반적으로 별도 파일에 두지만, 편의상 여기에 포함) */}
             <style>{`
                 .event-add-container {
-                  padding: 40px 20px;
-                  max-width: 600px;
-                  margin: 0 auto;
-                  font-family: 'Arial', sans-serif;
-                  background-color: #f7f9fc;
-                  border-radius: 15px;
-                  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+                  max-width: 800px;
+                  margin: 60px auto;
+                  padding: 40px;
+                  background-color: #ffffff;
+                  border-radius: 16px;
+                  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+                  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                 }
-                .add-event-title {
+                .event-add-title {
                   text-align: center;
-                  color: #007bff;
-                  margin-bottom: 30px;
-                  font-size: 28px;
-                  font-weight: bold;
+                  font-size: 32px;
+                  font-weight: 600;
+                  color: #222;
+                  margin-bottom: 40px;
                 }
-                .event-form {
+                .event-add-form {
                   display: flex;
                   flex-direction: column;
-                  gap: 20px;
+                  gap: 24px;
                 }
                 .form-group {
                   display: flex;
                   flex-direction: column;
                 }
+                .form-group-row {
+                  display: grid;
+                  grid-template-columns: 1fr 1fr;
+                  gap: 20px;
+                }
                 .form-group label {
+                  font-size: 14px;
+                  font-weight: 600;
+                  color: #555;
                   margin-bottom: 8px;
-                  font-weight: bold;
-                  color: #333;
+                  letter-spacing: 0.5px;
                 }
                 .form-group input[type="text"],
                 .form-group input[type="date"],
-                .form-group textarea {
-                  padding: 12px;
-                  border: 1px solid #ddd;
+                .form-group textarea,
+                .form-group input[type="file"] {
+                  width: 100%;
+                  padding: 12px 14px;
+                  border: 1.5px solid #ccc;
                   border-radius: 8px;
                   font-size: 16px;
-                  transition: border-color 0.2s ease;
-                }
-                .form-group input:focus,
-                .form-group textarea:focus {
-                  border-color: #007bff;
+                  box-sizing: border-box;
+                  transition: border-color 0.3s, box-shadow 0.3s;
                   outline: none;
                 }
-                .date-group {
-                    display: flex;
-                    gap: 20px;
+                .form-group input:focus, .form-group textarea:focus {
+                    border-color: #007bff;
+                    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
                 }
-                .date-item {
-                    flex: 1;
-                }
-                .image-upload-group input[type="file"] {
-                    border: none;
-                    padding: 0;
+                .form-group textarea {
+                  resize: vertical;
+                  min-height: 120px;
                 }
                 .image-preview-container {
-                  margin-top: 10px;
                   text-align: center;
-                  padding: 10px;
+                  margin-top: 10px;
                 }
                 .image-preview {
                   max-width: 100%;
