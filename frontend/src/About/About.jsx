@@ -14,6 +14,42 @@ const About = () => {
     const [deleteMode, setDeleteMode] = useState(false); // 삭제 모드 활성화 여부
     const [checkedEvents, setCheckedEvents] = useState(new Set()); // 체크된 이벤트들의 Title을 저장
 
+    // ✅ D-day 계산 함수
+    const getDDay = (startDate, endDate) => {
+        const today = new Date();
+        // 날짜 형식은 YYYY-MM-DD라고 가정합니다.
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        // 시간을 00:00:00으로 맞추어 날짜 계산의 정확성을 높입니다.
+        today.setHours(0, 0, 0, 0);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(0, 0, 0, 0);
+
+        // 1. 이벤트 종료 여부 확인 (종료일 < 오늘)
+        if (end.getTime() < today.getTime()) {
+            return "종료";
+        }
+
+        // 2. 이벤트 진행 중 여부 확인 (시작일 <= 오늘 <= 종료일)
+        if (start.getTime() <= today.getTime() && today.getTime() <= end.getTime()) {
+            return "진행 중";
+        }
+
+        // 3. 이벤트 예정 여부 확인 (시작일 > 오늘)
+        if (start.getTime() > today.getTime()) {
+            const diffTime = start.getTime() - today.getTime();
+            // 밀리초를 일(day)로 변환
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) return "D-day";
+            return `D-${diffDays}`;
+        }
+
+        return ""; // 예외 케이스
+    };
+
+
     // 이벤트 목록을 불러오는 useEffect
     useEffect(() => {
         const fetchEvents = async () => {
@@ -23,8 +59,6 @@ const About = () => {
                 setEvents(response.data);
             } catch (error) {
                 console.error("이벤트 목록을 불러오는 데 실패했습니다:", error);
-                // 오류 발생 시 사용자에게 알림 (예: 서버 연결 오류)
-                // alert('이벤트 목록을 불러오는 데 실패했습니다. 서버 상태를 확인해주세요.');
             } finally {
                 setLoading(false);
             }
@@ -48,8 +82,7 @@ const About = () => {
         setCheckedEvents(newCheckedEvents);
     };
 
-    // 🔥 선택 항목 일괄 삭제 핸들러 (수정된 로직)
-    // 백엔드의 단일 삭제 API를 반복 호출하여 처리
+    // 🔥 선택 항목 일괄 삭제 핸들러
     const handleBulkDelete = async () => {
         if (checkedEvents.size === 0) {
             alert('삭제할 이벤트를 하나 이상 선택해주세요.');
@@ -63,7 +96,7 @@ const About = () => {
                 // 백엔드 단일 삭제 API를 각 항목에 대해 반복 호출
                 for (const title of titlesToDelete) {
                     await axios.delete(
-                        // 백엔드: DELETE /deleteEventByTitle/{title} 호출
+                        // ⚠️ 현재 Title 기반 삭제 API 호출. ID 기반으로 백엔드 수정 시 프론트도 반드시 ID로 바꿔야 오류가 해결됩니다.
                         `${process.env.REACT_APP_API_URL}/deleteEventByTitle/${encodeURIComponent(title)}`
                     );
                 }
@@ -138,8 +171,14 @@ const About = () => {
                                 <img src={event.imageUrl} alt={event.title} className="event-image" />
                                 <div className="event-content">
                                     <h2 className="event-title">{event.title}</h2>
-                                    <p className="event-description">{event.description}</p>
-                                    <p className="event-date">{event.startDate} ~ {event.endDate}</p>
+                                    {/* ✅ D-day 표시 로직 및 동적 클래스 할당 */}
+                                    <p className="event-date">
+                                        {event.startDate} ~ {event.endDate}
+                                        {/* D-day 결과에 따라 클래스 이름 할당 (띄어쓰기는 하이픈으로 치환) */}
+                                        <span className={`d-day-badge d-day-${getDDay(event.startDate, event.endDate).replace(/\s/g, '-')}`}>
+                                            ({getDDay(event.startDate, event.endDate)})
+                                        </span>
+                                    </p>
                                     <button
                                         // EventDetail.js로 이동 (URL 인코딩 필수)
                                         onClick={() => navigate(`/event/${encodeURIComponent(event.title)}`)}
@@ -205,7 +244,6 @@ const About = () => {
                 .cancel-button:hover { background-color: #e0a800; }
                 
                 .event-container {
-                  background-color: #f5f5f5;
                   padding: 40px 20px;
                   min-height: 300px;
                   display: flex;
@@ -273,7 +311,34 @@ const About = () => {
                   font-size: 12px;
                   color: #999;
                   margin-bottom: 20px;
+                  display: flex; /* D-day 배지를 옆으로 배치 */
+                  align-items: center;
+                  gap: 8px;
                 }
+                
+                /* D-day 배지 기본 스타일 */
+                .d-day-badge {
+                    font-weight: bold;
+                    font-size: 14px;
+                }
+
+                /* 🎯 1. 시작 예정 (D-n 또는 D-day)일 때: 빨간색 */
+                .d-day-D-day, 
+                .d-day-D- {
+                    /* "D-1", "D-5", "D-day" 모두 포함 */
+                    color: #dc3545; /* 빨간색 */
+                }
+
+                /* 🎯 2. 진행 중일 때: 초록색 */
+                .d-day-진행-중 {
+                    color: #28a745; /* 초록색 */
+                }
+
+                /* 🎯 3. 종료일 때: 회색 */
+                .d-day-종료 {
+                    color: #6c757d; /* 회색 */
+                }
+
                 .event-button {
                   align-self: center;
                   background-color: #007bff;
