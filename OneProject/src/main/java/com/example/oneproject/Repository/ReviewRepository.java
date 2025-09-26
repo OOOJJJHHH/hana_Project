@@ -5,6 +5,7 @@ import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.Review;
 import com.example.oneproject.Entity.Room;
 import com.example.oneproject.Entity.UserContent;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -20,10 +21,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     void deleteByUserAndClodContentAndRoom(UserContent user, ClodContent clodContent, Room room);
 
-    @Query("SELECT new com.example.oneproject.DTO.RoomReviewSummaryDTO(" +
-            "r.room.id, r.room.roomName, r.room.clodContent.lodName, AVG(r.rating), COUNT(r)) " +
+    @Query("SELECT r.room, AVG(r.rating), COUNT(r) " +
             "FROM Review r " +
-            "GROUP BY r.room.id, r.room.roomName, r.room.clodContent.lodName " +
+            "GROUP BY r.room " +
             "ORDER BY AVG(r.rating) DESC")
-    List<RoomReviewSummaryDTO> findTop5RoomsByAverageRating();
+    List<Object[]> findTopRoomsByAverageRating(Pageable pageable);
 }

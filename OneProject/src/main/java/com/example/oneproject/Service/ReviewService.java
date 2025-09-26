@@ -6,12 +6,14 @@ import com.example.oneproject.Entity.*;
 import com.example.oneproject.Repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import com.example.oneproject.Enum.ReservationStatus;
 
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +24,7 @@ public class ReviewService {
     private final CLodRepository clodRepository;
     private final RoomRepository roomRepository;
     private final ReservationRepository reservationRepository;
+    private final S3Service s3Service;
 
     public Review createReview(ReviewDTO dto) {
         UserContent user = userRepository.findByUId(dto.getUserId())
@@ -100,8 +103,29 @@ public class ReviewService {
         reviewRepository.deleteByClodContentIdAndRoomIdAndUserId(clodContentId, roomId, userId);
     }
 
-    public List<RoomReviewSummaryDTO> getTop5RoomsByReview() {
-        return reviewRepository.findTop5RoomsByAverageRating()
-                .stream().limit(5).toList(); // 혹시 5개 이상 나오는 경우 대비
+    public List<RoomReviewSummaryDTO> getTop5RoomsByReviews() {
+        List<Object[]> results = reviewRepository.findTopRoomsByAverageRating(PageRequest.of(0, 5));
+
+        return results.stream().map(obj -> {
+            Room room = (Room) obj[0];
+            double avgRating = obj[1] != null ? (Double) obj[1] : 0.0;
+            long reviewCount = obj[2] != null ? (Long) obj[2] : 0L;
+
+            // S3 Presigned URL 변환
+            List<String> presignedUrls = room.getRoomImages().stream()
+                    .map(img -> s3Service.generatePresignedUrl(img.getImageKey()))
+                    .collect(Collectors.toList());
+
+            RoomReviewSummaryDTO dto = new RoomReviewSummaryDTO(
+                    room.getId(),
+                    room.getRoomName(),
+                    room.getClodContent().getLodName(),
+                    avgRating,
+                    reviewCount
+            );
+
+            dto.setRoomImages(presignedUrls);
+            return dto;
+        }).collect(Collectors.toList());
     }
 }

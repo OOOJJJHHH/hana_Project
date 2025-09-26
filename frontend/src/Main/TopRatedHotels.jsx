@@ -24,7 +24,7 @@ const hotelList = {
 
 const card = {
     width: '200px',
-    height: '230px',
+    height: '260px',
     border: '1px solid #ccc',
     borderRadius: '8px',
     padding: '10px',
@@ -32,15 +32,16 @@ const card = {
     cursor: 'pointer',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     backgroundColor: '#f9f9f9',
 };
 
-const placeholderImage = {
+const imageStyle = {
     width: '100%',
     height: '130px',
-    backgroundColor: '#ddd',
+    objectFit: 'cover',
     borderRadius: '6px',
+    backgroundColor: '#ddd',
 };
 
 const hotelName = {
@@ -52,6 +53,7 @@ const hotelName = {
 const ratingStyle = {
     fontSize: '14px',
     color: '#555',
+    marginTop: '5px',
 };
 
 // ⭐ 평점 숫자 → 별 표시
@@ -73,9 +75,13 @@ const TopRatedHotels = () => {
 
     useEffect(() => {
         axios.get(`${process.env.REACT_APP_API_URL}/api/rooms/top5-reviews`)
-            .then(res => setRooms(res.data))
+            .then(res => {
+                console.log("TopRatedHotels API 데이터:", res.data); // ← 여기에 콘솔 출력
+                setRooms(res.data);
+            })
             .catch(err => console.error(err));
     }, []);
+
 
     return (
         <div style={container}>
@@ -85,9 +91,19 @@ const TopRatedHotels = () => {
                     <div
                         key={index}
                         style={card}
-                        onClick={() => navigate(`/hotel-detail?name=${encodeURIComponent(room.roomName)}`)}
+                        onClick={() => navigate(`/hotel-detail?name=${encodeURIComponent(room.clodName)}`)}
                     >
-                        <div style={placeholderImage}></div>
+                        {/* 대표 이미지 */}
+                        {room.roomImages && room.roomImages.length > 0 ? (
+                            <img
+                                src={room.roomImages[0]}
+                                alt={room.roomName}
+                                style={imageStyle}
+                            />
+                        ) : (
+                            <div style={imageStyle}></div>
+                        )}
+
                         <div style={hotelName}>{room.roomName} ({room.clodName})</div>
                         <div style={ratingStyle}>
                             {renderStars(room.averageRating)} ({room.averageRating.toFixed(1)}, {room.reviewCount}개 리뷰)

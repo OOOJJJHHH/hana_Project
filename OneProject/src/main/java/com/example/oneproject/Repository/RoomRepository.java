@@ -3,6 +3,7 @@ package com.example.oneproject.Repository;
 import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.Room;
 import com.example.oneproject.Entity.RoomImages;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,5 +26,11 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     // 전체 방 중에서 가격이 낮은 순서대로 상위 6개 가져오기
     @Query("SELECT r FROM Room r ORDER BY r.price ASC")
     List<Room> findTop6ByPrice();
+
+    @Query("SELECT r as room, AVG(rv.rating) as avgRating, COUNT(rv) as reviewCount " +
+            "FROM Room r LEFT JOIN r.reviews rv " +
+            "GROUP BY r " +
+            "ORDER BY avgRating DESC")
+    List<Object[]> findTopRoomsByAverageRating(Pageable pageable);
 
 }
