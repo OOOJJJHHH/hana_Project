@@ -3,53 +3,71 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const EventDetail = () => {
-    // useParams()는 URL에 담긴 ID 같은 동적인 값을 잡아내는 낚싯대입니다.
-    // 예를 들어 주소가 /event/3 이면, id 변수에는 '3'이 담깁니다.
+    // --- 1. 주소에서 정보 얻기 ---
+    // HotelDetail.js는 주소 뒤에 ?name=... 을 사용해서 useLocation을 썼지만,
+    // 우리는 /event/3 처럼 주소의 일부로 ID를 사용하기 때문에 useParams 훅을 사용하는 것이 더 정확하고 현대적인 방식입니다.
+    // { id } 변수에는 주소창의 숫자(예: 3)가 자동으로 담깁니다.
     const { id } = useParams();
     const navigate = useNavigate();
 
-    // 백엔드에서 받아온 이벤트 데이터를 저장할 빈 상자를 준비합니다.
-    const [event, setEvent] = useState(null);
-    const [loading, setLoading] = useState(true); // 데이터를 불러오는 동안 '로딩 중'을 표시하기 위함
+    // --- 2. 데이터 보관 상자 준비하기 (useState) ---
+    // HotelDetail.js의 'hotelInfo'처럼, 우리도 'eventInfo'라는 상자를 만듭니다.
+    // 처음에는 비어있으므로 null(없음) 상태입니다.
+    const [eventInfo, setEventInfo] = useState(null);
+    const [isLoading, setIsLoading] = useState(true); // 로딩 상태를 관리합니다.
 
-    // 이 페이지가 처음 화면에 나타날 때, 딱 한 번만 실행되는 코드입니다.
+    // --- 3. 백엔드에 데이터 요청하기 (useEffect) ---
+    // 이 페이지가 처음 화면에 나타날 때, 또는 주소의 id값이 바뀔 때 딱 한 번만 실행됩니다.
+    // HotelDetail.js의 fetchHotelInfo 함수와 똑같은 역할을 합니다.
     useEffect(() => {
-        const fetchEvent = async () => {
+        // id 값이 없으면 아무것도 실행하지 않습니다.
+        if (!id) return;
+
+        const fetchEventInfo = async () => {
             try {
-                // URL에서 잡아온 id를 이용해 백엔드에 "이 ID에 해당하는 이벤트 정보 하나만 주세요!" 라고 요청합니다.
-                const response = await axios.get(`${process.env.REACT_APP_API_URL}/getEvent/${id}`);
-                setEvent(response.data); // 성공적으로 받아온 데이터를 event 상자에 담습니다.
+                // 백엔드에 "id에 해당하는 이벤트 정보를 주세요" 라고 GET 방식으로 요청합니다.
+                // HotelDetail.js가 호텔 이름을 주소에 담아 보낸 것처럼, 우리도 이벤트 id를 주소에 담아 보냅니다.
+                const response = await axios.get(
+                    `${process.env.REACT_APP_API_URL}/getEvent/${id}`
+                );
+
+                // 성공적으로 데이터를 받으면, eventInfo 상자에 담습니다.
+                setEventInfo(response.data);
+                console.log("✅ 이벤트 상세 정보 수신 성공:", response.data);
+
             } catch (error) {
-                console.error("이벤트 상세 정보를 불러오는 데 실패했습니다:", error);
+                console.error("❌ 이벤트 상세 정보를 불러오는 데 실패했습니다:", error);
                 alert("이벤트 정보를 불러오는 데 실패했습니다.");
             } finally {
-                setLoading(false); // 데이터 요청이 끝나면 '로딩 중' 표시를 멈춥니다.
+                // 데이터 요청이 성공하든 실패하든, 로딩 상태를 종료합니다.
+                setIsLoading(false);
             }
         };
 
-        fetchEvent();
-    }, [id]); // id 값이 바뀔 때마다 이 코드를 다시 실행하라는 의미입니다.
+        fetchEventInfo(); // 위에서 만든 함수를 실행합니다.
+    }, [id]); // id 값이 바뀔 때마다 이 함수를 다시 실행하라는 의미입니다.
+
+    // --- 4. 화면 그리기 (return) ---
 
     // 로딩 중일 때 보여줄 화면
-    if (loading) {
+    if (isLoading) {
         return <div style={{ textAlign: 'center', padding: '50px' }}>데이터를 불러오는 중입니다...</div>;
     }
 
-    // 이벤트를 찾지 못했을 때 보여줄 화면
-    if (!event) {
+    // 데이터를 못 찾았을 때 보여줄 화면
+    if (!eventInfo) {
         return <div style={{ textAlign: 'center', padding: '50px' }}>해당 이벤트를 찾을 수 없습니다.</div>;
     }
 
     // 성공적으로 데이터를 받아왔을 때 보여줄 최종 화면
     return (
         <div className="event-detail-container">
-            <h1 className="event-detail-title">{event.title}</h1>
-            <p className="event-detail-date">{event.startDate} ~ {event.endDate}</p>
+            <h1 className="event-detail-title">{eventInfo.title}</h1>
+            <p className="event-detail-date">{eventInfo.startDate} ~ {eventInfo.endDate}</p>
             <div className="event-detail-content">
-                <img src={event.imageUrl} alt={event.title} className="event-detail-image" />
-                {/* 설명에 포함된 줄바꿈(\n)을 화면에서도 줄바꿈되도록 처리합니다. */}
+                <img src={eventInfo.imageUrl} alt={eventInfo.title} className="event-detail-image" />
                 <p className="event-detail-description">
-                    {event.description}
+                    {eventInfo.description}
                 </p>
             </div>
             <button onClick={() => navigate('/about')} className="back-to-list-button">
@@ -62,7 +80,7 @@ const EventDetail = () => {
                 .event-detail-date { text-align: center; font-size: 16px; color: #888; margin-bottom: 40px; }
                 .event-detail-content { background-color: #f9f9f9; border-radius: 16px; padding: 40px; margin: 0 auto; margin-bottom: 40px; }
                 .event-detail-image { width: 100%; height: auto; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-                .event-detail-description { font-size: 18px; color: #555; line-height: 1.8; white-space: pre-wrap; } /* 이 줄 덕분에 \n이 줄바꿈으로 보입니다. */
+                .event-detail-description { font-size: 18px; color: #555; line-height: 1.8; white-space: pre-wrap; }
                 .back-to-list-button { display: block; margin: 0 auto; background-color: #6c757d; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background-color 0.2s ease; }
                 .back-to-list-button:hover { background-color: #5a6268; }
             `}</style>
