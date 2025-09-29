@@ -6,7 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 public class Event {
 
@@ -29,4 +30,7 @@ public class Event {
     @Column(nullable = false)
     private String imageUrl;
 
+    // ✅ 메인 배너 표시 여부 (true면 ImageSlider에 노출)
+    @Column(nullable = false)
+    private boolean mainBanner = false;
 }

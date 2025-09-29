@@ -1,26 +1,23 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { UserContext } from '../../Session/UserContext'; // UserContext 경로를 확인해주세요.
+import { UserContext } from '../../Session/UserContext'; // UserContext 경로 확인
 
 const EventDetail = () => {
-    // 💡 URL에서 이벤트 제목(title) 파라미터를 가져옵니다.
     const { title } = useParams();
     const navigate = useNavigate();
-    // 💡 관리자 권한 확인을 위해 사용자 정보를 가져옵니다.
     const userInfo = useContext(UserContext);
 
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [deleting, setDeleting] = useState(false);
+    const [isBanner, setIsBanner] = useState(true); // 메인배너 상태
 
     // 이벤트 상세 정보 조회
     useEffect(() => {
         const fetchEvent = async () => {
-            // URL 파라미터에 공백이나 특수문자가 있을 수 있으므로 인코딩이 필수입니다.
             const encodedTitle = encodeURIComponent(title);
             try {
-                // 백엔드: GET /getEventByTitle/{title} 호출
                 const res = await axios.get(
                     `${process.env.REACT_APP_API_URL}/getEventByTitle/${encodedTitle}`
                 );
@@ -28,34 +25,29 @@ const EventDetail = () => {
             } catch (err) {
                 console.error('이벤트 불러오기 실패:', err);
                 alert('이벤트를 불러오는 데 실패했거나 해당 이벤트가 존재하지 않습니다.');
-                navigate('/about'); // 실패 시 이벤트 목록 페이지로 이동
+                navigate('/about');
             } finally {
                 setLoading(false);
             }
         };
         fetchEvent();
-    }, [title, navigate]); // title이 변경되거나 navigate 함수가 변경되면 재실행
+    }, [title, navigate]);
 
-    // 'X' 또는 '닫기' 버튼 클릭 핸들러 (이전 페이지로 돌아가기)
     const handleClose = () => {
         navigate(-1);
     };
 
-    // 이벤트 삭제 핸들러 (관리자용)
     const handleDelete = async () => {
         if (!window.confirm('이 이벤트를 정말 삭제하시겠습니까?')) return;
 
         try {
             setDeleting(true);
             const encodedTitle = encodeURIComponent(title);
-
-            // 백엔드: DELETE /deleteEventByTitle/{title} 호출
             await axios.delete(
                 `${process.env.REACT_APP_API_URL}/deleteEventByTitle/${encodedTitle}`
             );
-
             alert('이벤트가 성공적으로 삭제되었습니다.');
-            navigate('/about'); // 삭제 성공 시 목록 페이지로 이동
+            navigate('/about');
         } catch (error) {
             console.error('이벤트 삭제 실패:', error);
             alert('이벤트 삭제에 실패했습니다. 서버 오류를 확인해주세요.');
@@ -64,13 +56,27 @@ const EventDetail = () => {
         }
     };
 
-    if (loading) {
-        return <div className="detail-modal"><p>이벤트 정보를 불러오는 중...</p></div>;
-    }
+    // 메인배너 버튼 클릭
+    const handleBanner = () => {
+        setIsBanner(prev => {
+            const newValue = !prev;
+            const stored = JSON.parse(localStorage.getItem('mainBannerEvents')) || [];
 
-    if (!event) {
-        return <div className="detail-modal"><p>이벤트가 존재하지 않거나, 불러올 수 없습니다.</p></div>;
-    }
+            if (newValue) {
+                // 메인배너O → 리스트에 추가
+                if (!stored.includes(event.title)) {
+                    stored.push(event.title);
+                }
+            } else {
+                // 메인배너X → 리스트에서 제거
+                const index = stored.indexOf(event.title);
+                if (index > -1) stored.splice(index, 1);
+            }
+
+            localStorage.setItem('mainBannerEvents', JSON.stringify(stored));
+            return newValue;
+        });
+    };
 
     return (
         <div className="detail-modal">
@@ -84,9 +90,15 @@ const EventDetail = () => {
                     <p className="date">{event.startDate} ~ {event.endDate}</p>
                     <p className="description">{event.description}</p>
 
-                    {/* 관리자 버튼 영역 (uUser가 'admin'일 때만 표시) */}
                     {userInfo?.uUser === 'admin' && (
                         <div className="detail-actions">
+                            <button
+                                onClick={handleBanner}
+                                className="banner-btn"
+                            >
+                                {isBanner ? '메인배너X' : '메인배너O'}
+                            </button>
+
                             <button
                                 onClick={handleDelete}
                                 disabled={deleting}
@@ -99,7 +111,6 @@ const EventDetail = () => {
                 </div>
             </div>
 
-            {/* 스타일 정의 */}
             <style>{`
                 .detail-modal {
                     position: fixed;
@@ -133,18 +144,14 @@ const EventDetail = () => {
                     border: none;
                     font-size: 20px;
                     font-weight: bold;
-                    color: #fff; /* 이미지 위에 표시되므로 흰색으로 */
+                    color: #fff;
                     text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
                     cursor: pointer;
                     z-index: 10;
                     transition: color 0.2s;
                 }
-                .close-btn:hover {
-                    color: #ccc;
-                }
-                .img-wrap {
-                    flex-shrink: 0; /* 이미지 영역이 줄어들지 않도록 설정 */
-                }
+                .close-btn:hover { color: #ccc; }
+                .img-wrap { flex-shrink: 0; }
                 .img-wrap img {
                     width: 100%;
                     height: 320px;
@@ -153,7 +160,7 @@ const EventDetail = () => {
                 }
                 .detail-content {
                     padding: 24px;
-                    overflow-y: auto; /* 내용이 길 경우 스크롤 가능 */
+                    overflow-y: auto;
                     flex-grow: 1;
                 }
                 .detail-content h2 {
@@ -170,7 +177,7 @@ const EventDetail = () => {
                     font-size: 15px;
                     color: #444;
                     line-height: 1.6;
-                    white-space: pre-line; /* 줄바꿈 유지 */
+                    white-space: pre-line;
                 }
                 .detail-actions {
                     display:flex;
@@ -193,23 +200,24 @@ const EventDetail = () => {
                     color: white;
                     border: none;
                 }
-                .delete-btn:hover {
-                    background-color: #c82333;
-                }
-                .delete-btn:disabled {
-                    background-color: #ccc;
-                    cursor: not-allowed;
-                }
+                .delete-btn:hover { background-color: #c82333; }
+                .delete-btn:disabled { background-color: #ccc; cursor: not-allowed; }
 
-                /* 모바일 반응형 */
+                .banner-btn {
+                    background-color: #007bff;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: background-color 0.2s;
+                }
+                .banner-btn:hover { background-color: #005dc1; }
+
                 @media (max-width: 768px) {
-                    .modal-content-wrap {
-                        width: 95%;
-                        max-height: 95vh;
-                    }
-                    .img-wrap img {
-                        height: 250px;
-                    }
+                    .modal-content-wrap { width: 95%; max-height: 95vh; }
+                    .img-wrap img { height: 250px; }
                 }
             `}</style>
         </div>

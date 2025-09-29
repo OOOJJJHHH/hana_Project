@@ -127,7 +127,7 @@ const About = () => {
                 <h1 className="about-title">이벤트 안내</h1>
             </div>
 
-            {/* 관리자 버튼 영역 (userInfo?.uUser가 'admin'일 때만 표시) */}
+            {/* 관리자 버튼 영역 (userInfo?.uUser가 '`admin`'일 때만 표시) */}
             {userInfo?.uUser === 'admin' && (
                 <div className="admin-button-group">
                     {deleteMode ? (
