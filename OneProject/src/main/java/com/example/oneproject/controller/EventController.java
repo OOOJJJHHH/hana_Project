@@ -102,24 +102,42 @@ public class EventController {
         }
     }
 
-    // ✅ 5. 메인배너용 이벤트만 조회 (ImageSlider.jsx에서 사용)
-    // EventController.java
-    // EventController.java
+    // 5. 메인배너 토글 (PUT)
     @PutMapping("/updateMainBanner/{title}")
     public ResponseEntity<EventDTO> updateMainBanner(
             @PathVariable String title,
             @RequestBody Map<String, Boolean> bannerMap
     ) {
         try {
+            // URL 디코딩
+            String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8.toString());
             Boolean mainBanner = bannerMap.get("mainBanner");
-            EventDTO updatedEvent = eventService.updateMainBanner(title, mainBanner);
-            return ResponseEntity.ok(updatedEvent);
+            EventDTO updatedEvent = eventService.updateMainBanner(decodedTitle, mainBanner);
+
+            if (updatedEvent != null) {
+                return ResponseEntity.ok(updatedEvent);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
-
+    // ✅ 6. 메인배너용 이벤트만 조회 (ImageSlider.jsx에서 사용)
+    @GetMapping("/getMainBannerEvents")
+    public ResponseEntity<List<EventDTO>> getMainBannerEvents() {
+        try {
+            List<EventDTO> bannerEvents = eventService.getMainBannerEvents();
+            return ResponseEntity.ok(bannerEvents);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
 }

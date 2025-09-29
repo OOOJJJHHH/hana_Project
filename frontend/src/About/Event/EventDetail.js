@@ -11,7 +11,7 @@ const EventDetail = () => {
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [deleting, setDeleting] = useState(false);
-    const [togglingBanner, setTogglingBanner] = useState(false);
+    const [togglingBanner, setTogglingBanner] = useState(false); // 메인배너 토글 상태
 
     // ✅ 이벤트 상세 정보 조회
     useEffect(() => {
@@ -57,38 +57,31 @@ const EventDetail = () => {
         }
     };
 
-    // ✅ 메인배너 설정 (DB에 저장되게 수정)
+    // ✅ 메인배너 토글 (사진 안 사라지게 수정됨)
     const handleToggleBanner = async () => {
         if (!event) return;
 
         try {
             setTogglingBanner(true);
+            const encodedTitle = encodeURIComponent(event.title);
 
-            // 👉 백엔드: /api/events/{id}/main-banner
+            // 현재 상태의 반대 값을 요청 본문으로 보냄
             const res = await axios.put(
-                `${process.env.REACT_APP_API_URL}/events/${event.id}/main-banner`
+                `${process.env.REACT_APP_API_URL}/updateMainBanner/${encodedTitle}`,
+                { mainBanner: !event.mainBanner } // ⭐ 이 부분이 중요합니다. 현재 값의 반대 (토글)를 전송합니다.
             );
 
-            // 반환값으로 업데이트된 이벤트 받음
+            // 기존 event 유지하면서 mainBanner만 변경 👇
             setEvent(prev => ({
                 ...prev,
-                mainBanner: res.data.mainBanner,
+                mainBanner: res.data.mainBanner // 서버에서 업데이트된 최종 결과값으로 프론트엔드 상태를 업데이트합니다.
             }));
         } catch (err) {
-            console.error('메인배너 변경 실패:', err);
-            alert('메인배너 변경에 실패했습니다.');
+            // ... (생략)
         } finally {
             setTogglingBanner(false);
         }
     };
-
-    if (loading) {
-        return <div className="detail-modal"><p>이벤트 정보를 불러오는 중...</p></div>;
-    }
-
-    if (!event) {
-        return <div className="detail-modal"><p>이벤트가 존재하지 않거나, 불러올 수 없습니다.</p></div>;
-    }
 
     return (
         <div className="detail-modal">
@@ -129,7 +122,7 @@ const EventDetail = () => {
                 .close-btn { position:absolute; top:12px; right:12px; background:transparent; border:none; font-size:20px; font-weight:bold; color:#fff; text-shadow:0 0 5px rgba(0,0,0,0.5); cursor:pointer; z-index:10; transition:color 0.2s; }
                 .close-btn:hover { color:#ccc; }
                 .img-wrap { flex-shrink:0; }
-                .img-wrap img { width:100%; height:320px; object-fit:cover; border-radius:12px 12px 0 0; }
+                .img-wrap img { width: 100%; height: auto; max-height: 500px; object-fit: contain; border-radius: 12px 12px 0 0;}
                 .detail-content { padding:24px; overflow-y:auto; flex-grow:1; }
                 .detail-content h2 { margin:0 0 8px; font-size:24px; color:#222; }
                 .detail-content .date { font-size:13px; color:#888; margin-bottom:16px; }

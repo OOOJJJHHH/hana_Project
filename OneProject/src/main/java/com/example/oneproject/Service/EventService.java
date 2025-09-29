@@ -59,6 +59,7 @@ public class EventService {
                     eventDTO.setStartDate(eventEntity.getStartDate());
                     eventDTO.setEndDate(eventEntity.getEndDate());
                     eventDTO.setImageUrl(finalImageUrl);
+                    eventDTO.setMainBanner(eventEntity.isMainBanner()); // ✅ mainBanner 값 추가
 
                     return eventDTO;
                 })
@@ -85,6 +86,7 @@ public class EventService {
         eventDTO.setStartDate(event.getStartDate());
         eventDTO.setEndDate(event.getEndDate());
         eventDTO.setImageUrl(finalImageUrl);
+        eventDTO.setMainBanner(event.isMainBanner()); // ✅ mainBanner 값 추가
 
         return eventDTO;
     }
@@ -120,18 +122,56 @@ public class EventService {
     }
 
 
-
+    // ✅ 메인 배너 토글 및 단일 배너 강제 로직 추가
     public EventDTO updateMainBanner(String title, Boolean mainBanner) {
         Event event = eventRepository.findByTitle(title);
         if(event == null) return null;
 
-        event.setMainBanner(mainBanner); // true/false만 저장
-        eventRepository.save(event);
+        if (mainBanner) {
+            // 1. 현재 이벤트를 'true'로 설정하려고 할 때만,
+            // 다른 모든 이벤트를 'false'로 초기화하여 단일 배너를 강제합니다.
+            // 만약 'false'로 설정하려는 경우 (배너 해제)는 전체 초기화를 수행하지 않습니다.
+            eventRepository.resetMainBanners();
+        }
+
+        event.setMainBanner(mainBanner); // true/false 저장
+        eventRepository.save(event); // 변경된 이벤트 저장
 
         // DTO 반환
         EventDTO dto = new EventDTO(event);
+
+        // DTO에 Presigned URL을 설정해야 프론트엔드에서 바로 사용할 수 있으므로 추가합니다.
+        String finalImageUrl = null;
+        if (event.getImageUrl() != null) {
+            finalImageUrl = s3Service.generatePresignedUrl(event.getImageUrl());
+        }
+        dto.setImageUrl(finalImageUrl);
+
         return dto;
     }
 
+    // ✅ 메인 배너용 이벤트만 조회
+    public List<EventDTO> getMainBannerEvents() {
+        List<Event> bannerEvents = eventRepository.findByMainBannerTrue();
 
+        return bannerEvents.stream()
+                .map(eventEntity -> {
+                    String finalImageUrl = null;
+                    if (eventEntity.getImageUrl() != null) {
+                        finalImageUrl = s3Service.generatePresignedUrl(eventEntity.getImageUrl());
+                    }
+
+                    EventDTO eventDTO = new EventDTO();
+                    eventDTO.setId(eventEntity.getId());
+                    eventDTO.setTitle(eventEntity.getTitle());
+                    eventDTO.setDescription(eventEntity.getDescription());
+                    eventDTO.setStartDate(eventEntity.getStartDate());
+                    eventDTO.setEndDate(eventEntity.getEndDate());
+                    eventDTO.setImageUrl(finalImageUrl);
+                    eventDTO.setMainBanner(eventEntity.isMainBanner());
+
+                    return eventDTO;
+                })
+                .collect(Collectors.toList());
+    }
 }
