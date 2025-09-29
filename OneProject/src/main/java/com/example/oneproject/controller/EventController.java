@@ -56,6 +56,9 @@ public class EventController {
         }
     }
 
+
+
+
     // 3. 제목으로 이벤트 단건 조회 (GET)
     @GetMapping("/getEventByTitle/{title}")
     public ResponseEntity<EventDTO> getEventByTitle(@PathVariable String title) {

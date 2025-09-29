@@ -58,25 +58,16 @@ const EventDetail = () => {
 
     // 메인배너 버튼 클릭
     const handleBanner = () => {
-        setIsBanner(prev => {
-            const newValue = !prev;
-            const stored = JSON.parse(localStorage.getItem('mainBannerEvents')) || [];
-
-            if (newValue) {
-                // 메인배너O → 리스트에 추가
-                if (!stored.includes(event.title)) {
-                    stored.push(event.title);
-                }
-            } else {
-                // 메인배너X → 리스트에서 제거
-                const index = stored.indexOf(event.title);
-                if (index > -1) stored.splice(index, 1);
-            }
-
-            localStorage.setItem('mainBannerEvents', JSON.stringify(stored));
-            return newValue;
-        });
+        setIsBanner(prev => !prev);
     };
+
+    if (loading) {
+        return <div className="detail-modal"><p>이벤트 정보를 불러오는 중...</p></div>;
+    }
+
+    if (!event) {
+        return <div className="detail-modal"><p>이벤트가 존재하지 않거나, 불러올 수 없습니다.</p></div>;
+    }
 
     return (
         <div className="detail-modal">
