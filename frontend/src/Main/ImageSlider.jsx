@@ -1,8 +1,12 @@
-// src/components/ImageSlider.jsx
+// components/ImageSlider.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import arrowLeft from '../image/arrow-left.png';
 import arrowRight from '../image/arrow-right.png';
-import axios from 'axios';
+import fan1 from '../image/1.jpg';
+import fan2 from '../image/2.jpg';
+import fan3 from '../image/3.jpg';
+import fan4 from '../image/4.jpg';
+import fan5 from '../image/5.jpg';
 
 const styles = {
     container: {
@@ -19,12 +23,11 @@ const styles = {
         display: 'flex',
         height: '100%',
     },
-    imageSlide: {
+    image: {
         minWidth: '100%',
         height: '100%',
         objectFit: 'cover',
         borderRadius: '15px',
-        position: 'relative',
     },
     arrow: {
         position: 'absolute',
@@ -60,75 +63,48 @@ const styles = {
     activeDot: {
         backgroundColor: '#fff',
         transform: 'scale(1.2)',
-    },
-    slideText: {
-        position: 'absolute',
-        bottom: '20px',
-        left: '20px',
-        color: '#fff',
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        padding: '10px 15px',
-        borderRadius: '10px',
-    },
-    slideTitle: { fontSize: '20px', fontWeight: '700', margin: 0 },
-    slideDate: { fontSize: '14px', margin: '5px 0 0 0' },
+    }
 };
 
 const ImageSlider = () => {
-    const [bannerEvents, setBannerEvents] = useState([]);
+    const originalImages = [fan1, fan2, fan3, fan4, fan5];
+    const images = [originalImages[originalImages.length - 1], ...originalImages, originalImages[0]];
+    // [마지막, 1,2,3,4,5, 첫번째]
+
     const [index, setIndex] = useState(1);
     const [isTransitioning, setIsTransitioning] = useState(true);
     const intervalRef = useRef(null);
 
-    // 메인 배너 이벤트 불러오기
-    useEffect(() => {
-        const fetchMainBanners = async () => {
-            try {
-                const res = await axios.get(
-                    `${process.env.REACT_APP_API_URL}/events/main-banners`
-                );
-                setBannerEvents(res.data); // mainBanner === true인 이벤트만
-            } catch (err) {
-                console.error('배너 이벤트 불러오기 실패:', err);
-            }
-        };
-        fetchMainBanners();
-    }, []);
-
-    // 자동 슬라이드
     useEffect(() => {
         intervalRef.current = setInterval(() => {
             nextImage();
         }, 4000);
         return () => clearInterval(intervalRef.current);
-    }, [bannerEvents]);
+    }, []);
 
     const prevImage = () => setIndex(prev => prev - 1);
     const nextImage = () => setIndex(prev => prev + 1);
 
-    // 무한 슬라이드 처리
     const handleTransitionEnd = () => {
-        if (bannerEvents.length === 0) return;
-        if (index === bannerEvents.length + 1) {
+        if (index === images.length - 1) {
+            // 마지막 → 첫번째 순간이동
             setIsTransitioning(false);
             setIndex(1);
         } else if (index === 0) {
+            // 첫번째 → 마지막 순간이동
             setIsTransitioning(false);
-            setIndex(bannerEvents.length);
+            setIndex(images.length - 2);
         }
     };
 
-    // transition false → true 복원
+    // transition false → true로 복원 (자연스럽게 연결)
     useEffect(() => {
         if (!isTransitioning) {
-            requestAnimationFrame(() => setIsTransitioning(true));
+            requestAnimationFrame(() => {
+                setIsTransitioning(true);
+            });
         }
     }, [isTransitioning]);
-
-    // 보여줄 이미지 배열 (마지막, ...배너, 첫번째)
-    const images = bannerEvents.length > 0
-        ? [bannerEvents[bannerEvents.length - 1], ...bannerEvents, bannerEvents[0]]
-        : [];
 
     return (
         <div style={styles.container}>
@@ -146,16 +122,8 @@ const ImageSlider = () => {
                 }}
                 onTransitionEnd={handleTransitionEnd}
             >
-                {images.map((event, i) => (
-                    <div key={i} style={styles.imageSlide}>
-                        <img src={event?.imageUrl} alt={event?.title} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '15px' }} />
-                        {event && (
-                            <div style={styles.slideText}>
-                                <h3 style={styles.slideTitle}>{event.title}</h3>
-                                <p style={styles.slideDate}>{event.startDate} ~ {event.endDate}</p>
-                            </div>
-                        )}
-                    </div>
+                {images.map((img, i) => (
+                    <img key={i} src={img} alt={`slide-${i}`} style={styles.image} />
                 ))}
             </div>
             <img
@@ -167,12 +135,12 @@ const ImageSlider = () => {
 
             {/* 인디케이터 */}
             <div style={styles.dots}>
-                {bannerEvents.map((_, i) => (
+                {originalImages.map((_, i) => (
                     <div
                         key={i}
                         style={{
                             ...styles.dot,
-                            ...(i + 1 === index ? styles.activeDot : {}),
+                            ...(i + 1 === index ? styles.activeDot : {})
                         }}
                         onClick={() => setIndex(i + 1)}
                     />
