@@ -91,7 +91,6 @@ const Header = () => {
         width: "100%",
         fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
         background: "#fff",
-        zIndex: 1000,
     };
 
     const topRowStyle = {
@@ -124,7 +123,7 @@ const Header = () => {
         top: isScrolled ? 0 : "auto",
         left: 0,
         backgroundColor: "#ffffff",
-        zIndex: 1100,
+        zIndex: 1,
         boxShadow: isScrolled ? "0 2px 6px rgba(0,0,0,0.1)" : "0 1px 3px rgba(0,0,0,0.05)", // 스크롤 전에도 약간 그림자
         padding: "10px 0",
         transition: "box-shadow 0.2s ease",
