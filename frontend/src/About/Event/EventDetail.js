@@ -11,9 +11,9 @@ const EventDetail = () => {
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [deleting, setDeleting] = useState(false);
-    const [togglingBanner, setTogglingBanner] = useState(false); // 메인배너 토글 상태
+    const [togglingBanner, setTogglingBanner] = useState(false);
 
-    // 이벤트 상세 정보 조회
+    // ✅ 이벤트 상세 정보 조회
     useEffect(() => {
         const fetchEvent = async () => {
             const encodedTitle = encodeURIComponent(title);
@@ -37,7 +37,7 @@ const EventDetail = () => {
         navigate(-1);
     };
 
-    // 이벤트 삭제
+    // ✅ 이벤트 삭제
     const handleDelete = async () => {
         if (!window.confirm('이 이벤트를 정말 삭제하시겠습니까?')) return;
 
@@ -57,21 +57,23 @@ const EventDetail = () => {
         }
     };
 
-    // 메인배너 토글
+    // ✅ 메인배너 설정 (DB에 저장되게 수정)
     const handleToggleBanner = async () => {
         if (!event) return;
 
         try {
             setTogglingBanner(true);
-            const encodedTitle = encodeURIComponent(event.title);
 
-            // true/false만 보내서 저장
+            // 👉 백엔드: /api/events/{id}/main-banner
             const res = await axios.put(
-                `${process.env.REACT_APP_API_URL}/updateMainBanner/${encodedTitle}`,
-                { mainBanner: !event.mainBanner } // O → true, X → false
+                `${process.env.REACT_APP_API_URL}/events/${event.id}/main-banner`
             );
 
-            setEvent(res.data); // 변경된 값 반영
+            // 반환값으로 업데이트된 이벤트 받음
+            setEvent(prev => ({
+                ...prev,
+                mainBanner: res.data.mainBanner,
+            }));
         } catch (err) {
             console.error('메인배너 변경 실패:', err);
             alert('메인배너 변경에 실패했습니다.');
@@ -79,7 +81,6 @@ const EventDetail = () => {
             setTogglingBanner(false);
         }
     };
-
 
     if (loading) {
         return <div className="detail-modal"><p>이벤트 정보를 불러오는 중...</p></div>;
