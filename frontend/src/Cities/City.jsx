@@ -1,10 +1,11 @@
+// City.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 
 function City() {
     const navigate = useNavigate();
-    const [cityContents, setcityContents] = useState([]);
+    const [cityContents, setCityContents] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [userType, setUserType] = useState(null);
     const [hoveredIndex, setHoveredIndex] = useState(null);
@@ -28,14 +29,15 @@ function City() {
     useEffect(() => {
         const fetchData = async () => {
             const res = await axios.get(`${process.env.REACT_APP_API_URL}/getCity`);
-            setcityContents(res.data);
+            setCityContents(res.data);
         };
         fetchData();
     }, []);
 
+    // ================== 스타일 ==================
     const container = {
         padding: '40px',
-        maxWidth: '1200px',
+        width: '100%', // 화면 전체 기준
         margin: '0 auto',
         fontFamily: "'Noto Sans KR', sans-serif",
     };
@@ -44,7 +46,7 @@ function City() {
         display: 'flex',
         justifyContent: 'center',
         gap: '20px',
-        marginBottom: '10px',  // 멘트와 버튼 간격 위해 조금 줄임
+        marginBottom: '10px',
         flexWrap: 'wrap',
     };
 
@@ -55,7 +57,6 @@ function City() {
         color: '#ff5722',
         fontWeight: '600',
         fontSize: '16px',
-        fontFamily: "'Noto Sans KR', sans-serif",
     };
 
     const actionButton = {
@@ -69,54 +70,63 @@ function City() {
         transition: '0.3s',
     };
 
+    const listStyle = {
+        display: 'flex',
+        flexDirection: 'column',   // 세로로 쌓임
+        alignItems: 'center',      // 중앙 정렬
+        gap: '30px',               // 카드 간격
+    };
+
     const card = {
         position: 'relative',
-        display: 'flex',
         borderRadius: '16px',
-        width: "900px",
+        width: '70vw',      // 화면 가로 기준 70%
+        maxWidth: '900px',  // 최대 너비 제한
         overflow: 'hidden',
-        marginBottom: '30px',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
         height: '260px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-end',
+        backgroundColor: '#fff',
+        transition: 'transform 0.3s',
+    };
+
+    const cardHover = {
+        ...card,
+        transform: 'translateY(-5px)',
     };
 
     const cardImage = {
-        width: '100%',
-        height: '100%',
-        objectFit: 'cover',
-    };
-
-    const cardContent = {
         position: 'absolute',
         top: 0,
         left: 0,
         width: '100%',
         height: '100%',
-        padding: '30px',
-        background: 'linear-gradient(to right, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0.1) 100%)',
+        objectFit: 'cover',
+        zIndex: 0,
+    };
+
+    const cardContent = {
+        position: 'relative',
+        zIndex: 1,
+        padding: '20px',
+        background: 'linear-gradient(to top, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0) 100%)',
         color: '#fff',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
+        justifyContent: 'flex-end',
+        height: '100%',
     };
 
-    const cityNameStyle = {
-        fontSize: '32px',
-        fontWeight: 'bold',
-        marginBottom: '10px',
-    };
-
-    const cityDetailStyle = {
-        fontSize: '16px',
-        color: '#ddd',
-        maxWidth: '60%',
-    };
+    const cityNameStyle = { fontSize: '20px', fontWeight: 'bold', marginBottom: '8px' };
+    const cityDetailStyle = { fontSize: '14px', color: '#ddd' };
 
     const viewButton = {
         position: 'absolute',
-        bottom: '20px',
-        right: '20px',
-        padding: '10px 20px',
+        bottom: '15px',
+        right: '15px',
+        padding: '8px 16px',
         backgroundColor: '#ffffff',
         color: '#333',
         borderRadius: '6px',
@@ -124,6 +134,7 @@ function City() {
         cursor: 'pointer',
         fontSize: '14px',
         transition: 'all 0.3s ease',
+        zIndex: 2,
     };
 
     const viewButtonHover = {
@@ -165,25 +176,30 @@ function City() {
             {cityContents.length === 0 ? (
                 <p style={noCity}>현재 추가되어 있는 도시가 없습니다.</p>
             ) : (
-                cityContents
-                    .filter((c) => c.cityName.toLowerCase().includes(searchTerm))
-                    .map((c, index) => (
-                        <div key={index} style={card}>
-                            <img src={c.cityImageUrl} alt={c.cityName} style={cardImage} />
-                            <div style={cardContent}>
-                                <div style={cityNameStyle}>{c.cityName}</div>
-                                <p style={cityDetailStyle}>{c.cityDetail}</p>
-                            </div>
-                            <button
-                                style={hoveredIndex === index ? viewButtonHover : viewButton}
+                <div style={listStyle}>
+                    {cityContents
+                        .filter(c => c.cityName.toLowerCase().includes(searchTerm))
+                        .map((c, index) => (
+                            <div
+                                key={index}
+                                style={hoveredIndex === index ? cardHover : card}
                                 onMouseEnter={() => setHoveredIndex(index)}
                                 onMouseLeave={() => setHoveredIndex(null)}
-                                onClick={() => handleClick(c.cityName)}
                             >
-                                숙소 보러가기
-                            </button>
-                        </div>
-                    ))
+                                <img src={c.cityImageUrl} alt={c.cityName} style={cardImage} />
+                                <div style={cardContent}>
+                                    <div style={cityNameStyle}>{c.cityName}</div>
+                                    <div style={cityDetailStyle}>{c.cityDetail}</div>
+                                </div>
+                                <button
+                                    style={hoveredIndex === index ? viewButtonHover : viewButton}
+                                    onClick={() => handleClick(c.cityName)}
+                                >
+                                    숙소 보러가기 ▶
+                                </button>
+                            </div>
+                        ))}
+                </div>
             )}
         </div>
     );
