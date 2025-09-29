@@ -52,7 +52,6 @@ public class EventController {
             return ResponseEntity.ok(allEvents);
         } catch (Exception e) {
             e.printStackTrace();
-            // S3 Presigned URL 생성 실패 등 Service 로직에서 오류 발생 시 500 반환
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -62,9 +61,8 @@ public class EventController {
     @GetMapping("/getEventByTitle/{title}")
     public ResponseEntity<EventDTO> getEventByTitle(@PathVariable String title) {
         try {
-            // URL 디코딩
             String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8.toString());
-            EventDTO eventDTO = eventService.getEventDTOByTitle(decodedTitle); // Service 메서드 이름 변경 필요
+            EventDTO eventDTO = eventService.getEventDTOByTitle(decodedTitle);
 
             if (eventDTO != null) {
                 return ResponseEntity.ok(eventDTO);
@@ -84,7 +82,6 @@ public class EventController {
     @DeleteMapping("/deleteEventByTitle/{title}")
     public ResponseEntity<String> deleteEventByTitle(@PathVariable String title) {
         try {
-            // URL 디코딩
             String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8.toString());
             boolean success = eventService.deleteEventByTitle(decodedTitle);
 
@@ -109,7 +106,6 @@ public class EventController {
             @RequestBody Map<String, Boolean> bannerMap
     ) {
         try {
-            // URL 디코딩
             String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8.toString());
             Boolean mainBanner = bannerMap.get("mainBanner");
             EventDTO updatedEvent = eventService.updateMainBanner(decodedTitle, mainBanner);
@@ -128,7 +124,7 @@ public class EventController {
         }
     }
 
-    // ✅ 6. 메인배너용 이벤트만 조회 (ImageSlider.jsx에서 사용)
+    // 6. 메인배너용 이벤트만 조회 (GET)
     @GetMapping("/getMainBannerEvents")
     public ResponseEntity<List<EventDTO>> getMainBannerEvents() {
         try {
@@ -139,5 +135,4 @@ public class EventController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
 }

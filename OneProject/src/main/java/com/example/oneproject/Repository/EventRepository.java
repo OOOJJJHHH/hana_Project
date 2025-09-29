@@ -20,7 +20,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     @Query("UPDATE Event e SET e.mainBanner = false")
     void resetMainBanners();
 
-    // ✅ 특정 이벤트를 메인 배너로 설정 (true로)
+    // 특정 이벤트를 메인 배너로 설정 (true로) - 현재는 Service에서 resetMainBanners()와 함께 사용됨
     @Modifying
     @Transactional
     @Query("UPDATE Event e SET e.mainBanner = true WHERE e.id = :eventId")

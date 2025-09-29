@@ -18,7 +18,7 @@ public class EventDTO {
     private String startDate;    // 시작 날짜
     private String endDate;      // 종료 날짜
     private String imageUrl;     // 이미지 URL
-    private boolean mainBanner;  // ✅ 메인 배너 여부 (추가됨)
+    private boolean mainBanner;  // ✅ 메인 배너 여부
 
     // ✅ Entity → DTO 변환 생성자
     public EventDTO(Event event) {
@@ -28,6 +28,6 @@ public class EventDTO {
         this.startDate = event.getStartDate();
         this.endDate = event.getEndDate();
         this.imageUrl = event.getImageUrl();
-        this.mainBanner = event.isMainBanner();  // ✅ Entity의 값과 매핑
+        this.mainBanner = event.isMainBanner();
     }
 }
