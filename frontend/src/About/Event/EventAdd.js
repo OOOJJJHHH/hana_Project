@@ -9,7 +9,6 @@ const EventAdd = () => {
         description: '',
         startDate: '',
         endDate: '',
-        mainBanner: false,
     });
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState('');
@@ -45,7 +44,6 @@ const EventAdd = () => {
         formData.append('eventStartDate', eventData.startDate);
         formData.append('eventEndDate', eventData.endDate);
         formData.append('eventImage', imageFile);
-        formData.append('mainBanner', eventData.mainBanner);
 
         console.log('🎉 전송될 이벤트 데이터:');
         for (let [key, value] of formData.entries()) {
