@@ -1,13 +1,9 @@
-// components/ImageSlider.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import arrowLeft from '../image/arrow-left.png';
 import arrowRight from '../image/arrow-right.png';
-import fan1 from '../image/1.jpg';
-import fan2 from '../image/2.jpg';
-import fan3 from '../image/3.jpg';
-import fan4 from '../image/4.jpg';
-import fan5 from '../image/5.jpg';
+import axios from 'axios';
 
+// ✅ 텍스트 오버레이를 위한 스타일 추가
 const styles = {
     container: {
         position: 'relative',
@@ -23,11 +19,39 @@ const styles = {
         display: 'flex',
         height: '100%',
     },
-    image: {
+    // ✅ 각 슬라이드를 감싸는 컨테이너 스타일 추가
+    slide: {
+        position: 'relative', // 텍스트 오버레이를 위해 relative 포지션 설정
         minWidth: '100%',
+        height: '100%',
+        color: 'white',
+    },
+    image: {
+        width: '100%', // minWidth에서 width로 변경하여 컨테이너에 꽉 차게 함
         height: '100%',
         objectFit: 'cover',
         borderRadius: '15px',
+    },
+    // ✅ 텍스트 오버레이 스타일
+    textOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        width: '100%',
+        padding: '40px 25px 25px',
+        background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)', // 아래쪽을 어둡게
+        borderRadius: '0 0 15px 15px',
+        boxSizing: 'border-box', // 패딩이 너비를 넘지 않도록 설정
+    },
+    title: {
+        margin: '0 0 8px 0',
+        fontSize: '24px',
+        fontWeight: 'bold',
+    },
+    date: {
+        margin: 0,
+        fontSize: '15px',
+        opacity: 0.9,
     },
     arrow: {
         position: 'absolute',
@@ -67,53 +91,58 @@ const styles = {
 };
 
 const ImageSlider = () => {
-    const originalImages = [fan1, fan2, fan3, fan4, fan5];
-    const images = [originalImages[originalImages.length - 1], ...originalImages, originalImages[0]];
-    // [마지막, 1,2,3,4,5, 첫번째]
-
+    // ✅ State 이름을 events로 변경하고, 이벤트 객체 전체를 저장
+    const [events, setEvents] = useState([]);
     const [index, setIndex] = useState(1);
     const [isTransitioning, setIsTransitioning] = useState(true);
     const intervalRef = useRef(null);
 
     useEffect(() => {
-        intervalRef.current = setInterval(() => {
-            nextImage();
-        }, 4000);
-        return () => clearInterval(intervalRef.current);
+        const fetchMainBannerEvents = async () => {
+            try {
+                const res = await axios.get(`${process.env.REACT_APP_API_URL}/getMainBannerEvents`);
+                const bannerEvents = res.data; // ✅ 데이터 전체를 변수에 저장
+
+                if (bannerEvents.length > 0) {
+                    // ✅ 무한 슬라이더를 위해 이벤트 객체 자체를 복사
+                    setEvents([bannerEvents[bannerEvents.length - 1], ...bannerEvents, bannerEvents[0]]);
+                    setIndex(1);
+                }
+            } catch (err) {
+                console.error('메인배너 이벤트 불러오기 실패:', err);
+            }
+        };
+        fetchMainBannerEvents();
     }, []);
+
+    useEffect(() => {
+        if (events.length === 0) return; // ✅ events로 조건 변경
+        intervalRef.current = setInterval(() => nextImage(), 4000);
+        return () => clearInterval(intervalRef.current);
+    }, [events]); // ✅ events로 의존성 배열 변경
 
     const prevImage = () => setIndex(prev => prev - 1);
     const nextImage = () => setIndex(prev => prev + 1);
 
     const handleTransitionEnd = () => {
-        if (index === images.length - 1) {
-            // 마지막 → 첫번째 순간이동
+        if (index === events.length - 1) { // ✅ events.length로 변경
             setIsTransitioning(false);
             setIndex(1);
         } else if (index === 0) {
-            // 첫번째 → 마지막 순간이동
             setIsTransitioning(false);
-            setIndex(images.length - 2);
+            setIndex(events.length - 2); // ✅ events.length로 변경
         }
     };
 
-    // transition false → true로 복원 (자연스럽게 연결)
     useEffect(() => {
-        if (!isTransitioning) {
-            requestAnimationFrame(() => {
-                setIsTransitioning(true);
-            });
-        }
+        if (!isTransitioning) requestAnimationFrame(() => setIsTransitioning(true));
     }, [isTransitioning]);
+
+    if (events.length === 0) return null; // ✅ events로 변경
 
     return (
         <div style={styles.container}>
-            <img
-                src={arrowLeft}
-                alt="prev"
-                style={{ ...styles.arrow, ...styles.leftArrow }}
-                onClick={prevImage}
-            />
+            <img src={arrowLeft} alt="prev" style={{ ...styles.arrow, ...styles.leftArrow }} onClick={prevImage} />
             <div
                 style={{
                     ...styles.imageContainer,
@@ -122,20 +151,23 @@ const ImageSlider = () => {
                 }}
                 onTransitionEnd={handleTransitionEnd}
             >
-                {images.map((img, i) => (
-                    <img key={i} src={img} alt={`slide-${i}`} style={styles.image} />
+                {/* ✅ events 배열을 순회하며 각 슬라이드 렌더링 */}
+                {events.map((event, i) => (
+                    <div key={i} style={styles.slide}>
+                        <img src={event.imageUrl} alt={event.title || `slide-${i}`} style={styles.image} />
+                        {/* ✅ 텍스트 오버레이 영역 */}
+                        <div style={styles.textOverlay}>
+                            <h2 style={styles.title}>{event.title}</h2>
+                            <p style={styles.date}>{event.startDate} ~ {event.endDate}</p>
+                        </div>
+                    </div>
                 ))}
             </div>
-            <img
-                src={arrowRight}
-                alt="next"
-                style={{ ...styles.arrow, ...styles.rightArrow }}
-                onClick={nextImage}
-            />
+            <img src={arrowRight} alt="next" style={{ ...styles.arrow, ...styles.rightArrow }} onClick={nextImage} />
 
-            {/* 인디케이터 */}
             <div style={styles.dots}>
-                {originalImages.map((_, i) => (
+                {/* ✅ events.slice로 변경 */}
+                {events.slice(1, events.length - 1).map((_, i) => (
                     <div
                         key={i}
                         style={{

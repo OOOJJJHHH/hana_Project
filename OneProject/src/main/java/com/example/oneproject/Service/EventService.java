@@ -139,8 +139,10 @@ public class EventService {
 
     // ✅ 메인 배너용 이벤트만 조회
     public List<EventDTO> getMainBannerEvents() {
+        // Calls the repository method to fetch events where mainBanner is true
         List<Event> bannerEvents = eventRepository.findByMainBannerTrue();
 
+        // Converts the list of Event entities to a list of EventDTOs
         return bannerEvents.stream()
                 .map(eventEntity -> {
                     String finalImageUrl = null;
