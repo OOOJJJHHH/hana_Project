@@ -12,6 +12,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class EventController {
@@ -103,23 +104,21 @@ public class EventController {
 
     // ✅ 5. 메인배너용 이벤트만 조회 (ImageSlider.jsx에서 사용)
     // EventController.java
-    @PatchMapping("/updateMainBanner/{title}")
-    public ResponseEntity<String> updateMainBanner(@PathVariable String title, @RequestParam boolean mainBanner) {
+    // EventController.java
+    @PutMapping("/updateMainBanner/{title}")
+    public ResponseEntity<EventDTO> updateMainBanner(
+            @PathVariable String title,
+            @RequestBody Map<String, Boolean> bannerMap
+    ) {
         try {
-            String decodedTitle = URLDecoder.decode(title, StandardCharsets.UTF_8.toString());
-            boolean updated = eventService.updateMainBanner(decodedTitle, mainBanner);
-
-            if (updated) {
-                return ResponseEntity.ok("메인배너 상태가 업데이트되었습니다.");
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("해당 이벤트를 찾을 수 없습니다.");
-            }
+            Boolean mainBanner = bannerMap.get("mainBanner");
+            EventDTO updatedEvent = eventService.updateMainBanner(title, mainBanner);
+            return ResponseEntity.ok(updatedEvent);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("업데이트 실패: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
 
 
 

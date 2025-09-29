@@ -121,16 +121,16 @@ public class EventService {
 
 
 
-    // EventService.java
-    public boolean updateMainBanner(String title, boolean mainBanner) {
+    public EventDTO updateMainBanner(String title, Boolean mainBanner) {
         Event event = eventRepository.findByTitle(title);
-        if (event != null) {
-            event.setMainBanner(mainBanner);
-            eventRepository.save(event);
-            return true;
-        } else {
-            return false;
-        }
+        if(event == null) return null;
+
+        event.setMainBanner(mainBanner); // true/false만 저장
+        eventRepository.save(event);
+
+        // DTO 반환
+        EventDTO dto = new EventDTO(event);
+        return dto;
     }
 
 
