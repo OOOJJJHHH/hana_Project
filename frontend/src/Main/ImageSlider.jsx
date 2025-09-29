@@ -1,12 +1,8 @@
-// components/ImageSlider.jsx
+// components/EventSlider.jsx
 import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 import arrowLeft from '../image/arrow-left.png';
 import arrowRight from '../image/arrow-right.png';
-import fan1 from '../image/1.jpg';
-import fan2 from '../image/2.jpg';
-import fan3 from '../image/3.jpg';
-import fan4 from '../image/4.jpg';
-import fan5 from '../image/5.jpg';
 
 const styles = {
     container: {
@@ -66,54 +62,75 @@ const styles = {
     }
 };
 
-const ImageSlider = () => {
-    const originalImages = [fan1, fan2, fan3, fan4, fan5];
-    const images = [originalImages[originalImages.length - 1], ...originalImages, originalImages[0]];
-    // [마지막, 1,2,3,4,5, 첫번째]
-
+const EventSlider = () => {
+    const [events, setEvents] = useState([]); // 백엔드에서 가져온 이벤트
     const [index, setIndex] = useState(1);
     const [isTransitioning, setIsTransitioning] = useState(true);
     const intervalRef = useRef(null);
 
+    // ===============================
+    // 백엔드에서 이벤트 가져오기
+    // ===============================
     useEffect(() => {
-        intervalRef.current = setInterval(() => {
-            nextImage();
-        }, 4000);
-        return () => clearInterval(intervalRef.current);
+        axios.get(`${process.env.REACT_APP_API_URL}/getEvents`)
+            .then(res => {
+                console.log("백엔드에서 받은 이벤트:", res.data); // ✅ 콘솔 출력
+                setEvents(res.data);
+            })
+            .catch(err => console.error("이벤트 불러오기 실패:", err));
     }, []);
 
+
+    // ===============================
+    // 자동 슬라이드
+    // ===============================
+    useEffect(() => {
+        if (events.length === 0) return; // 이벤트가 없으면 실행 안함
+        intervalRef.current = setInterval(() => nextImage(), 4000);
+        return () => clearInterval(intervalRef.current);
+    }, [events, index]);
+
+    // ===============================
+    // 슬라이드 이동
+    // ===============================
     const prevImage = () => setIndex(prev => prev - 1);
     const nextImage = () => setIndex(prev => prev + 1);
 
+    // ===============================
+    // 무한 슬라이드 처리
+    // ===============================
     const handleTransitionEnd = () => {
-        if (index === images.length - 1) {
-            // 마지막 → 첫번째 순간이동
+        if (events.length === 0) return;
+        if (index === events.length + 1) {
             setIsTransitioning(false);
             setIndex(1);
         } else if (index === 0) {
-            // 첫번째 → 마지막 순간이동
             setIsTransitioning(false);
-            setIndex(images.length - 2);
+            setIndex(events.length);
         }
     };
 
-    // transition false → true로 복원 (자연스럽게 연결)
     useEffect(() => {
         if (!isTransitioning) {
-            requestAnimationFrame(() => {
-                setIsTransitioning(true);
-            });
+            requestAnimationFrame(() => setIsTransitioning(true));
         }
     }, [isTransitioning]);
 
+    // ===============================
+    // 이미지 배열 (무한 슬라이드용)
+    // [마지막, ...이벤트, 첫번째]
+    // ===============================
+    const images = events.length > 0
+        ? [events[events.length - 1], ...events, events[0]]
+        : [];
+
     return (
         <div style={styles.container}>
-            <img
-                src={arrowLeft}
-                alt="prev"
-                style={{ ...styles.arrow, ...styles.leftArrow }}
-                onClick={prevImage}
-            />
+            {/* 좌우 화살표 */}
+            <img src={arrowLeft} alt="prev" style={{ ...styles.arrow, ...styles.leftArrow }} onClick={prevImage} />
+            <img src={arrowRight} alt="next" style={{ ...styles.arrow, ...styles.rightArrow }} onClick={nextImage} />
+
+            {/* 이미지 슬라이드 */}
             <div
                 style={{
                     ...styles.imageContainer,
@@ -122,20 +139,14 @@ const ImageSlider = () => {
                 }}
                 onTransitionEnd={handleTransitionEnd}
             >
-                {images.map((img, i) => (
-                    <img key={i} src={img} alt={`slide-${i}`} style={styles.image} />
+                {images.map((event, i) => (
+                    <img key={i} src={event?.imageUrl} alt={event?.title} style={styles.image} />
                 ))}
             </div>
-            <img
-                src={arrowRight}
-                alt="next"
-                style={{ ...styles.arrow, ...styles.rightArrow }}
-                onClick={nextImage}
-            />
 
             {/* 인디케이터 */}
             <div style={styles.dots}>
-                {originalImages.map((_, i) => (
+                {events.map((_, i) => (
                     <div
                         key={i}
                         style={{
@@ -150,4 +161,4 @@ const ImageSlider = () => {
     );
 };
 
-export default ImageSlider;
+export default EventSlider;

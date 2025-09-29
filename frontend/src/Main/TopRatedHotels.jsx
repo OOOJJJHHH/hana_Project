@@ -112,7 +112,7 @@ const TopRatedHotels = () => {
                     <div
                         key={room.roomId}
                         style={{ ...card, ...(hoverIndex === index ? cardHover : {}) }}
-                        onClick={() => navigate(`/hotel-detail/${room.roomId}`)}
+                        onClick={() => navigate(`/hotel-detail?name=${encodeURIComponent(room.clodName)}`)}
                         onMouseEnter={() => setHoverIndex(index)}
                         onMouseLeave={() => setHoverIndex(null)}
                     >
