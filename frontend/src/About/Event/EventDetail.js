@@ -59,15 +59,18 @@ const EventDetail = () => {
     // 메인배너 버튼 클릭
     const handleBanner = async () => {
         try {
-            const newBannerStatus = !isBanner;
-            await axios.patch(`${process.env.REACT_APP_API_URL}/events/${event.id}/banner`, {
-                mainBanner: newBannerStatus
-            });
-            setIsBanner(newBannerStatus);
-            alert(`메인배너 상태가 ${newBannerStatus ? 'O' : 'X'}로 변경되었습니다.`);
-        } catch (err) {
-            console.error('메인배너 상태 변경 실패:', err);
-            alert('메인배너 상태 변경에 실패했습니다.');
+            const encodedTitle = encodeURIComponent(event.title);
+            await axios.patch(
+                `${process.env.REACT_APP_API_URL}/updateMainBanner/${encodedTitle}`,
+                null,
+                { params: { mainBanner: !event.mainBanner } }
+            );
+
+            // 토글 후 상태 업데이트
+            setEvent(prev => ({ ...prev, mainBanner: !prev.mainBanner }));
+        } catch (error) {
+            console.error("메인배너 업데이트 실패:", error);
+            alert("메인배너 상태 업데이트에 실패했습니다.");
         }
     };
 
