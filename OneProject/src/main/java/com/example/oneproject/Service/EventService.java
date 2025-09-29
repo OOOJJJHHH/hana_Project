@@ -119,4 +119,29 @@ public class EventService {
         }
     }
 
+
+
+    public List<EventDTO> getMainBannerEvents() {
+        List<Event> bannerEvents = eventRepository.findByMainBannerTrue();
+
+        return bannerEvents.stream()
+                .map(eventEntity -> {
+                    String finalImageUrl = null;
+                    if (eventEntity.getImageUrl() != null) {
+                        finalImageUrl = s3Service.generatePresignedUrl(eventEntity.getImageUrl());
+                    }
+
+                    EventDTO dto = new EventDTO();
+                    dto.setId(eventEntity.getId());
+                    dto.setTitle(eventEntity.getTitle());
+                    dto.setDescription(eventEntity.getDescription());
+                    dto.setStartDate(eventEntity.getStartDate());
+                    dto.setEndDate(eventEntity.getEndDate());
+                    dto.setImageUrl(finalImageUrl);
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
 }

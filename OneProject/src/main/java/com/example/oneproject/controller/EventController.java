@@ -57,8 +57,6 @@ public class EventController {
     }
 
 
-
-
     // 3. 제목으로 이벤트 단건 조회 (GET)
     @GetMapping("/getEventByTitle/{title}")
     public ResponseEntity<EventDTO> getEventByTitle(@PathVariable String title) {
@@ -102,6 +100,19 @@ public class EventController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("삭제 실패: " + e.getMessage());
         }
     }
+
+    // ✅ 5. 메인배너용 이벤트만 조회 (ImageSlider.jsx에서 사용)
+    @GetMapping("/events/main-banners")
+    public ResponseEntity<List<EventDTO>> getMainBannerEvents() {
+        try {
+            List<EventDTO> bannerEvents = eventService.getMainBannerEvents();  // ✅ 서비스에서 처리
+            return ResponseEntity.ok(bannerEvents);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 
 
 }

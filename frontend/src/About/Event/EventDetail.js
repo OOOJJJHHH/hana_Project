@@ -57,17 +57,19 @@ const EventDetail = () => {
     };
 
     // 메인배너 버튼 클릭
-    const handleBanner = () => {
-        setIsBanner(prev => !prev);
+    const handleBanner = async () => {
+        try {
+            const newBannerStatus = !isBanner;
+            await axios.patch(`${process.env.REACT_APP_API_URL}/events/${event.id}/banner`, {
+                mainBanner: newBannerStatus
+            });
+            setIsBanner(newBannerStatus);
+            alert(`메인배너 상태가 ${newBannerStatus ? 'O' : 'X'}로 변경되었습니다.`);
+        } catch (err) {
+            console.error('메인배너 상태 변경 실패:', err);
+            alert('메인배너 상태 변경에 실패했습니다.');
+        }
     };
-
-    if (loading) {
-        return <div className="detail-modal"><p>이벤트 정보를 불러오는 중...</p></div>;
-    }
-
-    if (!event) {
-        return <div className="detail-modal"><p>이벤트가 존재하지 않거나, 불러올 수 없습니다.</p></div>;
-    }
 
     return (
         <div className="detail-modal">
