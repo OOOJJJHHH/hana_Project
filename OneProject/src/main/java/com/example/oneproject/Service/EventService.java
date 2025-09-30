@@ -116,10 +116,7 @@ public class EventService {
         Event event = eventRepository.findByTitle(title);
         if(event == null) return null;
 
-        if (mainBanner) {
-            // true로 설정 시: 다른 모든 이벤트를 false로 초기화하여 단일 배너 강제
-            eventRepository.resetMainBanners();
-        }
+
 
         event.setMainBanner(mainBanner); // true/false 저장
         eventRepository.save(event); // 변경된 이벤트 저장
