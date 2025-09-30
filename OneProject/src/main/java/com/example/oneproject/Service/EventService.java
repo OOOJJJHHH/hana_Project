@@ -116,15 +116,10 @@ public class EventService {
         Event event = eventRepository.findByTitle(title);
         if(event == null) return null;
 
-
-
         event.setMainBanner(mainBanner); // true/false 저장
         eventRepository.save(event); // 변경된 이벤트 저장
 
-        // DTO 반환
         EventDTO dto = new EventDTO(event);
-
-        // DTO에 Presigned URL을 설정
         String finalImageUrl = null;
         if (event.getImageUrl() != null) {
             finalImageUrl = s3Service.generatePresignedUrl(event.getImageUrl());
@@ -136,10 +131,8 @@ public class EventService {
 
     // ✅ 메인 배너용 이벤트만 조회
     public List<EventDTO> getMainBannerEvents() {
-        // Calls the repository method to fetch events where mainBanner is true
         List<Event> bannerEvents = eventRepository.findByMainBannerTrue();
 
-        // Converts the list of Event entities to a list of EventDTOs
         return bannerEvents.stream()
                 .map(eventEntity -> {
                     String finalImageUrl = null;

@@ -4,6 +4,7 @@ import arrowLeft from '../image/arrow-left.png';
 import arrowRight from '../image/arrow-right.png';
 import axios from 'axios';
 
+// ✅ 슬라이더 스타일
 const styles = {
     container: {
         position: 'relative',
@@ -41,8 +42,16 @@ const styles = {
         borderRadius: '0 0 15px 15px',
         boxSizing: 'border-box',
     },
-    title: { margin: '0 0 8px 0', fontSize: '24px', fontWeight: 'bold' },
-    date: { margin: 0, fontSize: '15px', opacity: 0.9 },
+    title: {
+        margin: '0 0 8px 0',
+        fontSize: '24px',
+        fontWeight: 'bold',
+    },
+    date: {
+        margin: 0,
+        fontSize: '15px',
+        opacity: 0.9,
+    },
     arrow: {
         position: 'absolute',
         top: '50%',
@@ -81,33 +90,32 @@ const styles = {
 };
 
 const ImageSlider = () => {
-    const [events, setEvents] = useState([]); // mainBanner 이벤트 전체
+    const [events, setEvents] = useState([]);
     const [index, setIndex] = useState(1);
     const [isTransitioning, setIsTransitioning] = useState(true);
     const intervalRef = useRef(null);
 
-    // 1️⃣ 메인배너 이벤트 불러오기
-    useEffect(() => {
-        const fetchMainBannerEvents = async () => {
-            try {
-                const res = await axios.get(`${process.env.REACT_APP_API_URL}/getMainBannerEvents`);
-                const bannerEvents = res.data;
+    // ✅ 메인배너 이벤트 불러오기
+    const fetchMainBannerEvents = async () => {
+        try {
+            const res = await axios.get(`${process.env.REACT_APP_API_URL}/getMainBannerEvents`);
+            const bannerEvents = res.data;
 
-                if (bannerEvents.length > 0) {
-                    // 무한 슬라이더를 위해 첫/마지막 슬라이드 복제
-                    setEvents([bannerEvents[bannerEvents.length - 1], ...bannerEvents, bannerEvents[0]]);
-                    setIndex(1);
-                }
-                console.log('메인배너 이벤트:', bannerEvents);
-            } catch (err) {
-                console.error('메인배너 이벤트 불러오기 실패:', err);
+            if (bannerEvents.length > 0) {
+                // 무한 슬라이드 위해 첫/마지막 요소 복사
+                setEvents([bannerEvents[bannerEvents.length - 1], ...bannerEvents, bannerEvents[0]]);
+                setIndex(1);
             }
-        };
+        } catch (err) {
+            console.error('메인배너 이벤트 불러오기 실패:', err);
+        }
+    };
 
+    useEffect(() => {
         fetchMainBannerEvents();
     }, []);
 
-    // 2️⃣ 자동 슬라이드
+    // ✅ 자동 슬라이드
     useEffect(() => {
         if (events.length === 0) return;
         intervalRef.current = setInterval(() => nextImage(), 4000);
@@ -130,6 +138,19 @@ const ImageSlider = () => {
     useEffect(() => {
         if (!isTransitioning) requestAnimationFrame(() => setIsTransitioning(true));
     }, [isTransitioning]);
+
+    // ✅ mainBanner 상태 토글 함수
+    const toggleBanner = async (title, newStatus) => {
+        try {
+            await axios.put(
+                `${process.env.REACT_APP_API_URL}/updateMainBanner/${encodeURIComponent(title)}`,
+                { mainBanner: newStatus }
+            );
+            fetchMainBannerEvents(); // 갱신
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
     if (events.length === 0) return null;
 
@@ -165,7 +186,6 @@ const ImageSlider = () => {
                 style={{ ...styles.arrow, ...styles.rightArrow }}
                 onClick={nextImage}
             />
-
             <div style={styles.dots}>
                 {events.slice(1, events.length - 1).map((_, i) => (
                     <div
