@@ -182,11 +182,11 @@ const HotelDetail = () => {
           ) : (
               <>
                 {roomImages.length > 1 && (
-                    <button className="nav-button left" onClick={handlePrev} aria-label="이전 이미지">⟨</button>
+                    <button className="nav-button left" onClick={handlePrev} aria-label="이전 이미지"></button>
                 )}
                 <img src={roomImages[currentIndex]} alt="room" className="main-image" />
                 {roomImages.length > 1 && (
-                    <button className="nav-button right" onClick={handleNext} aria-label="다음 이미지">⟩</button>
+                    <button className="nav-button right" onClick={handleNext} aria-label="다음 이미지"></button>
                 )}
               </>
           )}
