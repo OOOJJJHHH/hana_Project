@@ -93,6 +93,7 @@ public class CityController {
     @GetMapping("/api/rooms/random/{count}")
     public ResponseEntity<List<CheapestRoomWithImagesDTO>> getRandomRooms(@PathVariable("count") int count) {
         try {
+            // RoomService에서 성능 개선된 랜덤 조회 로직을 호출
             List<CheapestRoomWithImagesDTO> randomRooms = roomService.getRandomRooms(count);
             return ResponseEntity.ok(randomRooms);
         } catch (Exception e) {

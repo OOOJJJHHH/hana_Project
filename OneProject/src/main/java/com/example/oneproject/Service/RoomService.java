@@ -23,7 +23,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.Comparator;
-
+import java.util.Collections;
+import java.util.Random;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -268,20 +269,36 @@ public class RoomService {
     // 2. 전체 숙소 중에서 무작위로 'count' 개를 가져와 DTO 형태로 반환
     @Transactional(readOnly = true)
     public List<CheapestRoomWithImagesDTO> getRandomRooms(int count) {
-        // RoomRepository에서 무작위로 count개의 Room 엔티티를 가져옵니다.
-        List<Room> rooms = roomRepository.findRandomRooms(count);
+        // 1. 전체 방 개수 (totalRooms)를 빠르게 가져옵니다.
+        long totalRooms = roomRepository.countAllRooms();
 
-        // Room 엔티티 리스트를 CheapestRoomWithImagesDTO 리스트로 변환합니다.
+        if (totalRooms == 0) {
+            return Collections.emptyList();
+        }
+
+        List<Room> rooms;
+        if (totalRooms <= count) {
+            // 방이 count 개 이하일 경우 전체를 가져옵니다.
+            rooms = roomRepository.findAll();
+        } else {
+            // 2. 무작위 시작점(OFFSET)을 계산합니다.
+            Random random = new Random();
+            // 최대 OFFSET은 (전체 개수 - 가져올 개수)입니다.
+            int maxOffset = (int) (totalRooms - count);
+            int randomOffset = random.nextInt(maxOffset + 1); // 0부터 maxOffset 포함
+
+            // 3. 계산된 OFFSET을 사용하여 빠르게 5개의 방을 가져옵니다.
+            rooms = roomRepository.findRoomsWithOffset(count, randomOffset);
+        }
+
+        // 4. DTO로 변환합니다.
         return rooms.stream().map(room -> {
-            // 이미지 URL은 S3Service를 통해 Pre-Signed URL로 변환한다고 가정합니다.
             List<String> imageUrls = room.getRoomImages()
                     .stream()
                     .map(RoomImages::getImageKey)
                     .map(s3Service::generatePresignedUrl)
                     .collect(Collectors.toList());
 
-            // CheapestRoomWithImagesDTO를 재활용하여 필요한 정보를 전달합니다.
-            // (ID, RoomName, Price, ClodContentID, ClodContentLodName, ImageUrls)
             return new CheapestRoomWithImagesDTO(
                     room.getId(),
                     room.getRoomName(),

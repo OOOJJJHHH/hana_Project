@@ -33,7 +33,13 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             "ORDER BY avgRating DESC")
     List<Object[]> findTopRoomsByAverageRating(Pageable pageable);
 
-    @Query(value = "SELECT * FROM room ORDER BY RAND() LIMIT :limit", nativeQuery = true)
-    List<Room> findRandomRooms(@Param("limit") int limit);
+    // ✅ [성능 개선] 1. 전체 방의 개수를 빠르게 세는 쿼리
+    @Query("SELECT COUNT(r.id) FROM Room r")
+    long countAllRooms();
 
+    // ✅ [성능 개선] 2. 특정 OFFSET부터 LIMIT 개수만큼 가져오는 쿼리
+    // RoomService에서 무작위 OFFSET을 계산해 호출합니다.
+    @Query(value = "SELECT * FROM room LIMIT :limit OFFSET :offset", nativeQuery = true)
+    List<Room> findRoomsWithOffset(@Param("limit") int limit, @Param("offset") int offset);
 }
+
