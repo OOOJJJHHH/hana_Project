@@ -25,6 +25,9 @@ import java.util.stream.Collectors;
 import java.util.Comparator;
 
 
+import org.springframework.transaction.annotation.Transactional;
+import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 public class RoomService {
@@ -261,6 +264,34 @@ public class RoomService {
         }).collect(Collectors.toList());
     }
 
+
+    // 2. 전체 숙소 중에서 무작위로 'count' 개를 가져와 DTO 형태로 반환
+    @Transactional(readOnly = true)
+    public List<CheapestRoomWithImagesDTO> getRandomRooms(int count) {
+        // RoomRepository에서 무작위로 count개의 Room 엔티티를 가져옵니다.
+        List<Room> rooms = roomRepository.findRandomRooms(count);
+
+        // Room 엔티티 리스트를 CheapestRoomWithImagesDTO 리스트로 변환합니다.
+        return rooms.stream().map(room -> {
+            // 이미지 URL은 S3Service를 통해 Pre-Signed URL로 변환한다고 가정합니다.
+            List<String> imageUrls = room.getRoomImages()
+                    .stream()
+                    .map(RoomImages::getImageKey)
+                    .map(s3Service::generatePresignedUrl)
+                    .collect(Collectors.toList());
+
+            // CheapestRoomWithImagesDTO를 재활용하여 필요한 정보를 전달합니다.
+            // (ID, RoomName, Price, ClodContentID, ClodContentLodName, ImageUrls)
+            return new CheapestRoomWithImagesDTO(
+                    room.getId(),
+                    room.getRoomName(),
+                    room.getPrice(),
+                    room.getClodContent().getId(),
+                    room.getClodContent().getLodName(),
+                    imageUrls
+            );
+        }).collect(Collectors.toList());
+    }
 
 
 }

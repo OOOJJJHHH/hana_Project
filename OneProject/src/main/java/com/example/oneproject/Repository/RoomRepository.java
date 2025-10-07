@@ -33,4 +33,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             "ORDER BY avgRating DESC")
     List<Object[]> findTopRoomsByAverageRating(Pageable pageable);
 
+    @Query(value = "SELECT * FROM room ORDER BY RAND() LIMIT :limit", nativeQuery = true)
+    List<Room> findRandomRooms(@Param("limit") int limit);
+
 }
