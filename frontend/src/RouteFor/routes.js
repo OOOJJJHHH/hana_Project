@@ -82,9 +82,10 @@ const routes = [
         component: EventAdd,
     },
     {
-        path: '/event/:title',   // id → title 로 변경
+        path: '/event/:title',
         component: EventDetail,
     },
+
 
 ];
 
