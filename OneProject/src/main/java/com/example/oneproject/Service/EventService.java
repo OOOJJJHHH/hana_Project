@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.io.IOException;
 
+
 @Service
 @RequiredArgsConstructor
 public class EventService {
@@ -22,7 +23,7 @@ public class EventService {
     // ✅ 이벤트 저장 (EventAdd.js 연동)
     public void saveEvent(String title, String description, String startDate, String endDate, MultipartFile imageFile)
             throws IOException {
-
+        // ... (생략)
         String imageUrl = null;
         if (imageFile != null && !imageFile.isEmpty()) {
             imageUrl = s3Uploader.uploadFile("eventImages", imageFile);
@@ -41,6 +42,7 @@ public class EventService {
 
     // ✅ 전체 이벤트 조회 (About.jsx 연동)
     public List<EventDTO> getAllEvents() {
+        // ... (생략)
         List<Event> eventsFromDB = eventRepository.findAll();
 
         return eventsFromDB.stream()
@@ -66,6 +68,7 @@ public class EventService {
 
     // ✅ 제목으로 이벤트 단건 조회 (EventDetail.js 연동) - [중요] mainBanner 값 확실히 포함
     public EventDTO getEventDTOByTitle(String title) {
+        // ... (생략)
         Event event = eventRepository.findByTitle(title);
 
         if (event == null) return null;
@@ -90,6 +93,7 @@ public class EventService {
 
     // ✅ 제목으로 이벤트 삭제
     public boolean deleteEventByTitle(String title) {
+        // ... (생략)
         Event event = eventRepository.findByTitle(title);
 
         if (event != null) {
@@ -111,7 +115,9 @@ public class EventService {
     }
 
 
-    // ✅ 메인 배너 토글 및 단일 배너 강제 로직
+    // ✅ 메인 배너 토글 (여러 개 true 허용됨)
+    // 이 메서드는 단일 이벤트만 업데이트하며, 다른 이벤트를 false로 리셋하는 로직이 없습니다.
+    // 따라서 여러 개의 이벤트가 mainBanner=true 상태를 가질 수 있습니다.
     public EventDTO updateMainBanner(String title, Boolean mainBanner) {
         Event event = eventRepository.findByTitle(title);
         if(event == null) return null;
@@ -129,9 +135,9 @@ public class EventService {
         return dto;
     }
 
-    // ✅ 메인 배너용 이벤트만 조회
+    // ✅ 메인 배너용 이벤트만 조회 (findByMainBannerTrue로 모든 true인 이벤트를 가져옴)
     public List<EventDTO> getMainBannerEvents() {
-        List<Event> bannerEvents = eventRepository.findByMainBannerTrue();
+        List<Event> bannerEvents = eventRepository.findByMainBannerTrue(); // ⭐ 모든 true 이벤트를 가져옵니다.
 
         return bannerEvents.stream()
                 .map(eventEntity -> {

@@ -20,6 +20,7 @@ public class EventController {
     @Autowired
     private EventService eventService;
 
+    // 1. 이벤트 저장 (POST)
     @PostMapping("/saveEvent")
     public ResponseEntity<String> saveEvent(
             @RequestParam("eventTitle") String eventTitle,
