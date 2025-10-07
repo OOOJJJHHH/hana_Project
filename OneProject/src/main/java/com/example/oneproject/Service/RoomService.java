@@ -23,11 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.Comparator;
-import java.util.Collections;
-import java.util.Random;
 
-import org.springframework.transaction.annotation.Transactional;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -265,53 +261,6 @@ public class RoomService {
         }).collect(Collectors.toList());
     }
 
-
-    // 2. 전체 숙소 중에서 무작위로 'count' 개를 가져와 DTO 형태로 반환
-    @Transactional(readOnly = true)
-    public List<CheapestRoomWithImagesDTO> getRandomRooms(int count) {
-        // 1. 전체 방 개수 (totalRooms)를 빠르게 가져옵니다.
-        long totalRooms = roomRepository.countAllRooms();
-
-        if (totalRooms == 0) {
-            return Collections.emptyList();
-        }
-
-        List<Room> rooms;
-        if (totalRooms <= count) {
-            // 방이 count 개 이하일 경우 전체를 가져옵니다.
-            rooms = roomRepository.findAll();
-        } else {
-            // 2. 무작위 시작점(OFFSET)을 계산합니다.
-            Random random = new Random();
-            // 최대 OFFSET은 (전체 개수 - 가져올 개수)입니다.
-            int maxOffset = (int) (totalRooms - count);
-            int randomOffset = random.nextInt(maxOffset + 1); // 0부터 maxOffset 포함
-
-            // 3. 계산된 OFFSET을 사용하여 빠르게 5개의 방을 가져옵니다.
-            rooms = roomRepository.findRoomsWithOffset(count, randomOffset);
-        }
-
-        // 4. DTO로 변환합니다.
-        return rooms.parallelStream().map(room -> { // ✅ parallelStream() 사용
-            // room.getRoomImages()는 여전히 직렬로 처리되지만,
-            // 여러 방(room)에 대한 DTO 변환 및 S3 호출 로직이 병렬로 실행됨
-            List<String> imageUrls = room.getRoomImages()
-                    .stream()
-                    .map(RoomImages::getImageKey)
-                    .map(s3Service::generatePresignedUrl)
-                    .collect(Collectors.toList());
-
-            return new CheapestRoomWithImagesDTO(
-                    room.getId(),
-                    room.getRoomName(),
-                    room.getPrice(),
-                    room.getClodContent().getId(),
-                    room.getClodContent().getLodName(),
-                    imageUrls
-            );
-// 반드시 .collect(Collectors.toList());로 끝나야 합니다.
-        }).collect(Collectors.toList()); // ✅ 병렬 스트림으로 처리된 결과를 최종 List로 수집
-    }
 
 
 }

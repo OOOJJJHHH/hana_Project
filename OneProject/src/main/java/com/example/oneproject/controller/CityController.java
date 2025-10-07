@@ -14,8 +14,6 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.GetMapping;
 import java.util.List;
-import com.example.oneproject.Service.RoomService; // RoomService import 추가
-import lombok.RequiredArgsConstructor;
 
 
 import java.io.IOException;
@@ -88,19 +86,6 @@ public class CityController {
 
 
 
-    // 3. 무작위 숙소 목록을 반환하는 새로운 API 엔드포인트
-    // 예: GET /api/rooms/random/5
-    @GetMapping("/api/rooms/random/{count}")
-    public ResponseEntity<List<CheapestRoomWithImagesDTO>> getRandomRooms(@PathVariable("count") int count) {
-        try {
-            // RoomService에서 성능 개선된 랜덤 조회 로직을 호출
-            List<CheapestRoomWithImagesDTO> randomRooms = roomService.getRandomRooms(count);
-            return ResponseEntity.ok(randomRooms);
-        } catch (Exception e) {
-            // 에러 로깅 처리
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
 
 
     // 도시 정보 저장
