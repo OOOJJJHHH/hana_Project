@@ -292,7 +292,9 @@ public class RoomService {
         }
 
         // 4. DTO로 변환합니다.
-        return rooms.stream().map(room -> {
+        return rooms.parallelStream().map(room -> { // ✅ parallelStream() 사용
+            // room.getRoomImages()는 여전히 직렬로 처리되지만,
+            // 여러 방(room)에 대한 DTO 변환 및 S3 호출 로직이 병렬로 실행됨
             List<String> imageUrls = room.getRoomImages()
                     .stream()
                     .map(RoomImages::getImageKey)
@@ -307,7 +309,8 @@ public class RoomService {
                     room.getClodContent().getLodName(),
                     imageUrls
             );
-        }).collect(Collectors.toList());
+// 반드시 .collect(Collectors.toList());로 끝나야 합니다.
+        }).collect(Collectors.toList()); // ✅ 병렬 스트림으로 처리된 결과를 최종 List로 수집
     }
 
 
