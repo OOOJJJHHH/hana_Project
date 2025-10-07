@@ -128,39 +128,4 @@ public class ReviewService {
             return dto;
         }).collect(Collectors.toList());
     }
-
-    @Transactional
-    public List<RoomReviewSummaryDTO> getAllRoomsWithReviewSummary() {
-        List<Room> rooms = roomRepository.findAll(); // 전체 객실 조회
-
-        return rooms.stream().map(room -> {
-            // 각 객실 평점과 리뷰 수 계산
-            List<Review> reviews = reviewRepository.findByClodContentIdAndRoomId(
-                    room.getClodContent().getId(), room.getId());
-
-            double avgRating = reviews.stream()
-                    .mapToDouble(Review::getRating)
-                    .average()
-                    .orElse(0.0);
-
-            long reviewCount = reviews.size();
-
-            // 이미지 presigned URL
-            List<String> presignedUrls = room.getRoomImages().stream()
-                    .map(img -> s3Service.generatePresignedUrl(img.getImageKey()))
-                    .collect(Collectors.toList());
-
-            RoomReviewSummaryDTO dto = new RoomReviewSummaryDTO(
-                    room.getId(),
-                    room.getRoomName(),
-                    room.getClodContent().getLodName(),
-                    avgRating,
-                    reviewCount
-            );
-            dto.setRoomImages(presignedUrls);
-
-            return dto;
-        }).collect(Collectors.toList());
-    }
-
 }
