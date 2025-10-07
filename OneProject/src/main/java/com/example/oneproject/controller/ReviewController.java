@@ -21,4 +21,10 @@ public class ReviewController {
     public List<RoomReviewSummaryDTO> getTop5Rooms() {
         return reviewService.getTop5RoomsByReviews();
     }
+
+    @GetMapping("/rooms/all")
+    public List<RoomReviewSummaryDTO> getAllRoomsWithSummary() {
+        return reviewService.getAllRoomsWithReviewSummary();
+    }
+
 }
