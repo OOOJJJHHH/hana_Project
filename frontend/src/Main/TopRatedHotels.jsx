@@ -11,18 +11,18 @@ const container = {
 };
 
 const title = {
-    fontSize: '28px',
-    fontWeight: '700',
-    marginBottom: '25px',
-    color: '#333',
-    textAlign: 'center',
+    fontSize: "28px",
+    fontWeight: "700",
+    marginBottom: "25px",
+    color: "#333",
+    textAlign: "left", // 왼쪽 정렬
 };
 
 const hotelList = {
     display: 'flex',
     gap: '20px',
     flexWrap: 'wrap',
-    justifyContent: 'center',
+    justifyContent: 'flex-start', // 왼쪽 정렬
 };
 
 const card = {
