@@ -272,7 +272,7 @@ const Accommodation = ({ uId }) => {
                                     <img src={lod.lodImag} alt={`${lod.lodName} 이미지`} className="lodging-image" />
                                 </div>
                                 <div className="lodging-content">
-                                    <Link to={`/hotel-detail?name=${lod.lodName}`} style={{ textDecoration: "none" }}>
+                                    <Link to={`/hotel-detail?name=${encodeURIComponent(lod.lodName)}`} style={{ textDecoration: "none" }}>
                                         <h2 className="lodging-name">{lod.lodName}</h2>
                                     </Link>
                                     <div className="lodging-info">

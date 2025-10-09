@@ -41,8 +41,8 @@ const Wishlist = () => {
 
     // ---------------- CSS 객체 ----------------
     const styles = {
-        container: { padding: "2rem" },
-        title: { fontSize: "1.8rem", fontWeight: "700", marginBottom: "1rem" },
+        container: { maxWidth: "1000px", margin: "2rem auto", padding: "1rem" },
+        heading: { marginBottom: "1rem" },
         emptyText: { fontSize: "1rem", color: "#555" },
         wishlistContainer: {
             display: "flex",
@@ -90,7 +90,7 @@ const Wishlist = () => {
 
     return (
         <div style={styles.container}>
-            <h2 style={styles.title}>💖 찜한 숙소 목록</h2>
+            <h2 style={styles.heading}>💖 찜한 숙소 목록</h2>
 
             {wishlist.length === 0 ? (
                 <p style={styles.emptyText}>찜한 숙소가 없습니다.</p>
