@@ -194,12 +194,11 @@ const User = () => {
                         >
                             {userDetails?.profileImage ? (
                                 <img
-                                    key={getImageUrl(userDetails.profileImage) + Date.now()}
-                                    src={getImageUrl(userDetails.profileImage)}
+                                    src={userDetails?.profileImage ? getImageUrl(userDetails.profileImage) : require("../image/user.png")}
                                     alt="Profile"
                                     onError={(e) => {
                                         e.target.onerror = null;
-                                        e.target.src = "/default-profile.png";
+                                        e.target.src = require("../image/user.png"); // 기본 이미지
                                     }}
                                     style={{
                                         width: "100%",
