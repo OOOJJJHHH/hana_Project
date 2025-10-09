@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { UserContext } from "../Session/UserContext";
+import ReservationList from "./PopUp/ReservationDetail/ReservationList";
 
 const Reservation = () => {
     const [pendingReservations, setPendingReservations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const userInfo = useContext(UserContext); // UserContext를 통해 로그인된 사용자 정보 가져오기
+    const userInfo = useContext(UserContext);
 
-    // 로그인된 사용자 정보에서 숙소 주인(lodOwner) 아이디를 가져옵니다.
     const lodOwner = userInfo?.uId;
 
     useEffect(() => {
@@ -21,17 +21,20 @@ const Reservation = () => {
         fetchPendingReservations();
     }, [lodOwner]);
 
-    // 대기 중인(PENDING) 예약 목록을 불러오는 함수
     const fetchPendingReservations = async () => {
         try {
             setLoading(true);
-            console.log("프론트엔드에서 서버로 전달한 lodOwner:", lodOwner); // 🔍 로그 추가
-
-            const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reservations/landlord/${lodOwner}`);
-            // PENDING 상태의 예약만 필터링
-            const filteredReservations = response.data.filter(
-                (reservation) => reservation.status === "PENDING"
+            console.log("프론트엔드에서 서버로 전달한 lodOwner:", lodOwner);
+            const response = await axios.get(
+                `${process.env.REACT_APP_API_URL}/api/reservations/landlord/${lodOwner}`
             );
+
+            console.log(response.data);
+
+            const filteredReservations = response.data.filter(
+                (reservation) => reservation.status === "PENDING" || reservation.status === "COMPLETED"
+            );
+
             setPendingReservations(filteredReservations);
             setLoading(false);
         } catch (err) {
@@ -41,13 +44,12 @@ const Reservation = () => {
         }
     };
 
-    // 예약 수락 처리 함수
     const handleApprove = async (reservationId) => {
         if (window.confirm("정말로 이 예약을 수락하시겠습니까?")) {
             try {
                 await axios.patch(`${process.env.REACT_APP_API_URL}/api/reservations/${reservationId}/approve`);
                 alert("예약이 성공적으로 수락되었습니다.");
-                fetchPendingReservations(); // 목록 새로고침
+                fetchPendingReservations();
             } catch (err) {
                 console.error("예약 수락에 실패했습니다.", err);
                 alert("예약 수락에 실패했습니다.");
@@ -55,13 +57,12 @@ const Reservation = () => {
         }
     };
 
-    // 예약 거절 처리 함수
     const handleReject = async (reservationId) => {
         if (window.confirm("정말로 이 예약을 거절하시겠습니까?")) {
             try {
                 await axios.patch(`${process.env.REACT_APP_API_URL}/api/reservations/${reservationId}/reject`);
                 alert("예약이 성공적으로 거절되었습니다.");
-                fetchPendingReservations(); // 목록 새로고침
+                fetchPendingReservations();
             } catch (err) {
                 console.error("예약 거절에 실패했습니다.", err);
                 alert("예약 거절에 실패했습니다.");
@@ -70,65 +71,25 @@ const Reservation = () => {
     };
 
     const handleConsultation = (reservation) => {
-        // '상담' 버튼 클릭 시 기능 (예: 채팅방으로 이동, 팝업 띄우기 등)
         alert(`[${reservation.clodName} - ${reservation.roomName}] 예약 건에 대해 상담을 시작합니다.`);
-        // 실제 구현 시 채팅 페이지로 리다이렉션 등의 로직 추가
     };
 
-    if (loading) {
-        return <div style={styles.container}>로딩 중...</div>;
-    }
-
-    if (error) {
-        return <div style={styles.container}>{error}</div>;
-    }
+    if (loading) return <div style={styles.container}>로딩 중...</div>;
+    if (error) return <div style={styles.container}>{error}</div>;
 
     return (
         <div style={styles.container}>
             <h1 style={styles.title}>🏨 예약 요청 관리</h1>
             <p style={styles.description}>숙소로 들어온 예약 요청을 확인하고 처리하세요.</p>
 
-            {pendingReservations.length === 0 ? (
-                <div style={styles.noReservations}>
-                    <p>현재 대기 중인 예약 요청이 없습니다.</p>
-                </div>
-            ) : (
-                <div style={styles.reservationList}>
-                    {pendingReservations.map((reservation) => (
-                        <div key={reservation.reservationId} style={styles.reservationCard}>
-                            <div style={styles.cardInfo}>
-                                <p><strong>예약 번호:</strong> {reservation.reservationCode}</p>
-                                <p><strong>예약자 ID:</strong> {reservation.userId}</p>
-                                <p><strong>숙소명:</strong> {reservation.clodName}</p>
-                                <p><strong>객실명:</strong> {reservation.roomName}</p>
-                                <p><strong>체크인:</strong> {new Date(reservation.startDate).toLocaleDateString()}</p>
-                                <p><strong>체크아웃:</strong> {new Date(reservation.endDate).toLocaleDateString()}</p>
-                                <p><strong>요청사항:</strong> {reservation.memo || "없음"}</p>
-                            </div>
-                            <div style={styles.cardActions}>
-                                <button
-                                    style={{...styles.actionButton, ...styles.approveButton}}
-                                    onClick={() => handleApprove(reservation.reservationId)}
-                                >
-                                    ✅ 예약 수락
-                                </button>
-                                <button
-                                    style={{...styles.actionButton, ...styles.rejectButton}}
-                                    onClick={() => handleReject(reservation.reservationId)}
-                                >
-                                    ❌ 예약 거절
-                                </button>
-                                <button
-                                    style={{...styles.actionButton, ...styles.consultButton}}
-                                    onClick={() => handleConsultation(reservation)}
-                                >
-                                    💬 상담
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+            {/* ✅ 예약 목록 렌더링 부분 분리 */}
+            <ReservationList
+                pendingReservations={pendingReservations}
+                handleApprove={handleApprove}
+                handleReject={handleReject}
+                handleConsultation={handleConsultation}
+                styles={styles}
+            />
         </div>
     );
 };
@@ -164,9 +125,9 @@ const styles = {
         display: "flex",
         flexDirection: "column",
         gap: "20px",
-        maxHeight: "730px",   // 최대 높이 지정 (스크롤 영역 높이)
-        overflowY: "auto",   // 수직 스크롤 가능
-        paddingRight: "8px", // 스크롤바 공간 확보용 (필요시)
+        maxHeight: "730px",
+        overflowY: "auto",
+        paddingRight: "8px",
     },
     reservationCard: {
         border: "1px solid #ddd",
@@ -197,16 +158,9 @@ const styles = {
         cursor: "pointer",
         transition: "background-color 0.3s ease",
     },
-    approveButton: {
-        backgroundColor: "#28a745",
-        // React inline style는 &:hover 지원 안 하므로 CSS로 추가해야 합니다.
-    },
-    rejectButton: {
-        backgroundColor: "#dc3545",
-    },
-    consultButton: {
-        backgroundColor: "#6c757d",
-    },
+    approveButton: { backgroundColor: "#28a745" },
+    rejectButton: { backgroundColor: "#dc3545" },
+    consultButton: { backgroundColor: "#6c757d" },
 };
 
 export default Reservation;

@@ -129,12 +129,13 @@ public class ReservationService {
             return new ArrayList<>();
         }
 
-        // 3. 예약 상태가 PENDING인 예약만 조회
-        List<Reservation> reservations = reservationRepository.findByClodContentIdInAndStatus(
-                lodgingIds, ReservationStatus.PENDING
+        // 3. 예약 상태가 PENDING 또는 APPROVED인 예약 조회
+        List<Reservation> reservations = reservationRepository.findByClodContentIdInAndStatusIn(
+                lodgingIds,
+                List.of(ReservationStatus.PENDING, ReservationStatus.APPROVED)
         );
 
-        System.out.println("📋 조회된 PENDING 예약 수: " + reservations.size());
+        System.out.println("📋 조회된 PENDING + APPROVED 예약 수: " + reservations.size());
         System.out.println("=========================================");
 
         return reservations.stream()
