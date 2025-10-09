@@ -89,15 +89,14 @@ const Header = () => {
     // ================= 스타일 =================
     const headerWrapperStyle = {
         width: "100%",
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
         background: "#fff",
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     };
 
     const topRowStyle = {
         display: isScrolled ? "none" : "flex",
         alignItems: "center",
         width: "100%",
-        maxWidth: "1400px",
         justifyContent: "space-between",
         padding: "10px 40px",
         boxSizing: "border-box",
