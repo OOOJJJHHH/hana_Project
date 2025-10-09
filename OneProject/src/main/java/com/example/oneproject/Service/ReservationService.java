@@ -132,10 +132,10 @@ public class ReservationService {
         // 3. 예약 상태가 PENDING 또는 APPROVED인 예약 조회
         List<Reservation> reservations = reservationRepository.findByClodContentIdInAndStatusIn(
                 lodgingIds,
-                List.of(ReservationStatus.PENDING, ReservationStatus.APPROVED)
+                List.of(ReservationStatus.PENDING, ReservationStatus.APPROVED, ReservationStatus.COMPLETED)
         );
 
-        System.out.println("📋 조회된 PENDING + APPROVED 예약 수: " + reservations.size());
+        System.out.println("📋 조회된 PENDING + APPROVED + COMPLETED 예약 수: " + reservations.size());
         System.out.println("=========================================");
 
         return reservations.stream()
