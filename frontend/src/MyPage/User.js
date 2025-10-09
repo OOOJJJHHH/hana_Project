@@ -1,6 +1,5 @@
 import React, { useState, useRef, useContext, useEffect } from "react";
 import axios from "axios";
-import ReView from "./ReView";
 import Wishlist from "./Wishlist";
 import Account from "./Account";
 import { UserContext } from "../Session/UserContext";
@@ -92,8 +91,6 @@ const User = () => {
                 return <Revation />;
             case "wishlist":
                 return <Wishlist />;
-            case "recently":
-                return <ReView />;
             case "Reservation":
                 return <Reservation />;
             case "Accommodation":
@@ -257,7 +254,6 @@ const User = () => {
             { key: "info", label: "계정" },
             { key: "reservation", label: "예약 내역" },
             { key: "wishlist", label: "위시리스트" },
-            { key: "recently", label: "최근 본" },
         ]);
     }
 
