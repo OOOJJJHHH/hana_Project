@@ -26,7 +26,7 @@ public class Review {
     // 유저 연관관계
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private UserContent user;
+    private UserContent user; // 로그인한 사용자의 기본 생성된 id가 들어감
 
     // 숙소 연관관계
     @ManyToOne(fetch = FetchType.LAZY)

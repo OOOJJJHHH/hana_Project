@@ -18,5 +18,7 @@ public interface WishListRepository extends JpaRepository<WishList, Long> {
     // User 기준으로 WishList 조회, Room과 RoomImages를 join fetch
     @EntityGraph(attributePaths = {"room", "room.roomImages", "clodContent"})
     List<WishList> findByUser(UserContent user);
+
+    void deleteAllByUser(UserContent user);
 }
 

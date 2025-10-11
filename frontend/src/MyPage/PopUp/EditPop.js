@@ -49,24 +49,20 @@ const EditPop = ({ onClose }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // 비밀번호 변경 검증
         if (showPasswordFields) {
             if (passwordData.currentPassword !== formData.uPassword) {
                 alert("현재 비밀번호가 일치하지 않습니다.");
                 return;
             }
-
             if (passwordData.newPassword.length < 6) {
                 alert("새 비밀번호는 최소 6자 이상이어야 합니다.");
                 return;
             }
-
             if (passwordData.newPassword !== passwordData.confirmPassword) {
                 alert("새 비밀번호와 확인이 일치하지 않습니다.");
                 return;
             }
 
-            // 비밀번호를 새 비밀번호로 변경
             formData.uPassword = passwordData.newPassword;
         }
 
@@ -82,6 +78,20 @@ const EditPop = ({ onClose }) => {
         }
     };
 
+    // ✅ 백엔드 컨트롤러 요청 버튼
+    const handleBackendRequest = async () => {
+        try {
+            const response = await axios.post(`${process.env.REACT_APP_API_URL}/reservation/test`, {
+                userId: userInfo.uId,
+            });
+            console.log("✅ 요청 성공:", response.data);
+            alert("요청이 성공적으로 전송되었습니다.");
+        } catch (err) {
+            console.error("❌ 요청 실패:", err);
+            alert("요청 전송에 실패했습니다.");
+        }
+    };
+
     if (loading || !formData) return <div style={styles.loading}>로딩 중...</div>;
 
     return (
@@ -89,7 +99,6 @@ const EditPop = ({ onClose }) => {
             <div style={styles.modal}>
                 <h2 style={styles.title}>회원 정보 수정</h2>
                 <form onSubmit={handleSubmit} style={styles.form}>
-                    {/* 기본 정보 필드 */}
                     {Object.entries(visibleFields).map(([key, label]) => (
                         <div key={key} style={styles.formGroup}>
                             <label style={styles.label}>{label}</label>
@@ -104,7 +113,6 @@ const EditPop = ({ onClose }) => {
                         </div>
                     ))}
 
-                    {/* 비밀번호 변경 버튼 */}
                     <button
                         type="button"
                         onClick={() => setShowPasswordFields(prev => !prev)}
@@ -113,7 +121,6 @@ const EditPop = ({ onClose }) => {
                         {showPasswordFields ? "비밀번호 변경 취소" : "비밀번호 변경"}
                     </button>
 
-                    {/* 비밀번호 변경 필드 */}
                     {showPasswordFields && (
                         <>
                             <div style={styles.formGroup}>
@@ -149,13 +156,35 @@ const EditPop = ({ onClose }) => {
                         </>
                     )}
 
-                    {/* 버튼 그룹 */}
                     <div style={styles.buttonGroup}>
-                        <button type="submit" style={{ ...styles.button, backgroundColor: "#4CAF50", color: "white" }}>
+                        <button
+                            type="submit"
+                            style={{ ...styles.button, backgroundColor: "#4CAF50", color: "white" }}
+                        >
                             저장
                         </button>
-                        <button type="button" onClick={onClose} style={{ ...styles.button, backgroundColor: "#f44336", color: "white" }}>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            style={{ ...styles.button, backgroundColor: "#f44336", color: "white" }}
+                        >
                             취소
+                        </button>
+                    </div>
+
+                    {/* ✅ 여기 새 버튼 추가됨 */}
+                    <div style={{ marginTop: "15px" }}>
+                        <button
+                            type="button"
+                            onClick={handleBackendRequest}
+                            style={{
+                                ...styles.button,
+                                backgroundColor: "#2196F3",
+                                color: "white",
+                                width: "100%"
+                            }}
+                        >
+                            백엔드 요청 테스트
                         </button>
                     </div>
                 </form>
@@ -164,7 +193,6 @@ const EditPop = ({ onClose }) => {
     );
 };
 
-// 스타일
 const styles = {
     overlay: {
         position: "fixed",

@@ -3,10 +3,17 @@ import axios from "axios";
 import { UserContext } from "../Session/UserContext";
 import ReservationList from "./PopUp/ReservationDetail/ReservationList";
 
+const STATUS_INFO = {
+    PENDING: "현재 숙소 주인에게 예약 요청이 들어온 상태입니다.",
+    APPROVED: "숙소 주인이 수락했지만, 예약이 아직 진행중인 상태입니다.",
+    COMPLETED: "최종적으로 예약이 완료된 상태입니다.",
+};
+
 const Reservation = () => {
-    const [pendingReservations, setPendingReservations] = useState([]);
+    const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedStatus, setSelectedStatus] = useState("PENDING"); // ✅ 선택된 상태
     const userInfo = useContext(UserContext);
 
     const lodOwner = userInfo?.uId;
@@ -17,25 +24,16 @@ const Reservation = () => {
             setLoading(false);
             return;
         }
-
-        fetchPendingReservations();
+        fetchReservations();
     }, [lodOwner]);
 
-    const fetchPendingReservations = async () => {
+    const fetchReservations = async () => {
         try {
             setLoading(true);
-            console.log("프론트엔드에서 서버로 전달한 lodOwner:", lodOwner);
             const response = await axios.get(
                 `${process.env.REACT_APP_API_URL}/api/reservations/landlord/${lodOwner}`
             );
-
-            console.log(response.data);
-
-            const filteredReservations = response.data.filter(
-                (reservation) => reservation.status === "PENDING" || reservation.status === "COMPLETED"
-            );
-
-            setPendingReservations(filteredReservations);
+            setReservations(response.data);
             setLoading(false);
         } catch (err) {
             console.error("예약 목록을 불러오는 데 실패했습니다.", err);
@@ -47,9 +45,11 @@ const Reservation = () => {
     const handleApprove = async (reservationId) => {
         if (window.confirm("정말로 이 예약을 수락하시겠습니까?")) {
             try {
-                await axios.patch(`${process.env.REACT_APP_API_URL}/api/reservations/${reservationId}/approve`);
+                await axios.patch(
+                    `${process.env.REACT_APP_API_URL}/api/reservations/${reservationId}/approve`
+                );
                 alert("예약이 성공적으로 수락되었습니다.");
-                fetchPendingReservations();
+                fetchReservations();
             } catch (err) {
                 console.error("예약 수락에 실패했습니다.", err);
                 alert("예약 수락에 실패했습니다.");
@@ -60,9 +60,11 @@ const Reservation = () => {
     const handleReject = async (reservationId) => {
         if (window.confirm("정말로 이 예약을 거절하시겠습니까?")) {
             try {
-                await axios.patch(`${process.env.REACT_APP_API_URL}/api/reservations/${reservationId}/reject`);
+                await axios.patch(
+                    `${process.env.REACT_APP_API_URL}/api/reservations/${reservationId}/reject`
+                );
                 alert("예약이 성공적으로 거절되었습니다.");
-                fetchPendingReservations();
+                fetchReservations();
             } catch (err) {
                 console.error("예약 거절에 실패했습니다.", err);
                 alert("예약 거절에 실패했습니다.");
@@ -71,25 +73,83 @@ const Reservation = () => {
     };
 
     const handleConsultation = (reservation) => {
-        alert(`[${reservation.clodName} - ${reservation.roomName}] 예약 건에 대해 상담을 시작합니다.`);
+        alert(
+            `[${reservation.clodName} - ${reservation.roomName}] 예약 건에 대해 상담을 시작합니다.`
+        );
     };
 
     if (loading) return <div style={styles.container}>로딩 중...</div>;
     if (error) return <div style={styles.container}>{error}</div>;
 
+    // ✅ 현재 선택된 상태의 예약만 필터링
+    const filteredReservations = reservations.filter(
+        (r) => r.status === selectedStatus
+    );
+
     return (
         <div style={styles.container}>
             <h1 style={styles.title}>🏨 예약 요청 관리</h1>
-            <p style={styles.description}>숙소로 들어온 예약 요청을 확인하고 처리하세요.</p>
+            <p style={styles.description}>
+                숙소로 들어온 예약 요청을 상태별로 확인하고 처리하세요.
+            </p>
 
-            {/* ✅ 예약 목록 렌더링 부분 분리 */}
+            {/* ✅ 상태 탭 버튼 */}
+            <div style={styles.tabContainer}>
+                {Object.keys(STATUS_INFO).map((status) => (
+                    <div key={status} style={styles.tabWrapper}>
+                        <button
+                            style={{
+                                ...styles.tabButton,
+                                backgroundColor: selectedStatus === status ? "#007bff" : "#e9ecef",
+                                color: selectedStatus === status ? "#fff" : "#333",
+                            }}
+                            onClick={() => setSelectedStatus(status)}
+                        >
+                            {status === "PENDING" && "⏳ 요청"}
+                            {status === "APPROVED" && "✅ 승인됨"}
+                            {status === "COMPLETED" && "📅 완료됨"}
+                        </button>
+
+                        {/* 🪄 툴팁 */}
+                        <div className="tooltip">{STATUS_INFO[status]}</div>
+                    </div>
+                ))}
+            </div>
+
+            {/* ✅ 예약 목록 */}
             <ReservationList
-                pendingReservations={pendingReservations}
+                pendingReservations={filteredReservations || []} // undefined 방지
                 handleApprove={handleApprove}
                 handleReject={handleReject}
                 handleConsultation={handleConsultation}
                 styles={styles}
             />
+
+            {/* 👇 툴팁 CSS */}
+            <style>{`
+        .tooltip {
+          visibility: hidden;
+          width: 220px;
+          background-color: #333;
+          color: #fff;
+          text-align: left;
+          border-radius: 6px;
+          padding: 8px;
+          position: absolute;
+          z-index: 1;
+          bottom: 120%;
+          left: 50%;
+          transform: translateX(-50%);
+          opacity: 0;
+          transition: opacity 0.2s;
+          font-size: 0.85rem;
+          line-height: 1.4;
+        }
+        .tabWrapper:hover .tooltip {
+          visibility: visible;
+          opacity: 1;
+        }
+      `}</style>
         </div>
     );
 };
@@ -112,6 +172,24 @@ const styles = {
         color: "#666",
         fontSize: "1rem",
         marginBottom: "30px",
+    },
+    tabContainer: {
+        display: "flex",
+        justifyContent: "center",
+        gap: "15px",
+        marginBottom: "30px",
+    },
+    tabWrapper: {
+        position: "relative",
+        display: "inline-block",
+    },
+    tabButton: {
+        padding: "10px 20px",
+        border: "none",
+        borderRadius: "8px",
+        cursor: "pointer",
+        fontWeight: "bold",
+        transition: "background-color 0.2s ease",
     },
     noReservations: {
         textAlign: "center",

@@ -33,4 +33,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     // 숙소 ID 목록과 예약 상태를 기준으로 예약 조회
     List<Reservation> findByClodContentIdInAndStatusIn(List<Long> lodgingIds, List<ReservationStatus> statuses);
+
+    void deleteAllByUser(UserContent user);
 }
