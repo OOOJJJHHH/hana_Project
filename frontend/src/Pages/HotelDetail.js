@@ -204,7 +204,7 @@ const HotelDetail = () => {
                   )
               }
           >
-            <span className="map-icon">🗺️</span> 지도으로 보기
+            <span className="map-icon">🗺️</span> 지도로 보기
           </button>
           <p>소유자: {hotelInfo.lodOwner}</p>
           <p>연락처: {hotelInfo.lodCallNum}</p>
