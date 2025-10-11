@@ -62,7 +62,6 @@ const EditPop = ({ onClose }) => {
                 alert("새 비밀번호와 확인이 일치하지 않습니다.");
                 return;
             }
-
             formData.uPassword = passwordData.newPassword;
         }
 
@@ -78,17 +77,25 @@ const EditPop = ({ onClose }) => {
         }
     };
 
-    // ✅ 백엔드 컨트롤러 요청 버튼
-    const handleBackendRequest = async () => {
+    const handleDeleteAccount = async () => {
+        if (!window.confirm("정말로 회원 탈퇴를 진행하시겠습니까?")) return;
+
+        // 🛠 uId 값이 객체인지 문자열인지 확인
+        const userId = typeof userInfo.uId === "object" ? userInfo.uId.uId : userInfo.uId;
+
         try {
-            const response = await axios.post(`${process.env.REACT_APP_API_URL}/reservation/test`, {
-                userId: userInfo.uId,
-            });
-            console.log("✅ 요청 성공:", response.data);
-            alert("요청이 성공적으로 전송되었습니다.");
-        } catch (err) {
-            console.error("❌ 요청 실패:", err);
-            alert("요청 전송에 실패했습니다.");
+            const response = await axios.delete(
+                `${process.env.REACT_APP_API_URL}/api/user/${userId}`
+            );
+            alert(response.data);
+            localStorage.removeItem("loginUser");
+            window.location.href = "/";
+        } catch (error) {
+            console.error("❌ 회원 삭제 실패:", error);
+            alert(
+                error.response?.data ||
+                "회원 삭제 중 오류가 발생했습니다. 다시 시도해주세요."
+            );
         }
     };
 
@@ -172,19 +179,19 @@ const EditPop = ({ onClose }) => {
                         </button>
                     </div>
 
-                    {/* ✅ 여기 새 버튼 추가됨 */}
+                    {/* ✅ 회원 탈퇴 버튼 */}
                     <div style={{ marginTop: "15px" }}>
                         <button
                             type="button"
-                            onClick={handleBackendRequest}
+                            onClick={handleDeleteAccount}
                             style={{
                                 ...styles.button,
-                                backgroundColor: "#2196F3",
+                                backgroundColor: "#9e9e9e",
                                 color: "white",
                                 width: "100%"
                             }}
                         >
-                            백엔드 요청 테스트
+                            회원 탈퇴
                         </button>
                     </div>
                 </form>
