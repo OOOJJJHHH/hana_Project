@@ -352,4 +352,19 @@
   .similar-hotel-card img {
     height: 100px;
   }
+
+}
+.map-button {
+  display: inline-flex;
+  align-items: center;
+  background-color: #fff;
+  color: green;
+  border: none;
+  font-size: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease-in-out;
+}
+.map-icon {
+  font-size: 20px;
 }

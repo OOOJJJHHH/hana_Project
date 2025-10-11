@@ -195,6 +195,17 @@ const HotelDetail = () => {
         <div className="hotel-info">
           <h1>{hotelInfo.lodName}</h1>
           <p>{hotelInfo.lodLocation}</p>
+          <button
+              className="map-button"
+              onClick={() =>
+                  window.open(
+                      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotelInfo.lodLocation)}`,
+                      "_blank"
+                  )
+              }
+          >
+            <span className="map-icon">🗺️</span> 지도으로 보기
+          </button>
           <p>소유자: {hotelInfo.lodOwner}</p>
           <p>연락처: {hotelInfo.lodCallNum}</p>
 
