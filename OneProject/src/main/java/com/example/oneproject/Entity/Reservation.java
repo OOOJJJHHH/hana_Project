@@ -16,7 +16,7 @@ public class Reservation {
     // ✅ 사용자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private UserContent user;
+    private UserContent user; // 로그인한 사용자의 기본 생성된 id가 들어감
 
     // ✅ 숙소
     @ManyToOne(fetch = FetchType.LAZY)

@@ -4,8 +4,7 @@ import com.example.oneproject.DTO.UserDTO;
 import com.example.oneproject.DTO.UserUpdateDTO;
 import com.example.oneproject.Entity.ClodContent;
 import com.example.oneproject.Entity.UserContent;
-import com.example.oneproject.Repository.CLodRepository;
-import com.example.oneproject.Repository.UserRepository;
+import com.example.oneproject.Repository.*;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,6 +31,12 @@ public class UserService {
 
     @Autowired
     private S3Service s3Service;
+    @Autowired
+    private ReservationRepository reservationRepository;
+    @Autowired
+    private ReviewRepository reviewRepository;
+    @Autowired
+    private WishListRepository wishListRepository;
 
     // user 데이터 저장 (저장 후 저장된 엔티티 반환)
     public UserContent saveUser(UserContent userContent) {
@@ -181,6 +186,34 @@ public class UserService {
     public UserContent getUserWithImage(String userId) {
         return userRepository.findByUId(userId)
                 .orElseThrow(() -> new RuntimeException("해당 유저를 찾을 수 없습니다."));
+    }
+
+    public void deleteUserAndRelatedData(String uId) {
+        // 1. 유저 조회
+        UserContent user = userRepository.findByUId(uId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
+
+        String uFirstName = user.getuFirstName();
+        System.out.println("🧑 삭제 대상 유저: " + uFirstName);
+
+        // 2. 유저가 올린 숙소 삭제
+        List<ClodContent> clods = clodRepository.findByLodOwner(uFirstName);
+        System.out.println("🏠 유저가 올린 숙소 수: " + clods.size());
+        clodRepository.deleteAll(clods);
+
+        // 3. 유저가 예약한 내역 삭제
+        reservationRepository.deleteAllByUser(user);
+
+        // 4. 유저가 작성한 리뷰 삭제
+        reviewRepository.deleteAllByUser(user);
+
+        // 5. 유저가 찜한 숙소 삭제
+        wishListRepository.deleteAllByUser(user);
+
+        // 6. 마지막으로 유저 삭제
+        userRepository.delete(user);
+
+        System.out.println("✅ 회원 및 관련 데이터 삭제 완료: " + uFirstName);
     }
 
 

@@ -652,45 +652,19 @@ public class CityController {
         return ResponseEntity.ok("삭제 완료");
     }
 
+    @DeleteMapping("/api/user/{uId}")
+    public ResponseEntity<String> deleteUser(@PathVariable String uId) {
+        try {
+            userService.deleteUserAndRelatedData(uId);
+            return ResponseEntity.ok("✅ 회원 및 관련 데이터가 모두 삭제되었습니다.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("❌ 회원 삭제 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
 
-//    @PostMapping("/api/googleLogin")
-//    public ResponseEntity<?> googleLogin(@RequestBody UserDTO googleLoginRequest, HttpSession session) {
-//        // "google_" 접두사 제거
-//        String actualGoogleId = googleLoginRequest.getuId().replace("google_", "");
-//
-//        // DB에서 기존 사용자 조회 (구글 ID 기준)
-//        Optional<UserContent> existingUserOptional = userService.findByGoogleId(actualGoogleId);
-//
-//        UserContent userToReturn;
-//
-//        if (existingUserOptional.isPresent()) {
-//            // ✅ 기존 사용자 → 이름/이메일 업데이트
-//            userToReturn = existingUserOptional.get();
-//            userToReturn.setuFirstName(googleLoginRequest.getuFirstName());
-//            if (googleLoginRequest.getUIdEmail() != null && !googleLoginRequest.getUIdEmail().isEmpty()) {
-//                userToReturn.setuIdEmail(googleLoginRequest.getUIdEmail());
-//            }
-//            userService.saveUser(userToReturn);
-//        } else {
-//            // ✅ 신규 사용자 등록
-//            UserContent newUser = new UserContent();
-//            newUser.setuId(googleLoginRequest.getuId()); // ex) google_123456
-//            newUser.setuIdEmail(googleLoginRequest.getUIdEmail());
-//            newUser.setuFirstName(googleLoginRequest.getuFirstName());
-//            newUser.setuLastName(googleLoginRequest.getULastName());
-//            newUser.setuUser(googleLoginRequest.getuUser());
-//            newUser.setGoogleId(actualGoogleId); // ✅ 구글 ID 저장 (접두사 없는 값)
-//            newUser.setuPassword(""); // 비밀번호 없음
-//
-//            userToReturn = userService.saveUser(newUser);
-//        }
-//
-//        // 세션에 사용자 저장
-//        session.setAttribute("loginUser", userToReturn);
-//
-//        return ResponseEntity.ok(userToReturn);
-//    }
-
+    //=======================================================================================
 
     @PostMapping("/user/profile/upload")
     public ResponseEntity<?> uploadProfileImage(

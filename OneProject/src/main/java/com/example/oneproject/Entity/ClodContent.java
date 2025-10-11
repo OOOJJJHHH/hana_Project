@@ -19,7 +19,7 @@ public class ClodContent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String lodOwner;
+    private String lodOwner; // 로그인한 사용자들의 uFirstName가 들어감
     private String lodCity;
     private String lodName;
     private String lodLocation;

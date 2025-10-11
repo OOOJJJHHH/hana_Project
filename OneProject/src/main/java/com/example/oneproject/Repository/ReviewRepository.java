@@ -26,4 +26,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             "GROUP BY r.room " +
             "ORDER BY AVG(r.rating) DESC")
     List<Object[]> findTopRoomsByAverageRating(Pageable pageable);
+
+    void deleteAllByUser(UserContent user);
 }
