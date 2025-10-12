@@ -2,6 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faStar as solidStar, faStarHalfAlt } from "@fortawesome/free-solid-svg-icons";
+import { faStar as regularStar } from "@fortawesome/free-regular-svg-icons";
+
 
 const container = {
     width: '90%',
@@ -80,15 +84,45 @@ const ratingStyle = {
 // ⭐ 평점 숫자 → 별 표시
 const renderStars = (rating) => {
     const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
+    const fullStars = Math.floor(rating);  // 정수만큼 꽉찬 별
+    const hasHalfStar = rating % 1 >= 0.5; // 반쪽 별 여부
 
-    for (let i = 0; i < fullStars; i++) stars.push("★");
-    if (hasHalfStar) stars.push("☆");
-    while (stars.length < 5) stars.push("✩");
+    for (let i = 0; i < fullStars; i++) {
+        stars.push(
+            <FontAwesomeIcon
+                key={`full-${i}`}
+                icon={solidStar}
+                color="#FFD700"    // 별 색상 (노란색)
+                style={{ marginRight: "2px" }}
+            />
+        );
+    }
 
-    return stars.join("");
+    if (hasHalfStar) {
+        stars.push(
+            <FontAwesomeIcon
+                key="half"
+                icon={faStarHalfAlt}
+                color="#FFD700"
+                style={{ marginRight: "2px" }}
+            />
+        );
+    }
+
+    while (stars.length < 5) {
+        stars.push(
+            <FontAwesomeIcon
+                key={`empty-${stars.length}`}
+                icon={regularStar}
+                color="#FFD700"
+                style={{ marginRight: "2px" }}
+            />
+        );
+    }
+
+    return stars;
 };
+
 
 const TopRatedHotels = () => {
     const navigate = useNavigate();

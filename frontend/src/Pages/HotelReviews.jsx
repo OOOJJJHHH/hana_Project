@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import HotelReWrite from "./HotelReWrite"; // ✅ 리뷰 작성/수정 모달
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faStar as solidStar, faStarHalfAlt } from "@fortawesome/free-solid-svg-icons";
+import { faStar as regularStar } from "@fortawesome/free-regular-svg-icons";
+
+
 
 const HotelReviews = ({ hotelId, roomId, userId }) => {
     const [reviews, setReviews] = useState([]);
@@ -57,14 +62,46 @@ const HotelReviews = ({ hotelId, roomId, userId }) => {
     };
 
     const renderStars = (rating) => {
-        const full = Math.floor(rating);
-        const half = rating % 1 >= 0.5;
         const stars = [];
-        for (let i = 0; i < full; i++) stars.push("★");
-        if (half) stars.push("☆");
-        while (stars.length < 5) stars.push("✩");
-        return stars.join("");
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+
+        for (let i = 0; i < fullStars; i++) {
+            stars.push(
+                <FontAwesomeIcon
+                    key={`full-${i}`}
+                    icon={solidStar}
+                    color="#FFD700"
+                    style={{ marginRight: "2px" }}
+                />
+            );
+        }
+
+        if (hasHalfStar) {
+            stars.push(
+                <FontAwesomeIcon
+                    key="half"
+                    icon={faStarHalfAlt}
+                    color="#FFD700"
+                    style={{ marginRight: "2px" }}
+                />
+            );
+        }
+
+        while (stars.length < 5) {
+            stars.push(
+                <FontAwesomeIcon
+                    key={`empty-${stars.length}`}
+                    icon={regularStar}
+                    color="#FFD700"
+                    style={{ marginRight: "2px" }}
+                />
+            );
+        }
+
+        return stars;
     };
+
 
     const styles = {
         header: {
